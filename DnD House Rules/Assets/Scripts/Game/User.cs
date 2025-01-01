@@ -6,29 +6,23 @@ using UnityEngine.SceneManagement;
 
 public class User : NetworkBehaviour
 {
-    NetworkVariable<bool> isInitialized = new NetworkVariable<bool>(false);
+    public NetworkVariable<bool> isInitialized = new NetworkVariable<bool>(false);
     Camera cam;
     public GameObject screen;
 
     NetworkVariable<int> clientsReady = new NetworkVariable<int>(0);
-    NetworkVariable<int> connectedClients = new NetworkVariable<int>(0);
 
     Health health;
-    Stats stats;
+    public Stats stats;
     InqueCalendar calendar;
 
-    List<Bodypart> bodyparts;
+    public List<Bodypart> bodyparts;
 
     Interpreter interpreter;
 
     IEnumerator Start()
     {
-        if(!IsOwner){
-
-            gameObject.SetActive(false);
-            yield return false;
-        }
-        SetConnectedClientsNetworkVariableRpc();
+        Time.fixedDeltaTime = 10f;
         yield return new WaitUntil(() => SceneManager.GetActiveScene().name == "Game");
 
         SceneManager.activeSceneChanged += SceneChanged;
@@ -38,25 +32,32 @@ public class User : NetworkBehaviour
 
         health = screen.GetComponentInChildren<Health>();
         stats = screen.GetComponentInChildren<Stats>();
-        calendar = screen.GetComponentInChildren<InqueCalendar>();
+        calendar = GameManager.Singleton.inqueCalendar;
 
         interpreter = FindObjectOfType<Interpreter>();
 
         bodyparts = new List<Bodypart>();
 
-        interpreter.user = this;
+        if(IsOwner)
+            interpreter.user = this;
         
         foreach(GameObject part in health.body){
 
             bodyparts.Add(part.GetComponent<Bodypart>());
         }
-        screen.SetActive(false);
+        if(!IsOwner){
+            Destroy(cam.gameObject);
+            screen.GetComponent<Canvas>().enabled = false;
+            yield return false;
+        }
         ClientReadyRpc();
         if(IsHost){
 
-            yield return new WaitUntil(() => clientsReady.Value==connectedClients.Value);
+            yield return new WaitUntil(() => clientsReady.Value==NetworkManager.Singleton.ConnectedClientsList.Count);
             InitializedRpc();
         }
+        yield return new WaitUntil(() => isInitialized.Value);
+        UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
     [Rpc(SendTo.Server)]
     void ClientReadyRpc(){
@@ -68,22 +69,18 @@ public class User : NetworkBehaviour
 
         isInitialized.Value = true;
     }
-    [Rpc(SendTo.Server)]
-    void SetConnectedClientsNetworkVariableRpc(){
-
-        connectedClients.Value = NetworkManager.Singleton.ConnectedClientsList.Count;
-    }
 
     private void SceneChanged(Scene arg0, Scene arg1)
     {
         if(arg1.name == "Game"){
-
-            cam.enabled = true;
-            screen.SetActive(true);
+            if(cam != null)
+                cam.enabled = true;
+            if(screen != null)
+                screen.SetActive(true);
         }
     }
 
-    void FixedUpdate(){
+    void FixedUpdate(){ // Fixed Timestep = 10 || update will happen once every 10 seconds (much more affordable)
         if(!isInitialized.Value)
             return;
         // if(!screen.activeInHierarchy) return;
@@ -95,15 +92,13 @@ public class User : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void UpdateUserDataRpc(ulong id){
+    public void UpdateUserDataRpc(ulong id){
         
-        if(!IsOwner)
-            return;
         NetworkObject netObj = null;
 
         foreach(userData data in GameManager.Singleton.userDatas){
             
-            Debug.Log($"Checking ID: {data.id}");
+            // Debug.Log($"Checking ID: {data.id}");
             if(data.id == id){
 
                 netObj = data.objRef;
@@ -119,45 +114,64 @@ public class User : NetworkBehaviour
         for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
 
             if(GameManager.Singleton.userDatas[i].id == id){
-
+                
                 userData data = new userData{
 
                     id = GameManager.Singleton.userDatas[i].id,
                     username = GameManager.Singleton.userDatas[i].username,
                     objRef = GameManager.Singleton.userDatas[i].objRef,
 
-                    Str = user.stats.STR,
-                    Dex = user.stats.DEX,
-                    Con = user.stats.CON,
-                    Int = user.stats.INT,
-                    Wis = user.stats.WIS,
-                    Cha = user.stats.CHA,
+                    Str = user.stats.STR.Value,
+                    Dex = user.stats.DEX.Value,
+                    Con = user.stats.CON.Value,
+                    Int = user.stats.INT.Value,
+                    Wis = user.stats.WIS.Value,
+                    Cha = user.stats.CHA.Value,
 
-                    Lvl = user.stats.lvl,
+                    Lvl = user.stats.lvl.Value,
 
-                    BODY_HEAD = user.bodyparts[0].hp,
-                    BODY_NECK = user.bodyparts[1].hp,
-                    BODY_CHEST = user.bodyparts[2].hp,
-                    BODY_ARM_LEFT = user.bodyparts[3].hp,
-                    BODY_FOREARM_LEFT = user.bodyparts[4].hp,
-                    BODY_HAND_LEFT = user.bodyparts[5].hp,
-                    BODY_ARM_RIGHT = user.bodyparts[6].hp,
-                    BODY_FOREARM_RIGHT = user.bodyparts[7].hp,
-                    BODY_HAND_RIGHT = user.bodyparts[8].hp,
-                    BODY_TORSO = user.bodyparts[9].hp,
-                    BODY_PELVIS = user.bodyparts[10].hp,
-                    BODY_THIGH_LEFT = user.bodyparts[11].hp,
-                    BODY_CRUS_LEFT = user.bodyparts[12].hp,
-                    BODY_FOOT_LEFT = user.bodyparts[13].hp,
-                    BODY_THIGH_RIGHT = user.bodyparts[14].hp,
-                    BODY_CRUS_RIGHT = user.bodyparts[15].hp,
-                    BODY_FOOT_RIGHT = user.bodyparts[16].hp,
+                    HP_HEAD = user.bodyparts[0].hp.Value,
+                    HP_NECK = user.bodyparts[1].hp.Value,
+                    HP_CHEST = user.bodyparts[2].hp.Value,
+                    HP_ARM_LEFT = user.bodyparts[3].hp.Value,
+                    HP_FOREARM_LEFT = user.bodyparts[4].hp.Value,
+                    HP_HAND_LEFT = user.bodyparts[5].hp.Value,
+                    HP_ARM_RIGHT = user.bodyparts[6].hp.Value,
+                    HP_FOREARM_RIGHT = user.bodyparts[7].hp.Value,
+                    HP_HAND_RIGHT = user.bodyparts[8].hp.Value,
+                    HP_TORSO = user.bodyparts[9].hp.Value,
+                    HP_PELVIS = user.bodyparts[10].hp.Value,
+                    HP_THIGH_LEFT = user.bodyparts[11].hp.Value,
+                    HP_CRUS_LEFT = user.bodyparts[12].hp.Value,
+                    HP_FOOT_LEFT = user.bodyparts[13].hp.Value,
+                    HP_THIGH_RIGHT = user.bodyparts[14].hp.Value,
+                    HP_CRUS_RIGHT = user.bodyparts[15].hp.Value,
+                    HP_FOOT_RIGHT = user.bodyparts[16].hp.Value,
 
-                    barbarian = user.stats.barbarian,
-                    baseSpeed = user.stats.BASE_SPEED,
-                    initProf = user.stats.addProf2Init
+                    AC_HEAD = user.bodyparts[0].ac.Value,
+                    AC_NECK = user.bodyparts[1].ac.Value,
+                    AC_CHEST = user.bodyparts[2].ac.Value,
+                    AC_ARM_LEFT = user.bodyparts[3].ac.Value,
+                    AC_FOREARM_LEFT = user.bodyparts[4].ac.Value,
+                    AC_HAND_LEFT = user.bodyparts[5].ac.Value,
+                    AC_ARM_RIGHT = user.bodyparts[6].ac.Value,
+                    AC_FOREARM_RIGHT = user.bodyparts[7].ac.Value,
+                    AC_HAND_RIGHT = user.bodyparts[8].ac.Value,
+                    AC_TORSO = user.bodyparts[9].ac.Value,
+                    AC_PELVIS = user.bodyparts[10].ac.Value,
+                    AC_THIGH_LEFT = user.bodyparts[11].ac.Value,
+                    AC_CRUS_LEFT = user.bodyparts[12].ac.Value,
+                    AC_FOOT_LEFT = user.bodyparts[13].ac.Value,
+                    AC_THIGH_RIGHT = user.bodyparts[14].ac.Value,
+                    AC_CRUS_RIGHT = user.bodyparts[15].ac.Value,
+                    AC_FOOT_RIGHT = user.bodyparts[16].ac.Value,
+
+                    barbarian = user.stats.barbarian.Value,
+                    baseSpeed = user.stats.BASE_SPEED.Value,
+                    initProf = user.stats.addProf2Init.Value
 
                 };
+                // Debug.LogWarning($"Username: {data.username} : ID: {id} : Level: {data.Lvl} : Chest Health: {data.HP_CHEST}");
                 GameManager.Singleton.userDatas[i] = data;
             }
         }

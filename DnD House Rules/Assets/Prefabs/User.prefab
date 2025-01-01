@@ -47,7 +47,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 3907124835
+  GlobalObjectIdHash: 589740501
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -68,7 +68,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d0e6abccb608d114cad79a55038615d1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  isInitialized:
+    m_InternalValue: 0
   screen: {fileID: 0}
+  stats: {fileID: 0}
+  bodyparts: []
 --- !u!1 &7177519071055529687
 GameObject:
   m_ObjectHideFlags: 0
@@ -240,6 +244,38 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentDay.m_InternalValue
+      value: 260168
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentMin.m_InternalValue
+      value: 36
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentHour.m_InternalValue
+      value: 27
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentYear.m_InternalValue
+      value: 698
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentMonth.m_InternalValue
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentWeekday.m_InternalValue
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentYearday.m_InternalValue
+      value: 142
+      objectReference: {fileID: 0}
+    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: currentMonthday.m_InternalValue
+      value: 4
+      objectReference: {fileID: 0}
     - target: {fileID: 5127252106434593256, guid: d05d4c2461895d64b882694bb793826b, type: 3}
       propertyPath: m_Name
       value: Screen
@@ -248,7 +284,12 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 2084672001338715799}
-    m_RemovedComponents: []
+    - target: {fileID: 6055415985713829033, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+      propertyPath: m_PlaneDistance
+      value: 10
+      objectReference: {fileID: 0}
+    m_RemovedComponents:
+    - {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

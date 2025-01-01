@@ -15,6 +15,7 @@ public class PlayerSpawner : NetworkBehaviour
         if (!IsServer) return;
         
         NetworkObject player = Instantiate(PlayerObj, SpawnPoint, Quaternion.identity);
+        SpawnPoint+=Vector3.right*20;
         player.SpawnAsPlayerObject(NetworkManager.LocalClientId);
         GameManager.Singleton.AddPlayerDataRpc(player, interpreter.GetUsername, NetworkManager.LocalClientId);
         
@@ -31,6 +32,7 @@ public class PlayerSpawner : NetworkBehaviour
     private void SpawnPlayer(ulong clientId)
     {
         NetworkObject player = Instantiate(PlayerObj, SpawnPoint, Quaternion.identity);
+        SpawnPoint+=Vector3.right*20;
         player.SpawnAsPlayerObject(clientId);
         UpdateGameManagerPlayerDataRpc(player, RpcTarget.Single(clientId, RpcTargetUse.Temp));
     }

@@ -18,15 +18,25 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
 
     public int Lvl;
 
-    public int BODY_NECK,
-        BODY_HEAD, BODY_CHEST,
-        BODY_ARM_LEFT, BODY_FOREARM_LEFT,
-        BODY_HAND_LEFT, BODY_ARM_RIGHT,
-        BODY_FOREARM_RIGHT, BODY_HAND_RIGHT,
-        BODY_TORSO, BODY_PELVIS,
-        BODY_THIGH_LEFT, BODY_CRUS_LEFT,
-        BODY_FOOT_LEFT, BODY_THIGH_RIGHT,
-        BODY_CRUS_RIGHT, BODY_FOOT_RIGHT;               
+    public int HP_NECK,
+        HP_HEAD, HP_CHEST,
+        HP_ARM_LEFT, HP_FOREARM_LEFT,
+        HP_HAND_LEFT, HP_ARM_RIGHT,
+        HP_FOREARM_RIGHT, HP_HAND_RIGHT,
+        HP_TORSO, HP_PELVIS,
+        HP_THIGH_LEFT, HP_CRUS_LEFT,
+        HP_FOOT_LEFT, HP_THIGH_RIGHT,
+        HP_CRUS_RIGHT, HP_FOOT_RIGHT;
+    
+    public int AC_NECK,
+        AC_HEAD, AC_CHEST,
+        AC_ARM_LEFT, AC_FOREARM_LEFT,
+        AC_HAND_LEFT, AC_ARM_RIGHT,
+        AC_FOREARM_RIGHT, AC_HAND_RIGHT,
+        AC_TORSO, AC_PELVIS,
+        AC_THIGH_LEFT, AC_CRUS_LEFT,
+        AC_FOOT_LEFT, AC_THIGH_RIGHT,
+        AC_CRUS_RIGHT, AC_FOOT_RIGHT;
 
     public bool barbarian;
     public int baseSpeed;
@@ -52,23 +62,41 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
 
         serializer.SerializeValue(ref Lvl);
 
-        serializer.SerializeValue(ref BODY_NECK);
-        serializer.SerializeValue(ref BODY_HEAD);
-        serializer.SerializeValue(ref BODY_CHEST);
-        serializer.SerializeValue(ref BODY_ARM_LEFT);
-        serializer.SerializeValue(ref BODY_FOREARM_LEFT);
-        serializer.SerializeValue(ref BODY_HAND_LEFT);
-        serializer.SerializeValue(ref BODY_ARM_RIGHT);
-        serializer.SerializeValue(ref BODY_FOREARM_RIGHT);
-        serializer.SerializeValue(ref BODY_HAND_RIGHT);
-        serializer.SerializeValue(ref BODY_TORSO);
-        serializer.SerializeValue(ref BODY_PELVIS);
-        serializer.SerializeValue(ref BODY_THIGH_LEFT);
-        serializer.SerializeValue(ref BODY_CRUS_LEFT);
-        serializer.SerializeValue(ref BODY_FOOT_LEFT);
-        serializer.SerializeValue(ref BODY_THIGH_RIGHT);
-        serializer.SerializeValue(ref BODY_CRUS_RIGHT);
-        serializer.SerializeValue(ref BODY_FOOT_RIGHT);
+        serializer.SerializeValue(ref HP_NECK);
+        serializer.SerializeValue(ref HP_HEAD);
+        serializer.SerializeValue(ref HP_CHEST);
+        serializer.SerializeValue(ref HP_ARM_LEFT);
+        serializer.SerializeValue(ref HP_FOREARM_LEFT);
+        serializer.SerializeValue(ref HP_HAND_LEFT);
+        serializer.SerializeValue(ref HP_ARM_RIGHT);
+        serializer.SerializeValue(ref HP_FOREARM_RIGHT);
+        serializer.SerializeValue(ref HP_HAND_RIGHT);
+        serializer.SerializeValue(ref HP_TORSO);
+        serializer.SerializeValue(ref HP_PELVIS);
+        serializer.SerializeValue(ref HP_THIGH_LEFT);
+        serializer.SerializeValue(ref HP_CRUS_LEFT);
+        serializer.SerializeValue(ref HP_FOOT_LEFT);
+        serializer.SerializeValue(ref HP_THIGH_RIGHT);
+        serializer.SerializeValue(ref HP_CRUS_RIGHT);
+        serializer.SerializeValue(ref HP_FOOT_RIGHT);
+
+        serializer.SerializeValue(ref AC_NECK);
+        serializer.SerializeValue(ref AC_HEAD);
+        serializer.SerializeValue(ref AC_CHEST);
+        serializer.SerializeValue(ref AC_ARM_LEFT);
+        serializer.SerializeValue(ref AC_FOREARM_LEFT);
+        serializer.SerializeValue(ref AC_HAND_LEFT);
+        serializer.SerializeValue(ref AC_ARM_RIGHT);
+        serializer.SerializeValue(ref AC_FOREARM_RIGHT);
+        serializer.SerializeValue(ref AC_HAND_RIGHT);
+        serializer.SerializeValue(ref AC_TORSO);
+        serializer.SerializeValue(ref AC_PELVIS);
+        serializer.SerializeValue(ref AC_THIGH_LEFT);
+        serializer.SerializeValue(ref AC_CRUS_LEFT);
+        serializer.SerializeValue(ref AC_FOOT_LEFT);
+        serializer.SerializeValue(ref AC_THIGH_RIGHT);
+        serializer.SerializeValue(ref AC_CRUS_RIGHT);
+        serializer.SerializeValue(ref AC_FOOT_RIGHT);
 
         serializer.SerializeValue(ref barbarian);
         serializer.SerializeValue(ref baseSpeed);
@@ -91,6 +119,8 @@ public class GameManager : NetworkBehaviour
 
     public NetworkList<userData> userDatas;
 
+    public InqueCalendar inqueCalendar;
+
 
     void Start(){
 
@@ -98,6 +128,8 @@ public class GameManager : NetworkBehaviour
         userDatas.Initialize(this);
 
         userDatas.OnListChanged += UpdateNames;
+
+        inqueCalendar = GetComponent<InqueCalendar>();
     }
 
     private void UpdateNames(NetworkListEvent<userData> changeEvent)

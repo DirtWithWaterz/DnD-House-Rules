@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEditor;
+using Unity.Netcode;
 
 public enum State{
 
@@ -23,7 +24,7 @@ public enum State{
     Healthy = 5
 }
 
-public class Health : MonoBehaviour
+public class Health : NetworkBehaviour
 {
 
     public List<GameObject> body = new List<GameObject>();
@@ -53,19 +54,19 @@ public class Health : MonoBehaviour
     [SerializeField] State forcedState = State.Unknown;
 
     // Start is called before the first frame update
-    void Awake(){
+    void Start(){
         
-        s = Component.FindObjectOfType<Stats>();
-        lvl = s.lvl;
-        CONM = s.CON;
+        s = transform.root.GetComponentInChildren<Stats>();
+        lvl = s.lvl.Value;
+        CONM = s.CON.Value;
         
-
-        SetInitialValues();
+        if(IsOwner)
+            SetInitialValuesRpc();
 
         foreach(GameObject g in body){
 
             Bodypart b = g.GetComponent<Bodypart>();
-            maxHP += b.hp;
+            maxHP += b.hp.Value;
         }
 
         foreach(GameObject g in body){
@@ -77,25 +78,40 @@ public class Health : MonoBehaviour
                 vitals.Add(g);
             }
         }
+        foreach(GameObject g in body){
+
+            Bodypart b = g.GetComponent<Bodypart>();
+            b.maxHP = b.hp;
+        }
     }
 
     // Update is called once per frame
-    void FixedUpdate(){
+    void Update(){
 
-        if(s.CON != CONM)
+        if(s.CON.Value != CONM)
         {
-            CONM = s.CON;
-            SetInitialValues();
+            CONM = s.CON.Value;
+            SetInitialValuesRpc();
             CalculateValues();
             maxHP = currentHP;
+            foreach(GameObject g in body){
+
+                Bodypart b = g.GetComponent<Bodypart>();
+                b.maxHP = b.hp;
+            }
         }
 
-        if(lvl != s.lvl){
+        if(lvl != s.lvl.Value){
 
-            lvl = s.lvl;
-            SetInitialValues();
+            lvl = s.lvl.Value;
+            SetInitialValuesRpc();
             CalculateValues();
             maxHP = currentHP;
+            foreach(GameObject g in body){
+
+                Bodypart b = g.GetComponent<Bodypart>();
+                b.maxHP = b.hp;
+            }
         }
         
         levelText.text = $"LV: {lvl}";
@@ -107,60 +123,60 @@ public class Health : MonoBehaviour
         statusText.text = $"THP: {hpString}  Status: {status.ToString()}";
     }
 
-    public void SetInitialValues(){
+    [Rpc(SendTo.Owner)]
+    public void SetInitialValuesRpc(){
 
         lvlBuff = 
-            s.lvl >= 17 ? 10f : 
-            s.lvl >= 12 ? 8.5f : 
-            s.lvl >= 8 ? 7f :  
-            s.lvl >= 5 ? 6f : 
-            s.lvl >= 3 ? 5f :
-            s.lvl >= 2 ? 3.5f :
+            s.lvl.Value >= 17 ? 10f : 
+            s.lvl.Value >= 12 ? 8.5f : 
+            s.lvl.Value >= 8 ? 7f :  
+            s.lvl.Value >= 5 ? 6f : 
+            s.lvl.Value >= 3 ? 5f :
+            s.lvl.Value >= 2 ? 3.5f :
             1.0f;
 
-        body[0].GetComponent<Bodypart>().hp = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[1].GetComponent<Bodypart>().hp = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[2].GetComponent<Bodypart>().hp = 5+Mathf.RoundToInt(CONM < 0 ? (CONM/1.25f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[3].GetComponent<Bodypart>().hp = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[4].GetComponent<Bodypart>().hp = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[5].GetComponent<Bodypart>().hp = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[6].GetComponent<Bodypart>().hp = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[7].GetComponent<Bodypart>().hp = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[8].GetComponent<Bodypart>().hp = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[9].GetComponent<Bodypart>().hp = 5+Mathf.RoundToInt(CONM < 0 ? (CONM/1.25f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[10].GetComponent<Bodypart>().hp = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[11].GetComponent<Bodypart>().hp = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[12].GetComponent<Bodypart>().hp = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[13].GetComponent<Bodypart>().hp = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[14].GetComponent<Bodypart>().hp = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[15].GetComponent<Bodypart>().hp = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-        body[16].GetComponent<Bodypart>().hp = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl > 1 ? lvlBuff-1.5f : 0));
-
-        foreach(GameObject g in body){
-
-            Bodypart b = g.GetComponent<Bodypart>();
-            b.maxHP = b.hp;
-        }
-
-        body[0].GetComponent<Bodypart>().ac = 11 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[1].GetComponent<Bodypart>().ac = 12 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[2].GetComponent<Bodypart>().ac = 8 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[3].GetComponent<Bodypart>().ac = 9 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[4].GetComponent<Bodypart>().ac = 11 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[5].GetComponent<Bodypart>().ac = 12 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[6].GetComponent<Bodypart>().ac = 9 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[7].GetComponent<Bodypart>().ac = 11 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[8].GetComponent<Bodypart>().ac = 12 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[9].GetComponent<Bodypart>().ac = 8 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[10].GetComponent<Bodypart>().ac = 9 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[11].GetComponent<Bodypart>().ac = 9 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[12].GetComponent<Bodypart>().ac = 11 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[13].GetComponent<Bodypart>().ac = 12 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[14].GetComponent<Bodypart>().ac = 9 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[15].GetComponent<Bodypart>().ac = 11 + s.DEX + (s.barbarian ? s.CON : 0);
-        body[16].GetComponent<Bodypart>().ac = 12 + s.DEX + (s.barbarian ? s.CON : 0);
+        body[0].GetComponent<Bodypart>().hp.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[1].GetComponent<Bodypart>().hp.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[2].GetComponent<Bodypart>().hp.Value = 5+Mathf.RoundToInt(CONM < 0 ? (CONM/1.25f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[3].GetComponent<Bodypart>().hp.Value = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[4].GetComponent<Bodypart>().hp.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[5].GetComponent<Bodypart>().hp.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[6].GetComponent<Bodypart>().hp.Value = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[7].GetComponent<Bodypart>().hp.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[8].GetComponent<Bodypart>().hp.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[9].GetComponent<Bodypart>().hp.Value = 5+Mathf.RoundToInt(CONM < 0 ? (CONM/1.25f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[10].GetComponent<Bodypart>().hp.Value = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[11].GetComponent<Bodypart>().hp.Value = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[12].GetComponent<Bodypart>().hp.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[13].GetComponent<Bodypart>().hp.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[14].GetComponent<Bodypart>().hp.Value = 4+Mathf.RoundToInt(CONM < 0 ? (CONM/1.66f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[15].GetComponent<Bodypart>().hp.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
+        body[16].GetComponent<Bodypart>().hp.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
 
 
+        
+    }
+
+    [Rpc(SendTo.Owner)]
+    public void SetInitialValuesDexRpc(){
+
+        body[0].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[1].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[2].GetComponent<Bodypart>().ac.Value = 8 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[3].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[4].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[5].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[6].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[7].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[8].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[9].GetComponent<Bodypart>().ac.Value = 8 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[10].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[11].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[12].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[13].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[14].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[15].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+        body[16].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
     }
 
     public void CalculateValues(){
@@ -169,7 +185,7 @@ public class Health : MonoBehaviour
         foreach(GameObject g in body){
 
             Bodypart b = g.GetComponent<Bodypart>();
-            currentHP += b.hp;
+            currentHP += b.hp.Value;
         }
         hpString =
             currentHP > 999 ? $"??9":
@@ -209,7 +225,7 @@ public class Health : MonoBehaviour
         foreach(GameObject g in vitals){
 
             Bodypart v = g.GetComponent<Bodypart>();
-            if(v.status == State.Healthy || v.status == State.Stable || v.status == State.Brused)
+            if(v.status.Value == State.Healthy || v.status.Value == State.Stable || v.status.Value == State.Brused)
                 continue;
             else
                 return false;

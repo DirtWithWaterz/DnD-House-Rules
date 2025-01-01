@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "Jaden's House Rules.sln"
+    "dotnet.defaultSolution": "DnD House Rules.sln"
 }

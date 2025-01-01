@@ -1,4 +1,5 @@
 using TMPro;
+using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +18,7 @@ public class CalendarButton : MonoBehaviour
     void Awake(){
 
         
-        calendarUI = GameObject.Find("Calendar UI").GetComponent<CalendarUI>();
+        calendarUI = transform.parent.GetComponent<CalendarUI>();
 
         if(background == null || label == null || bottomEdge == null){
 
@@ -30,11 +31,12 @@ public class CalendarButton : MonoBehaviour
 
     void Start(){
 
-        user = GameObject.FindObjectOfType<User>();
+        user = transform.root.GetComponent<User>();
     }
 
     void OnMouseOver(){
-
+        if(!user.isInitialized.Value)
+            return;
         if(!bottomEdge.activeInHierarchy && index!=-1)
             return;
 
@@ -50,9 +52,10 @@ public class CalendarButton : MonoBehaviour
         }
         else if(Input.GetMouseButtonUp(0) && index==-1){
 
-            GameManager.Singleton.terminal.SetActive(true);
+            GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
             user.screen.SetActive(false);
         }
+        user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
 
     }
 

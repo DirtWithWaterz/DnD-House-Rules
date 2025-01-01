@@ -34,6 +34,8 @@ public class TerminalManager : MonoBehaviour
 
     public bool hasBooted = false;
 
+    bool skipFInit;
+
     Vector2 baseMsgListSizeDelta = new Vector2();
 
     private void Start(){
@@ -48,6 +50,14 @@ public class TerminalManager : MonoBehaviour
         terminalInput.caretWidth = 15;
         userInputLine.SetActive(false);
         StartCoroutine(TerminalStartUp());
+    }
+
+    void Update(){
+
+        if(Input.GetKeyDown(KeyCode.F1)){
+
+            skipFInit = true;
+        }
     }
 
     public void OnEnable(){
@@ -89,60 +99,60 @@ public class TerminalManager : MonoBehaviour
 
     private IEnumerator TerminalStartUp(){
         
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.8f);
         softwareAndVersion.SetActive(true);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         fakeCopyRight.SetActive(true);
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.7f);
         AddInterpreterLine(interpreter.Interpret("StartUp 0")[0]);
-        yield return new WaitForSeconds(0.07f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 1")[0]);
-        yield return new WaitForSeconds(0.07f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 2")[0]);
-        yield return new WaitForSeconds(0.07f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 3")[0]);
-        yield return new WaitForSeconds(0.07f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
         AddInterpreterLines(interpreter.Interpret("StartUp 4"));
-        yield return new WaitForSeconds(1.2f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 1.2f);
         AddInterpreterLine(interpreter.Interpret("StartUp 5")[0]);
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.5f);
         ScrollToBottom(10);
         memoryTest.transform.SetAsLastSibling();
         memoryTest.SetActive(true);
         AddInterpreterLine("");
-        yield return new WaitForSeconds(1.85f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 1.85f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 6")[0]);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 7")[0]);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         initializeUSB.transform.SetAsLastSibling();
         initializeUSB.SetActive(true);
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.6f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 8")[0]);
-        yield return new WaitForSeconds(0.1f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.1f);
         AddInterpreterLine(interpreter.Interpret("StartUp 9")[0]);
-        yield return new WaitForSeconds(0.15f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.15f);
         AddInterpreterLine(interpreter.Interpret("StartUp 10")[0]);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 11")[0]);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 12")[0]);
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 13")[0]);
-        yield return new WaitForSeconds(0.6f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.6f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 14")[0]);
-        yield return new WaitForSeconds(0.4f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.4f);
         AddInterpreterLine(interpreter.Interpret("StartUp 15")[0]);
-        yield return new WaitForSeconds(0.7f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.7f);
         AddInterpreterLine(interpreter.Interpret("StartUp 16")[0]);
 
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
         ScrollToBottom(10);
         AddInterpreterLines(interpreter.Interpret("StartUp Help"));
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
 
         
         yield return new WaitUntil(() => canTypeWrite);

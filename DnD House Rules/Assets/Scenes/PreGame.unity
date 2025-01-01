@@ -366,6 +366,7 @@ GameObject:
   - component: {fileID: 1775000834}
   - component: {fileID: 1775000832}
   - component: {fileID: 1775000835}
+  - component: {fileID: 1775000836}
   m_Layer: 0
   m_Name: GameManager
   m_TagString: Untagged
@@ -386,6 +387,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   terminal: {fileID: 1303239079}
+  inqueCalendar: {fileID: 0}
 --- !u!4 &1775000833
 Transform:
   m_ObjectHideFlags: 0
@@ -437,6 +439,215 @@ MonoBehaviour:
   PlayerObj: {fileID: 3232780105542158724, guid: cb62de9bd90051e41a77fea845454b1f, type: 3}
   SpawnPoint: {x: 0, y: 0, z: 0}
   interpreter: {fileID: 1271518002}
+--- !u!114 &1775000836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1775000831}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1fbc0b51d71e01d49ae577f51446b96d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  currentSunrise: {x: 0, y: 0}
+  currentSunset: {x: 0, y: 0}
+  month_t:
+    m_InternalValue:
+      utf8LengthInBytes: 0
+      bytes:
+        offset0000:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0016:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0032:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        byte0048: 0
+        byte0049: 0
+        byte0050: 0
+        byte0051: 0
+        byte0052: 0
+        byte0053: 0
+        byte0054: 0
+        byte0055: 0
+        byte0056: 0
+        byte0057: 0
+        byte0058: 0
+        byte0059: 0
+        byte0060: 0
+        byte0061: 0
+  weekday_t:
+    m_InternalValue:
+      utf8LengthInBytes: 0
+      bytes:
+        offset0000:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0016:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        offset0032:
+          byte0000: 0
+          byte0001: 0
+          byte0002: 0
+          byte0003: 0
+          byte0004: 0
+          byte0005: 0
+          byte0006: 0
+          byte0007: 0
+          byte0008: 0
+          byte0009: 0
+          byte0010: 0
+          byte0011: 0
+          byte0012: 0
+          byte0013: 0
+          byte0014: 0
+          byte0015: 0
+        byte0048: 0
+        byte0049: 0
+        byte0050: 0
+        byte0051: 0
+        byte0052: 0
+        byte0053: 0
+        byte0054: 0
+        byte0055: 0
+        byte0056: 0
+        byte0057: 0
+        byte0058: 0
+        byte0059: 0
+        byte0060: 0
+        byte0061: 0
+  totalMonths: 8
+  totalMonthdays:
+    m_InternalValue: 0
+  totalWeekdays: 5
+  totalDays: 365
+  totalHours: 35
+  totalMins: 59
+  totalSecs: 59
+  currentYear:
+    m_InternalValue: 698
+  currentYearday:
+    m_InternalValue: 139
+  currentMonth:
+    m_InternalValue: 4
+  currentMonthday:
+    m_InternalValue: 4
+  currentWeekday:
+    m_InternalValue: 3
+  currentDay:
+    m_InternalValue: 260168
+  currentHour:
+    m_InternalValue: 27
+  currentMin:
+    m_InternalValue: 36
+  currentSec:
+    m_InternalValue: 0
+  phases:
+  - {fileID: -1106695065, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 750078720, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 239834662, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: -1684610995, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: -1570777043, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 163967733, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: -1358192442, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 1869817478, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: -1285730225, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 1121072924, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 1736171943, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  - {fileID: 1782197670, guid: 4142013b659c7b74f8bbc3ea8e0ea78f, type: 3}
+  moons:
+  - {fileID: 11400000, guid: 4623cd2a1cd102644886f8ae8ad5a50c, type: 2}
+  - {fileID: 11400000, guid: fca1cae14d27e1245ac088e87c7c11f4, type: 2}
+  - {fileID: 11400000, guid: a9c5199a005b5ce459331fffc1f8c626, type: 2}
+  seasonOffset: 122
+  seasons:
+  - {fileID: 11400000, guid: d3d28e0186bf31b4ba141640ef5a56e3, type: 2}
+  - {fileID: 11400000, guid: eb5c9ffd477549d419b28974371786a0, type: 2}
+  - {fileID: 11400000, guid: c783ab6017a35314fa0fb1a17c9b7eeb, type: 2}
+  - {fileID: 11400000, guid: 598e26cfa303ab94e8ab291845fb7ff2, type: 2}
+  - {fileID: 11400000, guid: ed3b18af2eeef334085e9de833af8160, type: 2}
+  - {fileID: 11400000, guid: 502b626f671a19046845c26e291a6433, type: 2}
+  - {fileID: 11400000, guid: 2773f5b0a5f2d5f4a820d7beab3103ef, type: 2}
+  - {fileID: 11400000, guid: 6b093401d9446444187c286220c54a3a, type: 2}
+  currentSeasonday:
+    m_InternalValue: 1
+  currentSeason:
+    m_InternalValue: 0
 --- !u!1 &1892736513
 GameObject:
   m_ObjectHideFlags: 0

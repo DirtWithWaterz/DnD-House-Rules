@@ -2,39 +2,40 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Unity.Netcode;
 
-public class Stats : MonoBehaviour
+public class Stats : NetworkBehaviour
 {
 
     Health h;
 
-    public bool addProf2Init = false;
+    public NetworkVariable<bool> addProf2Init = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public bool barbarian = false;
+    public NetworkVariable<bool> barbarian = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public int lvl = 1;
+    public NetworkVariable<int> lvl = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public int BASE_SPEED = 44;
+    public NetworkVariable<int> BASE_SPEED = new NetworkVariable<int>(44, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public float WEIGHT = 0;
+    public NetworkVariable<float> WEIGHT = new NetworkVariable<float>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private string weightString;
 
-    public int STR = 0;
-    public int DEX = 0;
-    public int CON = 0;
-    public int INT = 0;
-    public int WIS = 0;
-    public int CHA = 0;
+    public NetworkVariable<int> STR = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> DEX = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> CON = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> INT = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> WIS = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> CHA = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     private int DEXWM;
     private int STRWM;
     private int CONWM;
 
-    public int PROF = 0;
+    public NetworkVariable<int> PROF = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     public float SPEED = 0;
-    public int INIT = 0;
-    public int ARMOR = 0;
+    public NetworkVariable<int> INIT = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> ARMOR = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     [SerializeField]
     TMP_Text display0;
@@ -49,46 +50,52 @@ public class Stats : MonoBehaviour
     [SerializeField]
     TMP_Text display5;
 
+    User user;
+
     // Start is called before the first frame update
     void Start()
     {
-        h = Component.FindObjectOfType<Health>();
+        h = transform.root.GetComponentInChildren<Health>();
+        user = transform.root.GetComponent<User>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        PROF = Mathf.CeilToInt(1f + ((1f/4f)*lvl));
-        display0.text = $"+{PROF}";
+        if(!IsOwner)
+            return;
+        
+        PROF.Value = Mathf.CeilToInt(1f + ((1f/4f)*lvl.Value));
+        display0.text = $"+{PROF.Value}";
 
-        SPEED = (BASE_SPEED + STR + (DEX/2)) / (1 + (WEIGHT / 1000));
+        SPEED = (BASE_SPEED.Value + STR.Value + (DEX.Value/2)) / (1 + (WEIGHT.Value / 1000));
         display4.text = SPEED.ToString();
         SPEED = Mathf.Clamp(SPEED, 0, 99);
         display1.text = $"{Mathf.RoundToInt(SPEED)} ft.";
 
-        INIT = DEX + (addProf2Init ? PROF : 0);
-        display2.text = (INIT >= 0 ? "+" : "") + INIT.ToString();
+        INIT.Value = DEX.Value + (addProf2Init.Value ? PROF.Value : 0);
+        display2.text = (INIT.Value >= 0 ? "+" : "") + INIT.Value.ToString();
 
         float sum = 0;
         int count = 0;
         foreach(GameObject g in h.body)
         {
             Bodypart b = g.GetComponent<Bodypart>();
-            sum += b.ac;
+            sum += b.ac.Value;
             count++;
         }
-        ARMOR = Mathf.RoundToInt(sum / count);
-        display3.text = ARMOR.ToString();
+        ARMOR.Value = Mathf.RoundToInt(sum / count);
+        display3.text = ARMOR.Value.ToString();
 
-        STRWM = STR*5;
-        CONWM = Mathf.FloorToInt((CON*8)/(barbarian ? 2f : 1));
-        DEXWM = -(DEX*6);
+        STRWM = STR.Value*5;
+        CONWM = Mathf.FloorToInt((CON.Value*8)/(barbarian.Value ? 2f : 1));
+        DEXWM = -(DEX.Value*6);
 
-        WEIGHT = 100+(STRWM+CONWM+DEXWM)+(barbarian ? 50 : 0);
+        WEIGHT.Value = 100+(STRWM+CONWM+DEXWM)+(barbarian.Value ? 50 : 0);
 
         weightString = 
-            WEIGHT > 999 ? "??9":
-            WEIGHT > -1 ? $"{WEIGHT:000}":
+            WEIGHT.Value > 999 ? "??9":
+            WEIGHT.Value > -1 ? $"{WEIGHT.Value:000}":
             "??0";
         
         display5.text = $"{weightString} Lbs.";

@@ -1,8 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Netcode;
 using UnityEngine;
 
-public class Bodypart : MonoBehaviour
+public class Bodypart : NetworkBehaviour
 {
 
     [SerializeField]
@@ -14,9 +15,10 @@ public class Bodypart : MonoBehaviour
     [SerializeField]
     bool deselect = false;
 
-    public State status = State.Unknown;
+    public NetworkVariable<State> status = new NetworkVariable<State>(State.Unknown, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     Health h;
+    User user;
 
     public bool shot = false;
 
@@ -24,43 +26,47 @@ public class Bodypart : MonoBehaviour
 
     public bool vital = false;
 
-    public int hp;
+    public NetworkVariable<int> hp = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public int maxHP;
+    public NetworkVariable<int> maxHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public int ac;
+    public NetworkVariable<int> ac = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     void Awake(){
 
         sr = GetComponent<SpriteRenderer>();
-        h = Component.FindObjectOfType<Health>();
+        h = transform.root.GetComponentInChildren<Health>();
+
+        user = transform.root.GetComponent<User>();
         
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        status = 
-                hp >= (maxHP*0.5f) && shot ? State.Bleeding : 
-                hp >= maxHP ? State.Healthy : 
-                hp >= (maxHP*0.75f) ? State.Stable : 
-                hp >= (maxHP*0.5f) ? State.Brused : 
-                hp >= (maxHP*0.25f) ? State.Critical : 
-                hp >= 0 ? State.Emaciated : 
-                hp >= -1 ? State.Paralyzed : 
+        if(!IsOwner)
+            return;
+            
+        status.Value = 
+                hp.Value >= (maxHP.Value*0.5f) && shot ? State.Bleeding : 
+                hp.Value >= maxHP.Value ? State.Healthy : 
+                hp.Value >= (maxHP.Value*0.75f) ? State.Stable : 
+                hp.Value >= (maxHP.Value*0.5f) ? State.Brused : 
+                hp.Value >= (maxHP.Value*0.25f) ? State.Critical : 
+                hp.Value >= 0 ? State.Emaciated : 
+                hp.Value >= -1 ? State.Paralyzed : 
                 gameObject.name == "BODY_CHEST" ? State.Concaved : 
                 State.Dismembered;
             
         if(h.VitalsNormal()){
 
-            if(status == State.Bleeding){
+            if(status.Value == State.Bleeding){
 
                 h.Bleeding = true;
                 WasBleeding = true;
-                h.ForceStatus(status);
+                h.ForceStatus(status.Value);
             }
-            else if(WasBleeding && status != State.Bleeding){
+            else if(WasBleeding && status.Value != State.Bleeding){
 
                 h.Bleeding = false;
                 WasBleeding = false;
@@ -69,16 +75,16 @@ public class Bodypart : MonoBehaviour
 
         if(vital){
             
-            switch(status){
+            switch(status.Value){
 
                 case State.Critical:
-                    h.ForceStatus(status);
+                    h.ForceStatus(status.Value);
                     break;
                 case State.Emaciated:
                     h.ForceStatus(State.Unconcious);
                     break;
                 case State.Paralyzed:
-                    h.ForceStatus(status);
+                    h.ForceStatus(status.Value);
                     break;
                 case State.Dismembered:
                     h.ForceStatus(State.Deceased);
@@ -87,7 +93,7 @@ public class Bodypart : MonoBehaviour
                     h.ForceStatus(State.Deceased);
                     break;
                 case State.Bleeding:
-                    h.ForceStatus(status);
+                    h.ForceStatus(status.Value);
                     break;
                 default:
                     if(h.VitalsNormal() && !h.Bleeding)
@@ -100,9 +106,9 @@ public class Bodypart : MonoBehaviour
 
         if(selected && !deselect){
 
-            description.status = status.ToString();
-            description.health = hp;
-            description.ac = ac;
+            description.status = status.Value.ToString();
+            description.health = hp.Value;
+            description.ac = ac.Value;
             description.condition = this.gameObject.name;
         }
     }
@@ -124,6 +130,7 @@ public class Bodypart : MonoBehaviour
     }
     void OnMouseDown(){
 
+        user.UpdateUserDataRpc(NetworkManager.LocalClientId);
         foreach(GameObject g in h.body){
 
             Bodypart b = g.GetComponent<Bodypart>();
@@ -143,9 +150,9 @@ public class Bodypart : MonoBehaviour
 
         description.gameObject.SetActive(true);
 
-        description.status = status.ToString();
-        description.health = hp;
-        description.ac = ac;
+        description.status = status.Value.ToString();
+        description.health = hp.Value;
+        description.ac = ac.Value;
         description.condition = this.gameObject.name;
 
         selected = true;

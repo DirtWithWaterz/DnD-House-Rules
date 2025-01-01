@@ -1,10 +1,14 @@
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using TMPro;
+using Unity.Collections;
+using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-public class InqueCalendar : MonoBehaviour
+public class InqueCalendar : NetworkBehaviour
 {
 
     public Vector2 currentSunrise; //Vector2(hour, min)
@@ -13,11 +17,11 @@ public class InqueCalendar : MonoBehaviour
 
 #region Calendar Definitions
 
-    public string month_t;
-    public string weekday_t;
+    public NetworkVariable<FixedString64Bytes> month_t = new NetworkVariable<FixedString64Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<FixedString64Bytes> weekday_t = new NetworkVariable<FixedString64Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 
-    Dictionary<int, string> monthNames = new Dictionary<int, string>{
+    public Dictionary<int, string> monthNames = new Dictionary<int, string>{
 
         {0, "Undefined"},
         {1, "Kiriel"},
@@ -29,7 +33,7 @@ public class InqueCalendar : MonoBehaviour
         {7, "Ramut"},
         {8, "Uzziel"}
     };
-    Dictionary<int, string> dayNames = new Dictionary<int, string>{
+    public Dictionary<int, string> dayNames = new Dictionary<int, string>{
 
         {0, "Undefined"},
         {1, "Reulian"},
@@ -38,7 +42,7 @@ public class InqueCalendar : MonoBehaviour
         {4, "Achian"},
         {5, "Salechien"}
     };
-    Dictionary<int, int> monthDayNum = new Dictionary<int, int>{
+    public Dictionary<int, int> monthDayNum = new Dictionary<int, int>{
 
         {0, 0},
         {1, 46},
@@ -52,7 +56,7 @@ public class InqueCalendar : MonoBehaviour
     };
 
     public int totalMonths = 8;
-    public int totalMonthdays;
+    public NetworkVariable<int> totalMonthdays = new NetworkVariable<int>(0);
     public int totalWeekdays = 5;
     public int totalDays = 373;
     public int totalHours = 35;
@@ -60,15 +64,15 @@ public class InqueCalendar : MonoBehaviour
     public int totalSecs = 59;
 
 
-    public int currentYear = 0;
-    public int currentYearday = 1;
-    public int currentMonth = 1;
-    public int currentMonthday = 1;
-    public int currentWeekday = 1;
-    public int currentDay = 1;
-    public int currentHour = 0;
-    public int currentMin = 0;
-    public int currentSec = 0;
+    public NetworkVariable<int> currentYear = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentYearday = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentMonth = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentMonthday = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentWeekday = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentDay = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentHour = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentMin = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkVariable<int> currentSec = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 #endregion
 
 #region Moon Phase Definitions
@@ -81,9 +85,9 @@ public class InqueCalendar : MonoBehaviour
     [SerializeField] int seasonOffset = 0; // Number of days to offset the seasons
     public Season[] seasons = new Season[0];
 
-    public int currentSeasonday = 1;
+    public NetworkVariable<int> currentSeasonday = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
-    public int currentSeason;
+    public NetworkVariable<int> currentSeason = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 #endregion
 
@@ -92,32 +96,47 @@ public class InqueCalendar : MonoBehaviour
 
     CalendarUI calendarUI;
 
-    void Awake(){
+    User user;
 
-        calendarUI = GameObject.Find("Calendar UI").GetComponent<CalendarUI>();
+    IEnumerator Start(){
+
+        yield return new WaitUntil(() => GameManager.Singleton.userDatas != null);
+        yield return new WaitUntil(() => SceneManager.GetActiveScene().name == "Game");
+        for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+
+            if(GameManager.Singleton.userDatas[i].id == NetworkManager.LocalClientId)
+                user = GameObject.Find(GameManager.Singleton.userDatas[i].username.ToString()).GetComponent<User>();
+        }
+        calendarUI = user.GetComponentInChildren<CalendarUI>();
     }
 
     // Update is called once per frame
     void Update()
     {
-
+        if(user == null)
+            return;
+        if(!user.isInitialized.Value)
+            return;
+        
         GetCurrentSeason(out Season currentSeason, out Season previousSeason, out Season nextSeason);
 
-        currentSunrise = new Vector2(Mathf.Lerp(previousSeason.rise_hour, currentSeason.rise_hour, currentSeasonday), Mathf.Lerp(previousSeason.rise_minute, currentSeason.rise_minute, currentSeasonday));
-        currentSunset = new Vector2(Mathf.Lerp(previousSeason.set_hour, currentSeason.set_hour, currentSeasonday), Mathf.Lerp(previousSeason.set_minute, currentSeason.set_minute, currentSeasonday));
-
+        float normalizedSeasonday = Mathf.Clamp01((float)currentSeasonday.Value / (float)currentSeason.duration);
+        currentSunrise = new Vector2(Mathf.Lerp((float)currentSeason.rise_hour, (float)nextSeason.rise_hour, normalizedSeasonday), Mathf.Lerp((float)currentSeason.rise_minute, (float)nextSeason.rise_minute, normalizedSeasonday));
+        currentSunset = new Vector2(Mathf.Lerp((float)currentSeason.set_hour, (float)nextSeason.set_hour, normalizedSeasonday), Mathf.Lerp((float)currentSeason.set_minute, (float)nextSeason.set_minute, normalizedSeasonday));
+        // Debug.Log($"Mathf.Clamp01({currentSeasonday.Value} / {currentSeason.duration}) = {normalizedSeasonday}");
         if(Time.time >= timeVar+1){
 
-            CalculateDateAndTime();
+            if(IsHost)
+                CalculateDateAndTimeRpc();
 
             timeVar = Mathf.FloorToInt(Time.time);
         }
-        if(currentDay != lastDay && calendarUI.IsTabOpen(0)){
+        if(currentDay.Value != lastDay && calendarUI.IsTabOpen(0)){
 
             foreach(Moon moon in moons){
 
                 // Update the moon's cycle position
-                moon.cyclePos = (currentDay + moon.shift) % moon.cycle;
+                moon.cyclePos = (currentDay.Value + moon.shift) % moon.cycle;
 
                 // Calculate the current phase within the 0-11 range
                 moon.currentPhase = Mathf.FloorToInt((float)moon.cyclePos / moon.cycle * phases.Length);
@@ -133,150 +152,154 @@ public class InqueCalendar : MonoBehaviour
             }
 
             // Update lastDay to the current day
-            lastDay = currentDay;
+            lastDay = currentDay.Value;
         }
     }
 
 #region Calculate date and time
-    void CalculateDateAndTime(){
 
-        currentSec =
-            currentSec>=
+    [Rpc(SendTo.Server)]
+    void CalculateDateAndTimeRpc(){
+
+        currentSec.Value =
+            currentSec.Value>=
             totalSecs?0:
-            currentSec+1;
+            currentSec.Value+1;
         
-        currentMin =
-            currentMin>=
+        currentMin.Value =
+            currentMin.Value>=
             totalMins&&
-            currentSec==0?0:
-            currentSec==0?
-            currentMin+1:
-            currentMin;
+            currentSec.Value==0?0:
+            currentSec.Value==0?
+            currentMin.Value+1:
+            currentMin.Value;
 
-        currentHour =
-            currentHour>=
+        currentHour.Value =
+            currentHour.Value>=
             totalHours&&
-            currentMin==0&&
-            currentSec==0?0:
-            currentMin==0&&
-            currentSec==0?
-            currentHour+1:
-            currentHour;
+            currentMin.Value==0&&
+            currentSec.Value==0?0:
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentHour.Value+1:
+            currentHour.Value;
 
-        currentYearday =
-            currentYearday>=
+        currentYearday.Value =
+            currentYearday.Value>=
             totalDays&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?1:
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentYearday+1:
-            currentYearday;
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?1:
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentYearday.Value+1:
+            currentYearday.Value;
         
-        currentDay =
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentDay+1:
-            currentDay;
+        currentDay.Value =
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentDay.Value+1:
+            currentDay.Value;
 
-        currentWeekday =
-            currentWeekday>=
+        currentWeekday.Value =
+            currentWeekday.Value>=
             totalWeekdays&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?1:
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentWeekday+1:
-            currentWeekday;
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?1:
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentWeekday.Value+1:
+            currentWeekday.Value;
 
-        totalMonthdays =
-            monthDayNum[currentMonth];
+        totalMonthdays.Value =
+            monthDayNum[currentMonth.Value];
 
-        currentMonthday =
-            currentMonthday>=
-            totalMonthdays&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?1:
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentMonthday+1:
-            currentMonthday;
+        currentMonthday.Value =
+            currentMonthday.Value>=
+            totalMonthdays.Value&&
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?1:
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentMonthday.Value+1:
+            currentMonthday.Value;
         
-        currentMonth =
-            currentMonth>=
+        currentMonth.Value =
+            currentMonth.Value>=
             totalMonths&&
-            currentMonthday==1&&
-            currentYearday==1&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?1:
-            currentMonthday==1&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentMonth+1:
-            currentMonth;
+            currentMonthday.Value==1&&
+            currentYearday.Value==1&&
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?1:
+            currentMonthday.Value==1&&
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentMonth.Value+1:
+            currentMonth.Value;
         
-        currentYear =
-            currentMonth==1&&
-            currentYearday==1&&
-            currentHour==0&&
-            currentMin==0&&
-            currentSec==0?
-            currentYear+1:
-            currentYear;
+        currentYear.Value =
+            currentMonth.Value==1&&
+            currentYearday.Value==1&&
+            currentHour.Value==0&&
+            currentMin.Value==0&&
+            currentSec.Value==0?
+            currentYear.Value+1:
+            currentYear.Value;
 
-        weekday_t = dayNames[currentWeekday];
-        month_t = monthNames[currentMonth];
+        weekday_t.Value = dayNames[currentWeekday.Value];
+        month_t.Value = monthNames[currentMonth.Value];
     }
 #endregion
 
 #region Season stuff
 
-float Lerp(float start, float end, float t)
-{
-    return start + (end - start) * t;
-}
-
-void GetCurrentSeason(out Season currentSeason, out Season previousSeason, out Season nextSeason)
-{
-    currentSeason = null;
-    previousSeason = null;
-    nextSeason = null;
-
-    int seasonStart = 1;
-
-    int adjustedYearday = (currentYearday + seasonOffset) % totalDays;
-    if (adjustedYearday <= 0) adjustedYearday += totalDays;
-
-
-    for (int i = 0; i < seasons.Length; i++)
+    float Lerp(float start, float end, float t)
     {
-        int seasonEnd = seasonStart + seasons[i].duration - 1;
-
-        if (adjustedYearday >= seasonStart && adjustedYearday <= seasonEnd)
-        {
-            currentSeason = seasons[i];
-            previousSeason = i > 0 ? seasons[i - 1] : seasons[seasons.Length - 1]; // Wrap around if the current season is the first
-            nextSeason = i < seasons.Length - 1 ? seasons[i + 1] : seasons[0]; // Wrap around if the current season is the last
-
-            currentSeasonday = adjustedYearday-seasonStart;
-            this.currentSeason = i;
-            break;
-        }
-
-        seasonStart = seasonEnd + 1; // Move start to the next season
+        return start + (end - start) * t;
     }
-}
+
+    public void GetCurrentSeason(out Season currentSeason, out Season previousSeason, out Season nextSeason)
+    {
+        currentSeason = null;
+        previousSeason = null;
+        nextSeason = null;
+
+        int seasonStart = 1;
+
+        int adjustedYearday = (currentYearday.Value + seasonOffset) % totalDays;
+        if (adjustedYearday <= 0) adjustedYearday += totalDays;
 
 
+        for (int i = 0; i < seasons.Length; i++)
+        {
+            int seasonEnd = seasonStart + seasons[i].duration - 1;
 
+            if (adjustedYearday >= seasonStart && adjustedYearday <= seasonEnd)
+            {
+                currentSeason = seasons[i];
+                previousSeason = i > 0 ? seasons[i - 1] : seasons[seasons.Length - 1]; // Wrap around if the current season is the first
+                nextSeason = i < seasons.Length - 1 ? seasons[i + 1] : seasons[0]; // Wrap around if the current season is the last
+
+                SetCurrentSeasonRpc(adjustedYearday, seasonStart, i);
+                break;
+            }
+
+            seasonStart = seasonEnd + 1; // Move start to the next season
+        }
+    }
+    [Rpc(SendTo.Server)]
+    void SetCurrentSeasonRpc(int adjustedYearday, int seasonStart, int val){
+
+        currentSeasonday.Value = adjustedYearday-seasonStart;
+        currentSeason.Value = val;
+    }
 #endregion
 }

@@ -29,7 +29,7 @@ public class CalendarUI : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        inqueCalendar = GameObject.Find("Calendar UI").GetComponent<InqueCalendar>();
+        inqueCalendar = GameManager.Singleton.inqueCalendar;
 
         foreach(GameObject g in tabline){
 
@@ -44,33 +44,33 @@ public class CalendarUI : MonoBehaviour
         if(IsTabOpen(1)){
 
             CurrentDate.text =
-                $"{inqueCalendar.currentYear:0000}-{inqueCalendar.currentMonth:00}-{inqueCalendar.currentMonthday:00}";
+                $"{inqueCalendar.currentYear.Value:0000}-{inqueCalendar.currentMonth.Value:00}-{inqueCalendar.currentMonthday.Value:00}";
             
             DayOfMonth.text =
-                $"{inqueCalendar.currentMonthday:00}/{inqueCalendar.totalMonthdays:00}";
+                $"{inqueCalendar.currentMonthday.Value:00}/{inqueCalendar.totalMonthdays.Value:00}";
             
             Time.text =
-                $"{inqueCalendar.currentHour:00}:{inqueCalendar.currentMin:00}";
+                $"{inqueCalendar.currentHour.Value:00}:{inqueCalendar.currentMin.Value:00}";
 
             DayName.text =
-                $"{inqueCalendar.weekday_t}";
+                $"{inqueCalendar.weekday_t.Value}";
 
             DayOfWeek.text =
-                $"{inqueCalendar.currentWeekday}/{inqueCalendar.totalWeekdays}";
+                $"{inqueCalendar.currentWeekday.Value}/{inqueCalendar.totalWeekdays}";
 
             MonthName.text =
-                $"{inqueCalendar.month_t}";
+                $"{inqueCalendar.month_t.Value}";
 
             MonthOfYear.text =
-                $"{inqueCalendar.currentMonth}/{inqueCalendar.totalMonths}";
+                $"{inqueCalendar.currentMonth.Value}/{inqueCalendar.totalMonths}";
         }
         if(IsTabOpen(2)){
 
-            Transform selectedPlanetPos = planetPositions[inqueCalendar.currentSeason];
+            Transform selectedPlanetPos = planetPositions[inqueCalendar.currentSeason.Value];
 
             planet.transform.position = selectedPlanetPos.position;
 
-            SeasonName.text = $"SEASON: {inqueCalendar.seasons[inqueCalendar.currentSeason].name}";
+            SeasonName.text = $"SEASON: {inqueCalendar.seasons[inqueCalendar.currentSeason.Value].name}";
 
             Sunrise.text = $"{inqueCalendar.currentSunrise.x:00}:{inqueCalendar.currentSunrise.y:00}";
             Sunset.text = $"{inqueCalendar.currentSunset.x:00}:{inqueCalendar.currentSunset.y:00}";
