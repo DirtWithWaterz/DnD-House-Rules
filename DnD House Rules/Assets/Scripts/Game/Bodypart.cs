@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
@@ -7,7 +8,7 @@ public class Bodypart : NetworkBehaviour
 {
 
     [SerializeField]
-    Description description;
+    public Description description;
 
     public SpriteRenderer sr;
     public bool selected = false;
@@ -26,11 +27,13 @@ public class Bodypart : NetworkBehaviour
 
     public bool vital = false;
 
-    public NetworkVariable<int> hp = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> currentHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
-    public NetworkVariable<int> maxHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<int> maximumHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public NetworkVariable<int> ac = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    public NetworkVariable<FixedString4096Bytes> condition = new NetworkVariable<FixedString4096Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     void Awake(){
 
@@ -48,13 +51,13 @@ public class Bodypart : NetworkBehaviour
             return;
             
         status.Value = 
-                hp.Value >= (maxHP.Value*0.5f) && shot ? State.Bleeding : 
-                hp.Value >= maxHP.Value ? State.Healthy : 
-                hp.Value >= (maxHP.Value*0.75f) ? State.Stable : 
-                hp.Value >= (maxHP.Value*0.5f) ? State.Brused : 
-                hp.Value >= (maxHP.Value*0.25f) ? State.Critical : 
-                hp.Value >= 0 ? State.Emaciated : 
-                hp.Value >= -1 ? State.Paralyzed : 
+                currentHP.Value >= (maximumHP.Value*0.5f) && shot ? State.Bleeding : 
+                currentHP.Value >= maximumHP.Value ? State.Healthy : 
+                currentHP.Value >= (maximumHP.Value*0.75f) ? State.Stable : 
+                currentHP.Value >= (maximumHP.Value*0.5f) ? State.Brused : 
+                currentHP.Value >= (maximumHP.Value*0.25f) ? State.Critical : 
+                currentHP.Value >= 0 ? State.Emaciated : 
+                currentHP.Value >= -1 ? State.Paralyzed : 
                 gameObject.name == "BODY_CHEST" ? State.Concaved : 
                 State.Dismembered;
             
@@ -107,9 +110,9 @@ public class Bodypart : NetworkBehaviour
         if(selected && !deselect){
 
             description.status = status.Value.ToString();
-            description.health = hp.Value;
+            description.health = currentHP.Value;
             description.ac = ac.Value;
-            description.condition = this.gameObject.name;
+            description.condition = condition.Value.ToString();
         }
     }
 
@@ -151,9 +154,9 @@ public class Bodypart : NetworkBehaviour
         description.gameObject.SetActive(true);
 
         description.status = status.Value.ToString();
-        description.health = hp.Value;
+        description.health = currentHP.Value;
         description.ac = ac.Value;
-        description.condition = this.gameObject.name;
+        description.condition = condition.Value.ToString();
 
         selected = true;
     }

@@ -34,7 +34,7 @@ public class TerminalManager : MonoBehaviour
 
     public bool hasBooted = false;
 
-    bool skipFInit;
+    bool skipFInitUser1, skipFInitUser2;
 
     Vector2 baseMsgListSizeDelta = new Vector2();
 
@@ -56,7 +56,11 @@ public class TerminalManager : MonoBehaviour
 
         if(Input.GetKeyDown(KeyCode.F1)){
 
-            skipFInit = true;
+            skipFInitUser1 = true;
+        }
+        if(Input.GetKeyDown(KeyCode.F2)){
+
+            skipFInitUser2 = true;
         }
     }
 
@@ -99,71 +103,87 @@ public class TerminalManager : MonoBehaviour
 
     private IEnumerator TerminalStartUp(){
         
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.8f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.8f);
         softwareAndVersion.SetActive(true);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         fakeCopyRight.SetActive(true);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.7f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.7f);
         AddInterpreterLine(interpreter.Interpret("StartUp 0")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 1")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 2")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.07f);
         AddInterpreterLine(interpreter.Interpret("StartUp 3")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.07f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.07f);
         AddInterpreterLines(interpreter.Interpret("StartUp 4"));
-        yield return new WaitForSeconds(skipFInit ? 0 : 1.2f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 1.2f);
         AddInterpreterLine(interpreter.Interpret("StartUp 5")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.5f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.5f);
         ScrollToBottom(10);
         memoryTest.transform.SetAsLastSibling();
         memoryTest.SetActive(true);
         AddInterpreterLine("");
-        yield return new WaitForSeconds(skipFInit ? 0 : 1.85f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 1.85f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 6")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 7")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         initializeUSB.transform.SetAsLastSibling();
         initializeUSB.SetActive(true);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.6f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.6f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 8")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.1f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.1f);
         AddInterpreterLine(interpreter.Interpret("StartUp 9")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.15f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.15f);
         AddInterpreterLine(interpreter.Interpret("StartUp 10")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 11")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 12")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         AddInterpreterLine(interpreter.Interpret("StartUp 13")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.6f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.6f);
         ScrollToBottom(10);
         AddInterpreterLine(interpreter.Interpret("StartUp 14")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.4f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.4f);
         AddInterpreterLine(interpreter.Interpret("StartUp 15")[0]);
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.7f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.7f);
         AddInterpreterLine(interpreter.Interpret("StartUp 16")[0]);
 
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
         ScrollToBottom(10);
         AddInterpreterLines(interpreter.Interpret("StartUp Help"));
-        yield return new WaitForSeconds(skipFInit ? 0 : 0.3f);
+        yield return new WaitForSeconds(skipFInitUser1 || skipFInitUser2 ? 0 : 0.3f);
 
         
         yield return new WaitUntil(() => canTypeWrite);
+
+        hasBooted = true;
+
+        if(skipFInitUser1)
+            AddInterpreterLines(interpreter.Interpret("login user1 TestUser#1"));
+        if(skipFInitUser2)
+            AddInterpreterLines(interpreter.Interpret("login user2 TestUser#2"));
+        yield return new WaitForSeconds(1f);
+        if(skipFInitUser1){
+
+            AddInterpreterLines(interpreter.Interpret("host"));
+            if(Input.GetKey(KeyCode.F3)){
+                yield return new WaitForSeconds(2f);
+                AddInterpreterLines(interpreter.Interpret("begin"));
+                yield return new WaitForSeconds(1f);
+                AddInterpreterLines(interpreter.Interpret("exit"));
+            }
+        }
 
         userInputLine.transform.SetAsLastSibling();
         userInputLine.SetActive(true);
 
         terminalInput.ActivateInputField();
         terminalInput.Select();
-
-        hasBooted = true;
     }
 
     private void OnGUI(){

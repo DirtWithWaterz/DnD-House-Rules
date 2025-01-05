@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 
 public enum Mod{
 
@@ -75,7 +76,7 @@ public class ModCBtn : MonoBehaviour
                     val = stat.CON.Value;
                     health.SetInitialValuesRpc();
                     health.CalculateValues();
-                    health.maxHP = health.currentHP;
+                    health.maxHP = health.currHP;
                 }
                 break;
             case Mod.INT:
@@ -107,6 +108,21 @@ public class ModCBtn : MonoBehaviour
             display.text = (val >= 0 ? "+" : "") + val.ToString();
         else if (mod != Mod.INIT && mod != Mod.ARMOR)
             display.text = $"BASE: {44 + val}";
+        if (mod == Mod.INIT){
+            if (stat.addProf2Init.Value)
+                display.gameObject.SetActive(true);
+            else
+                display.gameObject.SetActive(false);
+        }
+        if (mod == Mod.ARMOR){
+            if(stat.barbarian.Value){
+
+                display.gameObject.SetActive(true);
+                health.SetInitialValuesDexRpc();
+            }
+            else
+                display.gameObject.SetActive(false);
+        }
     }
 
 
@@ -130,7 +146,7 @@ public class ModCBtn : MonoBehaviour
                     stat.CON.Value = val;
                     health.SetInitialValuesRpc();
                     health.CalculateValues();
-                    health.maxHP = health.currentHP;
+                    health.maxHP = health.currHP;
                     break;
                 case Mod.INT:
                     stat.INT.Value = val;
@@ -182,7 +198,7 @@ public class ModCBtn : MonoBehaviour
                     stat.CON.Value = val;
                     health.SetInitialValuesRpc();
                     health.CalculateValues();
-                    health.maxHP = health.currentHP;
+                    health.maxHP = health.currHP;
                     break;
                 case Mod.INT:
                     stat.INT.Value = val;

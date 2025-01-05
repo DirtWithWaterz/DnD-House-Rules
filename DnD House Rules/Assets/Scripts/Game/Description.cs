@@ -2,8 +2,10 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
+using Unity.Collections;
+using Unity.Netcode;
 
-public class Description : MonoBehaviour
+public class Description : NetworkBehaviour
 {
 
     [SerializeField]

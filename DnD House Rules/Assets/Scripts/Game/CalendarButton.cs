@@ -53,7 +53,7 @@ public class CalendarButton : MonoBehaviour
         else if(Input.GetMouseButtonUp(0) && index==-1){
 
             GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
-            user.screen.SetActive(false);
+            user.screen.GetComponent<Canvas>().enabled = false;
         }
         user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
 

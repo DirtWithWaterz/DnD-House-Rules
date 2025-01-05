@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Unity.Collections;
 using Unity.Netcode;
@@ -232,7 +233,7 @@ public class Interpreter : NetworkBehaviour
         if(args[0] == "exit" && SceneManager.GetActiveScene().name == "Game"){
 
             transform.root.GetChild(0).gameObject.SetActive(false);
-            user.screen.SetActive(true);
+            user.screen.GetComponent<Canvas>().enabled = true;
             response.Add("");
             return response;
         }
@@ -328,8 +329,54 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "list"){
             
-            
-            
+            if(args[1] == "prof"){
+
+                if(IsHost){
+
+                    string usernameI = args.Length == 3 ? args[2] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
+
+                    response.Add(user.stats.PROF.Value.ToString());
+                    response.Add("");
+                    return response;
+                }
+            }
+            if(args[1] == "prof2Init"){
+
+                if(IsHost){
+
+                    string usernameI = args.Length == 3 ? args[2] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
+
+                    response.Add(user.stats.addProf2Init.Value.ToString());
+                    response.Add("");
+                    return response;
+                }
+            }
+            if(args[1] == "barbarian"){
+
+                if(IsHost){
+
+                    string usernameI = args.Length == 3 ? args[2] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
+
+                    response.Add(user.stats.barbarian.Value.ToString());
+                    response.Add("");
+                    return response;
+                }
+            }
+            if(args[1] == "baseSpeed"){
+
+                if(IsHost){
+
+                    string usernameI = args.Length == 3 ? args[2] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
+
+                    response.Add(user.stats.BASE_SPEED.Value.ToString());
+                    response.Add("");
+                    return response;
+                }
+            }
             if(args[1] == "players"){
 
                 foreach(userData data in GameManager.Singleton.userDatas){
@@ -343,459 +390,351 @@ public class Interpreter : NetworkBehaviour
 
                 if(args[2] == "head"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_HEAD.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[0].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "neck"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_NECK.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[1].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "chest"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_CHEST.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[2].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftArm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_ARM_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[3].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftForearm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_FOREARM_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[4].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftHand"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_HAND_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[5].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightArm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_ARM_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[6].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightForearm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_FOREARM_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[7].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightHand"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_HAND_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[8].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "torso"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_TORSO.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[9].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "pelvis"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_PELVIS.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[10].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftThigh"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_THIGH_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[11].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftCrus"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_CRUS_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[12].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftFoot"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_FOOT_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[13].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightThigh"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_THIGH_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[14].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightCrus"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_CRUS_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[15].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightFoot"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].HP_FOOT_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[16].currentHP.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
             }
             if(args[1] == "ac"){
 
                 if(args[2] == "head"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_HEAD.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[0].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "neck"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_NECK.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[1].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "chest"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_CHEST.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[2].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftArm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_ARM_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[3].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftForearm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_FOREARM_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[4].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftHand"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_HAND_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[5].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightArm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_ARM_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[6].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightForearm"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_FOREARM_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[7].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightHand"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_HAND_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[8].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "torso"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_TORSO.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[9].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "pelvis"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_PELVIS.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[10].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftThigh"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_THIGH_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[11].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftCrus"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_CRUS_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[12].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "leftFoot"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_FOOT_LEFT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[13].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightThigh"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_THIGH_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[14].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightCrus"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_CRUS_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[15].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
                 if(args[2] == "rightFoot"){
 
-                    string username = args[3];
-                    for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                    string usernameI = args.Length == 4 ? args[3] : username;
+                    User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                        if(GameManager.Singleton.userDatas[i].username == username){
-
-                            response.Add(GameManager.Singleton.userDatas[i].AC_FOOT_RIGHT.ToString());
-                            return response;
-                        }
-                    }
+                    response.Add(user.bodyparts[16].ac.Value.ToString());
+                    response.Add("");
+                    return response;
                 }
             }
             if(args[1] == "lvl"){
 
-                string username = args[2];
-                for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                string usernameI = args.Length == 3 ? args[2] : username;
+                User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                    if(GameManager.Singleton.userDatas[i].username == username){
-
-                        response.Add(GameManager.Singleton.userDatas[i].Lvl.ToString());
-                        return response;
-                    }
-                }
+                response.Add(user.stats.lvl.Value.ToString());
+                response.Add("");
+                return response;
             }
             if(args[1] == "mod"){
 
-                string username = args[3];
-                for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+                string usernameI = args.Length == 4 ? args[3] : username;
+                User user = GameObject.Find(usernameI).GetComponent<User>();
 
-                    if(GameManager.Singleton.userDatas[i].username == username){
-
-                        switch(args[2]){
-                            case "str":
-                                response.Add(GameManager.Singleton.userDatas[i].Str.ToString());
-                                break;
-                            case "dex":
-                                response.Add(GameManager.Singleton.userDatas[i].Dex.ToString());
-                                break;
-                            case "con":
-                                response.Add(GameManager.Singleton.userDatas[i].Con.ToString());
-                                break;
-                            case "int":
-                                response.Add(GameManager.Singleton.userDatas[i].Int.ToString());
-                                break;
-                            case "wis":
-                                response.Add(GameManager.Singleton.userDatas[i].Wis.ToString());
-                                break;
-                            case "cha":
-                                response.Add(GameManager.Singleton.userDatas[i].Cha.ToString());
-                                break;
-                            
-                        }
-                        return response;
-                    }
+                switch(args[2]){
+                    case "str":
+                        response.Add(user.stats.STR.Value.ToString());
+                        break;
+                    case "dex":
+                        response.Add(user.stats.DEX.Value.ToString());
+                        break;
+                    case "con":
+                        response.Add(user.stats.CON.Value.ToString());
+                        break;
+                    case "int":
+                        response.Add(user.stats.INT.Value.ToString());
+                        break;
+                    case "wis":
+                        response.Add(user.stats.WIS.Value.ToString());
+                        break;
+                    case "cha":
+                        response.Add(user.stats.CHA.Value.ToString());
+                        break;
+                    
                 }
+                response.Add("");
+                return response;
             }
             if(args[1] == "date"){
 
@@ -839,6 +778,32 @@ public class Interpreter : NetworkBehaviour
             }
         }
 
+        if(args[0] == "longrest"){
+
+            throw new NotImplementedException();
+        }
+
+        if(args[0] == "shortrest"){
+
+            throw new NotImplementedException();
+        }
+
+        if(args[0] == "save"){
+
+            GameManager.Singleton.SaveData();
+            response.Add("data saved.");
+            response.Add("");
+            return response;
+        }
+
+        if(args[0] == "load"){
+
+            StartCoroutine(GameManager.Singleton.LoadData());
+            response.Add("data loaded.");
+            response.Add("");
+            return response;
+        }
+
         if(args[0] == "begin"){
 
             if(!IsHost){
@@ -848,9 +813,7 @@ public class Interpreter : NetworkBehaviour
             }
             
             try{
-
                 LoadGameSceneRpc();
-                // transform.parent.gameObject.SetActive(false);
                 response.Add("");
                 return response;
             }
@@ -865,20 +828,190 @@ public class Interpreter : NetworkBehaviour
 
             if(args[1] == "sheet"){
 
-                user.screen.SetActive(true);
+                user.screen.GetComponent<Canvas>().enabled = true;
                 transform.root.GetChild(0).gameObject.SetActive(false);
                 response.Add("");
                 return response;
             }
         }
 
-        if(args[0] == "set"){
+        if(args[0] == "copy"){
 
+            if(args[1] == "data"){
+
+                if(!IsHost){
+
+                    response.Add("Error: No Perms");
+                    response.Add("");
+                    return response;
+                }
+
+                string usernameI = args.Length == 3 ? args[2] : username;
+                User currentUser = user;
+                User otherUser = GameObject.Find(usernameI).GetComponent<User>();
+
+                currentUser.stats.addProf2Init.Value = otherUser.stats.addProf2Init.Value;
+                // currentUser.stats.ARMOR.Value = otherUser.stats.ARMOR.Value;
+                currentUser.stats.barbarian.Value = otherUser.stats.barbarian.Value;
+                currentUser.stats.BASE_SPEED.Value = otherUser.stats.BASE_SPEED.Value;
+                currentUser.stats.CHA.Value = otherUser.stats.CHA.Value;
+                currentUser.stats.CON.Value = otherUser.stats.CON.Value;
+                currentUser.stats.DEX.Value = otherUser.stats.DEX.Value;
+                // currentUser.stats.INIT.Value = otherUser.stats.INIT.Value;
+                currentUser.stats.INT.Value = otherUser.stats.INT.Value;
+                currentUser.stats.lvl.Value = otherUser.stats.lvl.Value;
+                // currentUser.stats.PROF.Value = otherUser.stats.PROF.Value;
+                currentUser.stats.STR.Value = otherUser.stats.STR.Value;
+                // currentUser.stats.WEIGHT.Value = otherUser.stats.WEIGHT.Value;
+                currentUser.stats.WIS.Value = otherUser.stats.WIS.Value;
+
+                for(int i = 0; i < currentUser.bodyparts.Count; i++){
+
+                    currentUser.bodyparts[i].currentHP.Value = otherUser.bodyparts[i].currentHP.Value;
+                    // currentUser.bodyparts[i].maximumHP.Value = otherUser.bodyparts[i].maximumHP.Value;
+                    currentUser.bodyparts[i].ac.Value = otherUser.bodyparts[i].ac.Value;
+                    // currentUser.bodyparts[i].status.Value = otherUser.bodyparts[i].status.Value;
+                    currentUser.bodyparts[i].condition.Value = otherUser.bodyparts[i].condition.Value;
+                }
+
+                response.Add($"Copying {otherUser.name}'s data on sheet.");
+                response.Add("");
+                return response;
+            }
+        }
+        if(args[0] == "paste"){
+
+            if(args[1] == "data"){
+
+                if(!IsHost){
+
+                    response.Add("Error: No Perms");
+                    response.Add("");
+                    return response;
+                }
+
+                string otherUsername = args[2];
+                User currentUser = user;
+
+                SetLevelRpc(otherUsername, currentUser.stats.lvl.Value);
+
+                SetModRpc(otherUsername, "str", currentUser.stats.STR.Value);
+                SetModRpc(otherUsername, "dex", currentUser.stats.DEX.Value);
+                SetModRpc(otherUsername, "con", currentUser.stats.CON.Value);
+                SetModRpc(otherUsername, "int", currentUser.stats.INT.Value);
+                SetModRpc(otherUsername, "wis", currentUser.stats.WIS.Value);
+                SetModRpc(otherUsername, "cha", currentUser.stats.CHA.Value);
+
+                SetBaseSpeedRpc(otherUsername, currentUser.stats.BASE_SPEED.Value);
+                SetBarbarianRpc(otherUsername, currentUser.stats.barbarian.Value);
+                SetProf2InitRpc(otherUsername, currentUser.stats.addProf2Init.Value);
+
+                for(int i = 0; i < currentUser.bodyparts.Count; i++){
+
+                    SetHealthRpc(otherUsername, i, currentUser.bodyparts[i].currentHP.Value);
+                    SetArmorClassRpc(otherUsername, i, currentUser.bodyparts[i].ac.Value);
+                }
+                response.Add($"Pasting {otherUsername}'s data on sheet.");
+                response.Add("");
+                return response;
+            }
+        }
+
+        if(args[0] == "new"){
+
+            if(args[1] == "condition"){
+
+                if(IsHost){
+
+                    string val = "";
+                    for(int i = 3; i < args.Length; i++){
+
+                        val += $"{args[i]} ";
+                    }
+                    GameManager.Singleton.conditionsValueKey.Add(args[2], val);
+                    GameManager.Singleton.conditionsKeyValue.Add(val, args[2]);
+                }
+            }
+            if(args[1] == "item"){
+
+                if(IsHost){
+                    string nameI = "";
+                    for(int i = 7; i < args.Length; i++){
+
+                        nameI += $"{args[i]} ";
+                    }
+                    for(int i = 0; i < GameManager.Singleton.items.Count; i++){
+
+                        if(GameManager.Singleton.items[i].name.ToString() == nameI){
+
+                            response.Add("Item with that name already exists.");
+                            return response;
+                        }
+                    }
+                    item newItem = new item(){
+
+                        name = nameI,
+                        cost = int.Parse(args[2]),
+                        value = int.Parse(args[3]),
+                        type = (Type)int.Parse(args[4]),
+                        size = (Size)int.Parse(args[5]),
+                        amount = 1,
+                        weight = int.Parse(args[6])
+                    };
+                    GameManager.Singleton.items.Add(newItem);
+                }
+            }
+            response.Add("");
+            return response;
+        }
+
+        if(args[0] == "set"){
+            
+            if(args[1] == "condition"){
+
+                if(IsHost){
+
+                    SetConditionRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), GameManager.Singleton.conditionsValueKey[args[4]]);
+                }
+                response.Add("");
+
+                return response;
+            }
+            if(args[1] == "baseSpeed"){
+
+                if(IsHost){
+
+                    SetBaseSpeedRpc(args.Length == 3 ? args[2] : username, int.Parse(args[3]));
+                }
+                response.Add("");
+
+                return response;
+            }
+            if(args[1] == "barbarian"){
+
+                if(IsHost){
+
+                    SetBarbarianRpc(args.Length == 3 ? args[2] : username, args[3] == "true" ? true : false);
+                }
+                response.Add("");
+
+                return response;
+            }
+            if(args[1] == "prof2Init"){
+
+                if(IsHost){
+
+                    SetProf2InitRpc(args.Length == 3 ? args[2] : username, args[3] == "true" ? true : false);
+                }
+                response.Add("");
+
+                return response;
+            }
             if(args[1] == "ac"){
 
                 if(IsHost){
 
-                    SetArmorClassRpc(args[3], bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
+                    SetArmorClassRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
                 }
                 response.Add("");
 
@@ -889,7 +1022,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetHealthRpc(args[3], bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
+                    SetHealthRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
                 }
                 response.Add("");
 
@@ -900,7 +1033,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetLevelRpc(args[2], int.Parse(args[3]));
+                    SetLevelRpc(args.Length == 3 ? args[2] : username, int.Parse(args[3]));
                 }
                 response.Add("");
 
@@ -910,7 +1043,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetModRpc(args[3], args[2], int.Parse(args[4]));
+                    SetModRpc(args.Length == 4 ? args[3] : username, args[2], int.Parse(args[4]));
                 }
                 response.Add("");
 
@@ -1147,6 +1280,54 @@ public class Interpreter : NetworkBehaviour
             return response;
         }
 
+        if(args[0] == "give"){
+
+            if(IsHost){
+
+                string usernameI = args[1];
+                User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+                string nameI = "";
+                for(int i = 2; i < args.Length; i++){
+
+                    nameI += $"{args[i]} ";
+                }
+
+                foreach(item item in GameManager.Singleton.items){
+
+                    if(item.name.ToString() == nameI){
+
+                        userI.backpack.AddItemRpc(usernameI, item);
+                        response.Add($"giving 1 {nameI} to {usernameI}, if space is available in the users inventory.");
+                        response.Add("");
+                        return response;
+                    }
+                }
+                response.Add($"the item, \"{nameI}\" does not exist.");
+                response.Add("");
+                return response;
+            }
+            response.Add("");
+            return response;
+        }
+        if(args[0] == "take"){
+
+            if(IsHost){
+
+                string usernameI = args.Length == 3 ? args[2] : username;
+                User userI = GameObject.Find(usernameI).GetComponent<User>();
+                foreach(item item in GameManager.Singleton.items){
+
+                    if(item.name.ToString() == args[1]){
+
+                        userI.backpack.AddItemRpc(usernameI, item);
+                    }
+                }
+            }
+            response.Add("");
+            return response;
+        }
+        
         else{
 
             response.Add($"'{string.Join(" ", args)}' is not recognized as a valid input,");
@@ -1313,17 +1494,49 @@ public class Interpreter : NetworkBehaviour
                 break;
         }
     }
-
     [Rpc(SendTo.Everyone)]
-    void SetHealthRpc(string usernameI, int index, int val){
+    public void SetConditionRpc(string usernameI, int index, string conditionVal){
 
         if(username != usernameI)
             return;
         User user = GameObject.Find(usernameI).GetComponent<User>();
-        user.bodyparts[index].hp.Value = val;
+
+        user.bodyparts[index].condition.Value = conditionVal;
     }
     [Rpc(SendTo.Everyone)]
-    void SetArmorClassRpc(string usernameI, int index, int val){
+    public void SetProf2InitRpc(string usernameI, bool val){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+        user.stats.addProf2Init.Value = val;
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetBarbarianRpc(string usernameI, bool val){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+        user.stats.barbarian.Value = val;
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetBaseSpeedRpc(string usernameI, int val){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+        user.stats.BASE_SPEED.Value = val;
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetHealthRpc(string usernameI, int index, int val){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+        user.bodyparts[index].currentHP.Value = val;
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetArmorClassRpc(string usernameI, int index, int val){
 
         if(username != usernameI)
             return;
@@ -1331,7 +1544,7 @@ public class Interpreter : NetworkBehaviour
         user.bodyparts[index].ac.Value = val;
     }
     [Rpc(SendTo.Everyone)]
-    void SetLevelRpc(string usernameI, int val){
+    public void SetLevelRpc(string usernameI, int val){
 
         if(username != usernameI)
             return;
@@ -1339,7 +1552,7 @@ public class Interpreter : NetworkBehaviour
         user.stats.lvl.Value = val;
     }
     [Rpc(SendTo.Everyone)]
-    void SetModRpc(string usernameI, string mod, int val){
+    public void SetModRpc(string usernameI, string mod, int val){
 
         if(username != usernameI)
             return;
@@ -1375,6 +1588,11 @@ public class Interpreter : NetworkBehaviour
 
     void SceneChanged(Scene arg0, Scene arg1){
 
+        StartCoroutine(Waitio());
+    }
+    IEnumerator Waitio(){
+
+        yield return new WaitForSeconds(0.25f);
         terminal.userInputLine.transform.SetAsLastSibling();
         terminal.userInputLine.SetActive(true);
 

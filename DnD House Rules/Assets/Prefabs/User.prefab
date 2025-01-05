@@ -73,6 +73,8 @@ MonoBehaviour:
   screen: {fileID: 0}
   stats: {fileID: 0}
   bodyparts: []
+  backpack: {fileID: 0}
+  ready: 0
 --- !u!1 &7177519071055529687
 GameObject:
   m_ObjectHideFlags: 0
@@ -244,38 +246,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentDay.m_InternalValue
-      value: 260168
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentMin.m_InternalValue
-      value: 36
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentHour.m_InternalValue
-      value: 27
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentYear.m_InternalValue
-      value: 698
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentMonth.m_InternalValue
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentWeekday.m_InternalValue
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentYearday.m_InternalValue
-      value: 142
-      objectReference: {fileID: 0}
-    - target: {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: currentMonthday.m_InternalValue
-      value: 4
-      objectReference: {fileID: 0}
     - target: {fileID: 5127252106434593256, guid: d05d4c2461895d64b882694bb793826b, type: 3}
       propertyPath: m_Name
       value: Screen
@@ -284,12 +254,7 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 2084672001338715799}
-    - target: {fileID: 6055415985713829033, guid: d05d4c2461895d64b882694bb793826b, type: 3}
-      propertyPath: m_PlaneDistance
-      value: 10
-      objectReference: {fileID: 0}
-    m_RemovedComponents:
-    - {fileID: 4171230618592154985, guid: d05d4c2461895d64b882694bb793826b, type: 3}
+    m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
     m_AddedComponents: []

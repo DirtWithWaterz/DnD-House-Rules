@@ -388,6 +388,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   terminal: {fileID: 1303239079}
   inqueCalendar: {fileID: 0}
+  interpreter: {fileID: 0}
+  itemDisplayObject: {fileID: 6437086073024150627, guid: a8fb1f799a6c2ab449dc72defd85921f, type: 3}
 --- !u!4 &1775000833
 Transform:
   m_ObjectHideFlags: 0
