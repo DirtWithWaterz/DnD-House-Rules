@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -22,6 +23,9 @@ public class User : NetworkBehaviour
 
     public Backpack backpack;
 
+    [SerializeField] TMP_Text CurrentPlayerLabel1;
+    [SerializeField] TMP_Text CurrentPlayerLabel2;
+
     IEnumerator Start()
     {
         Time.fixedDeltaTime = 10f;
@@ -41,8 +45,11 @@ public class User : NetworkBehaviour
 
         bodyparts = new List<Bodypart>();
 
-        if(IsOwner)
+        if(IsOwner){
             interpreter.user = this;
+            interpreter.CurrentPlayerLabel1 = CurrentPlayerLabel1;
+            interpreter.CurrentPlayerLabel2 = CurrentPlayerLabel2;
+        }
         
         foreach(GameObject part in health.body){
 
@@ -70,6 +77,7 @@ public class User : NetworkBehaviour
     [Rpc(SendTo.Server)]
     void InitializedRpc(){
 
+        GameManager.Singleton.interpreter.init.Value = true;
         isInitialized.Value = true;
         StartCoroutine(GameManager.Singleton.LoadData());
     }

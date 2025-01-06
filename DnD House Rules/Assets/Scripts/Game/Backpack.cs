@@ -153,7 +153,7 @@ public class Backpack : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    void RefreshItemDisplayBoxRpc(string usernameI){
+    public void RefreshItemDisplayBoxRpc(string usernameI){
 
         if(username != usernameI)
             return;
@@ -192,9 +192,11 @@ public class Backpack : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void RemoveItemRpc(string itemName){
+    public void RemoveItemRpc(string usernameI, string itemName){
 
-        if(user.OwnerClientId != NetworkManager.LocalClientId)
+        if(usernameI != username)
+            return;
+        if(!IsOwner)
             return;
 
         for(int i = 0; i < inventory.Count; i++){
@@ -211,35 +213,29 @@ public class Backpack : NetworkBehaviour
                         type = inventory[i].type,
                         size = inventory[i].size,
                         amount = inventory[i].amount - 1,
-                        weight = inventory[i].weight
+                        weight = inventory[i].weight - (inventory[i].weight / inventory[i].amount)
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
+                    itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
                 }
                 else{
 
                     inventory.Remove(inventory[i]);
-                    Destroy(itemDisplays[i].gameObject);
-                    itemDisplays.Remove(itemDisplays[i]);
+                    RefreshItemDisplayBoxRpc(username);
                 }
                 break;
             }
         }
     }
 
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
-        if (inventory != null)
-        {
-            inventory.Dispose(); // Dispose to release unmanaged memory
-        }
-    }
+    // public override void OnDestroy()
+    // {
+    //     // inventory.Dispose(); // Dispose to release unmanaged memory
+    //     base.OnDestroy();
+    // }
     public override void OnNetworkDespawn()
     {
+        inventory.Dispose(); // Ensure disposal when network despawns
         base.OnNetworkDespawn();
-        if (inventory != null)
-        {
-            inventory.Dispose(); // Ensure disposal when network despawns
-        }
     }
 }

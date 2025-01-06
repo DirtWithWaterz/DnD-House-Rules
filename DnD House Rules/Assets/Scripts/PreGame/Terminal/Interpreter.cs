@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -23,6 +24,9 @@ public class Interpreter : NetworkBehaviour
     public bool loggedIn;
 
     public User user;
+
+    public TMP_Text CurrentPlayerLabel1;
+    public TMP_Text CurrentPlayerLabel2;
 
     [SerializeField] TerminalManager terminal;
 
@@ -79,12 +83,23 @@ public class Interpreter : NetworkBehaviour
         }
     }
 
+    public NetworkVariable<bool> init = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+
     IEnumerator Start(){
 
         SceneManager.activeSceneChanged += SceneChanged;
 
         yield return new WaitUntil(() => GameManager.Singleton != null);
         calendar = GameManager.Singleton.inqueCalendar;
+        yield return new WaitUntil(() => init.Value);
+        if(IsHost){
+
+            CurrentPlayerLabel1.text = "CURRENT VIEW:";
+        }
+        else{
+            CurrentPlayerLabel1.text = "CURRENT PLAYER:";
+        }
+        CurrentPlayerLabel2.text = username.ToUpper();
     }
 
     public List<string> Interpret(string userInput){
@@ -778,14 +793,35 @@ public class Interpreter : NetworkBehaviour
             }
         }
 
-        if(args[0] == "longrest"){
+        if(args[0] == "reset"){
 
-            throw new NotImplementedException();
-        }
+            if(args[1] == "hp"){
 
-        if(args[0] == "shortrest"){
+                if(IsHost){
+                    string usernameI = args.Length == 3 ? args[2] : username;
+                    if(usernameI == "all"){
 
-            throw new NotImplementedException();
+                        for(int i = 0; i < GameManager.Singleton.userDatas.Count; i++){
+
+                            User userI = GameObject.Find(GameManager.Singleton.userDatas[i].username.ToString()).GetComponent<User>();
+                            for(int j = 0; j < userI.bodyparts.Count; j++){
+
+                                SetHealthRpc(usernameI, j, userI.bodyparts[j].maximumHP.Value);
+                            }
+                        }
+                    }
+                    else{
+
+                        User userI = GameObject.Find(usernameI).GetComponent<User>();
+                        for(int i = 0; i < userI.bodyparts.Count; i++){
+
+                            SetHealthRpc(usernameI, i, userI.bodyparts[i].maximumHP.Value);
+                        }
+                    }
+                }
+            }
+            response.Add("");
+            return response;
         }
 
         if(args[0] == "save"){
@@ -873,7 +909,11 @@ public class Interpreter : NetworkBehaviour
                     // currentUser.bodyparts[i].status.Value = otherUser.bodyparts[i].status.Value;
                     currentUser.bodyparts[i].condition.Value = otherUser.bodyparts[i].condition.Value;
                 }
+                currentUser.backpack.capacity.Value = otherUser.backpack.capacity.Value;
+                currentUser.backpack.inventory = otherUser.backpack.inventory;
+                currentUser.backpack.RefreshItemDisplayBoxRpc(username);
 
+                CurrentPlayerLabel2.text = usernameI.ToUpper();
                 response.Add($"Copying {otherUser.name}'s data on sheet.");
                 response.Add("");
                 return response;
@@ -971,7 +1011,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetConditionRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), GameManager.Singleton.conditionsValueKey[args[4]]);
+                    SetConditionRpc(args.Length == 5 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), GameManager.Singleton.conditionsValueKey[args.Length == 5 ? args[4] : args[3]]);
                 }
                 response.Add("");
 
@@ -981,7 +1021,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetBaseSpeedRpc(args.Length == 3 ? args[2] : username, int.Parse(args[3]));
+                    SetBaseSpeedRpc(args.Length == 4 ? args[2] : username, int.Parse(args.Length == 4 ? args[3] : args[2]));
                 }
                 response.Add("");
 
@@ -991,7 +1031,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetBarbarianRpc(args.Length == 3 ? args[2] : username, args[3] == "true" ? true : false);
+                    SetBarbarianRpc(args.Length == 4 ? args[2] : username, (args.Length == 4 ? args[3] : args[2]) == "true" ? true : false);
                 }
                 response.Add("");
 
@@ -1001,7 +1041,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetProf2InitRpc(args.Length == 3 ? args[2] : username, args[3] == "true" ? true : false);
+                    SetProf2InitRpc(args.Length == 4 ? args[2] : username, (args.Length == 4 ? args[3] : args[2]) == "true" ? true : false);
                 }
                 response.Add("");
 
@@ -1011,7 +1051,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetArmorClassRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
+                    SetArmorClassRpc(args.Length == 5 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args.Length == 5 ? args[4] : args[3]));
                 }
                 response.Add("");
 
@@ -1022,7 +1062,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetHealthRpc(args.Length == 4 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args[4]));
+                    SetHealthRpc(args.Length == 5 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), int.Parse(args.Length == 5 ? args[4] : args[3]));
                 }
                 response.Add("");
 
@@ -1033,7 +1073,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetLevelRpc(args.Length == 3 ? args[2] : username, int.Parse(args[3]));
+                    SetLevelRpc(args.Length == 4 ? args[2] : username, int.Parse(args.Length == 4 ? args[3] : args[2]));
                 }
                 response.Add("");
 
@@ -1043,7 +1083,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetModRpc(args.Length == 4 ? args[3] : username, args[2], int.Parse(args[4]));
+                    SetModRpc(args.Length == 5 ? args[3] : username, args[2], int.Parse(args.Length == 5 ? args[4] : args[3]));
                 }
                 response.Add("");
 
@@ -1270,6 +1310,15 @@ public class Interpreter : NetworkBehaviour
                         break;
                 }
             }
+            if(args[1] == "hp"){
+
+                if(IsHost){
+
+                    string usernameI = args.Length == 5 ? args[3] : username;
+                    User userI = GameObject.Find(usernameI).GetComponent<User>();
+                    SetHealthRpc(usernameI, bodypartDict[args[2]], Mathf.Clamp(userI.bodyparts[bodypartDict[args[2]]].currentHP.Value + int.Parse(args.Length == 5 ? args[4] : args[3]), -99, userI.bodyparts[bodypartDict[args[2]]].maximumHP.Value));
+                }
+            }
             response.Add("");
             return response;
         }
@@ -1298,7 +1347,7 @@ public class Interpreter : NetworkBehaviour
                     if(item.name.ToString() == nameI){
 
                         userI.backpack.AddItemRpc(usernameI, item);
-                        response.Add($"giving 1 {nameI} to {usernameI}, if space is available in the users inventory.");
+                        response.Add($"giving 1 \"{nameI}\" to {usernameI}, if space is available in the users inventory.");
                         response.Add("");
                         return response;
                     }
@@ -1314,15 +1363,28 @@ public class Interpreter : NetworkBehaviour
 
             if(IsHost){
 
-                string usernameI = args.Length == 3 ? args[2] : username;
+                string usernameI = args[1];
                 User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+                string nameI = "";
+                for(int i = 2; i < args.Length; i++){
+
+                    nameI += $"{args[i]} ";
+                }
+
                 foreach(item item in GameManager.Singleton.items){
 
-                    if(item.name.ToString() == args[1]){
+                    if(item.name.ToString() == nameI){
 
-                        userI.backpack.AddItemRpc(usernameI, item);
+                        userI.backpack.RemoveItemRpc(usernameI, item.name.ToString());
+                        response.Add($"taking 1 \"{nameI}\" from {usernameI}.");
+                        response.Add("");
+                        return response;
                     }
                 }
+                response.Add($"the item, \"{nameI}\" does not exist.");
+                response.Add("");
+                return response;
             }
             response.Add("");
             return response;
