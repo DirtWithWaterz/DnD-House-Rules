@@ -79,6 +79,11 @@ public class User : NetworkBehaviour
 
         GameManager.Singleton.interpreter.init.Value = true;
         isInitialized.Value = true;
+        LoadDataRpc();
+    }
+    [Rpc(SendTo.Everyone)]
+    void LoadDataRpc(){
+
         StartCoroutine(GameManager.Singleton.LoadData());
     }
 

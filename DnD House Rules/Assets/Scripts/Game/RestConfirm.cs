@@ -4,7 +4,7 @@ using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class RestButton : MonoBehaviour
+public class RestConfirm : MonoBehaviour
 {
     public int index;
 
@@ -13,7 +13,7 @@ public class RestButton : MonoBehaviour
     [SerializeField] Image background;
     [SerializeField] TMP_Text label;
 
-    [SerializeField] GameObject popup;
+    [SerializeField] Rest rest;
 
     void Start(){
 
@@ -28,20 +28,22 @@ public class RestButton : MonoBehaviour
 
         background.color = Color.white;
         label.color = Color.black;
-        if(GameManager.Singleton.interpreter.transform.root.GetChild(0).gameObject.activeInHierarchy)
-            return;
 
-        if(Input.GetMouseButtonUp(0) && index==0){
 
-            background.color = Color.black;
-            label.color = Color.white;
-            popup.SetActive(true);
-        }
-        else if(Input.GetMouseButtonUp(0) && index==1){
+        if(Input.GetMouseButtonUp(0)){
 
             background.color = Color.black;
             label.color = Color.white;
-            popup.SetActive(true);
+            rest.DoRest(index);
+            switch(index){
+
+                case 0:
+                    GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a long rest, healing 1 hp on their {rest.bodypartDict1[rest.selectedBodypartIndex]}");
+                    break;
+                case 1:
+                    GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a short rest.");
+                    break;
+            }
         }
     }
 

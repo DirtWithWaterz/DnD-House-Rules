@@ -27,6 +27,8 @@ public class Bodypart : NetworkBehaviour
 
     public bool vital = false;
 
+    public NetworkVariable<bool> black = new NetworkVariable<bool>(false, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
     public NetworkVariable<int> currentHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public NetworkVariable<int> maximumHP = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
@@ -49,7 +51,110 @@ public class Bodypart : NetworkBehaviour
     {
         if(!IsOwner)
             return;
-            
+        if(user.isInitialized.Value){
+            if(black.Value){
+
+                switch(gameObject.name){
+
+                    case "BODY_ARM_LEFT":
+                        user.bodyparts[4].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_FOREARM_LEFT":
+                        user.bodyparts[5].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_HAND_LEFT":
+                        sr.enabled = false;
+                        break;
+                    case "BODY_ARM_RIGHT":
+                        user.bodyparts[7].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_FOREARM_RIGHT":
+                        user.bodyparts[8].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_HAND_RIGHT":
+                        sr.enabled = false;
+                        break;
+                    
+                    case "BODY_THIGH_LEFT":
+                        user.bodyparts[12].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_CRUS_LEFT":
+                        user.bodyparts[13].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_FOOT_LEFT":
+                        sr.enabled = false;
+                        break;
+                    case "BODY_THIGH_RIGHT":
+                        user.bodyparts[15].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_CRUS_RIGHT":
+                        user.bodyparts[16].black.Value = true;
+                        sr.enabled = false;
+                        break;
+                    case "BODY_FOOT_RIGHT":
+                        sr.enabled = false;
+                        break;
+                }
+            }
+            if(!black.Value){
+
+                switch(gameObject.name){
+
+                    case "BODY_ARM_LEFT":
+                        user.bodyparts[4].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_FOREARM_LEFT":
+                        user.bodyparts[5].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_HAND_LEFT":
+                        sr.enabled = true;
+                        break;
+                    case "BODY_ARM_RIGHT":
+                        user.bodyparts[7].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_FOREARM_RIGHT":
+                        user.bodyparts[8].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_HAND_RIGHT":
+                        sr.enabled = true;
+                        break;
+                    
+                    case "BODY_THIGH_LEFT":
+                        user.bodyparts[12].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_CRUS_LEFT":
+                        user.bodyparts[13].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_FOOT_LEFT":
+                        sr.enabled = true;
+                        break;
+                    case "BODY_THIGH_RIGHT":
+                        user.bodyparts[15].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_CRUS_RIGHT":
+                        user.bodyparts[16].black.Value = false;
+                        sr.enabled = true;
+                        break;
+                    case "BODY_FOOT_RIGHT":
+                        sr.enabled = true;
+                        break;
+                }
+            }
+        }
         status.Value = 
                 currentHP.Value >= (maximumHP.Value*0.5f) && shot ? State.Bleeding : 
                 currentHP.Value >= maximumHP.Value ? State.Healthy : 
@@ -133,7 +238,7 @@ public class Bodypart : NetworkBehaviour
     }
     void OnMouseDown(){
 
-        user.UpdateUserDataRpc(NetworkManager.LocalClientId);
+        // user.UpdateUserDataRpc(NetworkManager.LocalClientId);
         foreach(GameObject g in h.body){
 
             Bodypart b = g.GetComponent<Bodypart>();

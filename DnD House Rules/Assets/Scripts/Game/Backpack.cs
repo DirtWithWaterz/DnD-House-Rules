@@ -42,7 +42,7 @@ public class Backpack : NetworkBehaviour
 
             Debug.Log($"checking index {i}...");
             Debug.Log($"{item.name.ToString()} == {inventory[i].name.ToString()} && {item.size} != {Size.L}?");
-            if(item.name.ToString() == inventory[i].name.ToString() && item.size != Size.L){
+            if(item.name.ToString() == inventory[i].name.ToString() && item.size != Size.L && !(item.size == Size.S && item.amount + inventory[i].amount > 2) && !(item.size == Size.T && item.amount + inventory[i].amount > 4) && item.type != Type.backpack){
                 Debug.Log($"true");
                 
                 if(CapacityLogic(inventory[i])){
@@ -55,7 +55,8 @@ public class Backpack : NetworkBehaviour
                         type = inventory[i].type,
                         size = inventory[i].size,
                         amount = inventory[i].amount + 1,
-                        weight = inventory[i].weight + (inventory[i].weight / inventory[i].amount)
+                        weight = inventory[i].weight + (inventory[i].weight / inventory[i].amount),
+                        itemInventory = inventory[i].itemInventory
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
@@ -213,7 +214,8 @@ public class Backpack : NetworkBehaviour
                         type = inventory[i].type,
                         size = inventory[i].size,
                         amount = inventory[i].amount - 1,
-                        weight = inventory[i].weight - (inventory[i].weight / inventory[i].amount)
+                        weight = inventory[i].weight - (inventory[i].weight / inventory[i].amount),
+                        itemInventory = inventory[i].itemInventory
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
@@ -226,6 +228,18 @@ public class Backpack : NetworkBehaviour
                 break;
             }
         }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void ClearRpc(string usernameI){
+
+        if(usernameI != username)
+            return;
+        if(!IsOwner)
+            return;
+
+        inventory.Clear();
+        RefreshItemDisplayBoxRpc(usernameI);
     }
 
     // public override void OnDestroy()

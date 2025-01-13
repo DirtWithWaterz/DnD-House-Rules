@@ -49,13 +49,14 @@ public class CalendarButton : MonoBehaviour
             calendarUI.OpenTab(index);
             background.color = Color.black;
             label.color = Color.white;
+            // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
         }
         else if(Input.GetMouseButtonUp(0) && index==-1){
 
             GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
             user.screen.GetComponent<Canvas>().enabled = false;
+            user.transform.position += Vector3.up*100;
         }
-        user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
 
     }
 

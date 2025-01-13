@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Unity.Collections;
 using Unity.Netcode;
@@ -157,6 +156,8 @@ public class GameManager : NetworkBehaviour
     public InqueCalendar inqueCalendar;
     public Interpreter interpreter;
 
+    public TerminalManager terminalManager;
+
     public NetworkObject itemDisplayObject;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
@@ -174,6 +175,8 @@ public class GameManager : NetworkBehaviour
         inqueCalendar = GetComponent<InqueCalendar>();
 
         interpreter = FindObjectOfType<Interpreter>().GetComponent<Interpreter>();
+
+        terminalManager = terminal.transform.GetChild(0).GetComponent<TerminalManager>();
     }
 
     private void UpdateNames(NetworkListEvent<userData> changeEvent)
@@ -255,6 +258,7 @@ public class GameManager : NetworkBehaviour
         public Size size;
         public int amount;
         public int weight;
+        public string itemInventory;
     }
 
     [Serializable]
@@ -386,7 +390,8 @@ public class GameManager : NetworkBehaviour
                 type = items[i].type,
                 size = items[i].size,
                 amount = items[i].amount,
-                weight = items[i].weight
+                weight = items[i].weight,
+                itemInventory = items[i].itemInventory.ToString()
             };
         }
 
@@ -412,7 +417,8 @@ public class GameManager : NetworkBehaviour
                     type = userI.backpack.inventory[j].type,
                     size = userI.backpack.inventory[j].size,
                     amount = userI.backpack.inventory[j].amount,
-                    weight = userI.backpack.inventory[j].weight
+                    weight = userI.backpack.inventory[j].weight,
+                    itemInventory = userI.backpack.inventory[j].itemInventory.ToString()
                 };
             }
         }
@@ -425,7 +431,7 @@ public class GameManager : NetworkBehaviour
     public IEnumerator LoadData(){
 
         if(!IsHost)
-            yield return false;
+            yield break;
         string output = File.ReadAllText($"{Application.persistentDataPath}/userdatas.json");
         JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(File.ReadAllText($"{Application.persistentDataPath}/conditions.json"));
         JsonUserDatas jsonUserDatas;
@@ -725,10 +731,16 @@ public class GameManager : NetworkBehaviour
                 type = item.type,
                 size = item.size,
                 amount = item.amount,
-                weight = item.weight
+                weight = item.weight,
+                itemInventory = item.itemInventory.ToString()
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
+        foreach(userData userData in userDatas){
+
+            User userI = GameObject.Find(userData.username.ToString()).GetComponent<User>();
+            userI.backpack.ClearRpc(userI.name);
+        }
         JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
         if(jsonInventories.inventories.Count() < userDatas.Count){
 
@@ -765,10 +777,9 @@ public class GameManager : NetworkBehaviour
 
                     if(jsonInventories.inventories[i].items.Length != 0){
                         User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
-                        userI.backpack.inventory.Clear();
                         foreach(JsonItem item in jsonInventories.inventories[i].items){
 
-                            userI.backpack.AddItemRpc(data.username.ToString(), new item{
+                            LoadInventoryRpc(userI.name, new item{
 
                                 name = item.name,
                                 cost = item.cost,
@@ -776,7 +787,8 @@ public class GameManager : NetworkBehaviour
                                 type = item.type,
                                 size = item.size,
                                 amount = item.amount,
-                                weight = item.weight
+                                weight = item.weight,
+                                itemInventory = item.itemInventory.ToString()
                             });
                         }
                     }
@@ -785,9 +797,21 @@ public class GameManager : NetworkBehaviour
         }
         if(InitialLoad){
 
+            // yield return new WaitForSeconds(5f);
             InitialLoad = false;
             LoadData();
         }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void LoadInventoryRpc(string usernameI, item item){
+
+        if(usernameI != interpreter.GetUsername)
+            return;
+
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+        userI.backpack.AddItemRpc(usernameI, item);
     }
 
     [Rpc(SendTo.Server)]

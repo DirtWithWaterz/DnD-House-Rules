@@ -230,6 +230,6 @@ public class ModCBtn : MonoBehaviour
             else if (mod != Mod.INIT && mod != Mod.ARMOR)
                 display.text = $"BASE: {44 + val}";
         }
-        user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+        // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
     }
 }

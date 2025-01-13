@@ -249,6 +249,7 @@ public class Interpreter : NetworkBehaviour
 
             transform.root.GetChild(0).gameObject.SetActive(false);
             user.screen.GetComponent<Canvas>().enabled = true;
+            user.transform.position -= Vector3.up*100;
             response.Add("");
             return response;
         }
@@ -866,6 +867,7 @@ public class Interpreter : NetworkBehaviour
 
                 user.screen.GetComponent<Canvas>().enabled = true;
                 transform.root.GetChild(0).gameObject.SetActive(false);
+                user.transform.position -= Vector3.up*100;
                 response.Add("");
                 return response;
             }
@@ -1007,6 +1009,17 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "set"){
             
+            if(args[1] == "black"){
+
+                if(IsHost){
+
+                    SetBlackRpc(args.Length == 5 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), (args.Length == 5 ? args[4] : args[3]) == "true" ? true : false);
+                }
+                response.Add("");
+
+                return response;
+            }
+
             if(args[1] == "condition"){
 
                 if(IsHost){
@@ -1323,6 +1336,23 @@ public class Interpreter : NetworkBehaviour
             return response;
         }
 
+        if(args[0] == "longrest"){
+
+            if(IsHost){
+
+                Interpret("add 8 hours time");
+                return response;
+            }
+        }
+        if(args[0] == "shortrest"){
+
+            if(IsHost){
+
+                Interpret("add 1 hours time");
+                return response;
+            }
+        }
+
         if(args[0] == "clear")
         {
             terminal.Clear();
@@ -1390,6 +1420,72 @@ public class Interpreter : NetworkBehaviour
             return response;
         }
         
+        if(args[0] == "backpack"){ // testing backpack functionality, not to use in finished product.
+
+            if(args[1] == "set"){
+                User userI = GameObject.Find(username).GetComponent<User>();
+                for(int i = 0; i < userI.backpack.inventory.Count; i++){
+
+                    if(userI.backpack.inventory[i].type == Type.backpack){
+
+                        List<item> items = new List<item>
+                        {
+                            GameManager.Singleton.items[0],
+                            GameManager.Singleton.items[0],
+                            GameManager.Singleton.items[0],
+                            GameManager.Singleton.items[0],
+                            GameManager.Singleton.items[4],
+                            GameManager.Singleton.items[5]
+                        };
+
+                        userI.backpack.inventory[i].SetInventory(items.ToArray());
+                        response.Add($"Adding {items} to {userI.backpack.inventory[i].name} inventory");
+
+                        return response;
+                    }
+                }
+                response.Add("no backpacks found");
+                return response;
+            }
+            if(args[1] == "get"){
+
+                User userI = GameObject.Find(username).GetComponent<User>();
+                for(int i = 0; i < userI.backpack.inventory.Count; i++){
+
+                    if(userI.backpack.inventory[i].type == Type.backpack){
+
+                        response.Add($"returning {userI.backpack.inventory[i].name}inventory...");
+                        foreach(item item in userI.backpack.inventory[i].GetInventory()){
+
+                            response.Add(item.name.ToString());
+                            Debug.Log(item.name.ToString());
+                        }
+
+                        return response;
+                    }
+                }
+                response.Add("no backpacks found");
+                return response;
+            }
+        }
+
+        if(args[0] == "notify"){
+
+            if(args[1] == "all"){
+
+                string message = "";
+                for(int i = 2; i < args.Length; i++){
+
+                    message += $"{args[i]} ";
+                }
+                response.Add(message);
+                response.Add("");
+                return response;
+            }
+            response.Add("");
+            return response;
+        }
+
         else{
 
             response.Add($"'{string.Join(" ", args)}' is not recognized as a valid input,");
@@ -1555,6 +1651,28 @@ public class Interpreter : NetworkBehaviour
 
                 break;
         }
+    }
+    [Rpc(SendTo.NotMe)]
+    public void NoticeRpc(string message){
+
+        int lines = GameManager.Singleton.terminalManager.AddInterpreterLines(GameManager.Singleton.interpreter.Interpret(message));
+        // Scroll to the bottom of the scrollrect
+        GameManager.Singleton.terminalManager.ScrollToBottom(lines);
+
+        // Move the user input line to the end
+        GameManager.Singleton.terminalManager.userInputLine.transform.SetAsLastSibling();
+
+        // Refocus the input field
+        GameManager.Singleton.terminalManager.terminalInput.ActivateInputField();
+        GameManager.Singleton.terminalManager.terminalInput.Select();
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetBlackRpc(string usernameI, int index, bool val){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+        user.bodyparts[index].black.Value = val;
     }
     [Rpc(SendTo.Everyone)]
     public void SetConditionRpc(string usernameI, int index, string conditionVal){

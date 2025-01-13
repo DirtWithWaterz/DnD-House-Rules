@@ -30,6 +30,6 @@ public class LvlBtn : MonoBehaviour
 
             stat.lvl.Value--;
         }
-        user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+        // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
     }
 }
