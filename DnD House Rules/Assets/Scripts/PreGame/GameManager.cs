@@ -162,6 +162,7 @@ public class GameManager : NetworkBehaviour
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
+    public NetworkVariable<int> itemIdTally = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 
     void Start(){
@@ -186,6 +187,12 @@ public class GameManager : NetworkBehaviour
             if(data.objRef.TryGet(out NetworkObject netObj))
                 netObj.name = data.username.ToString();
         }
+    }
+
+    [Rpc(SendTo.Server)]
+    public void UpdateIdTallyRpc(){
+
+        itemIdTally.Value++;
     }
 
     [Serializable]
@@ -259,6 +266,7 @@ public class GameManager : NetworkBehaviour
         public int amount;
         public int weight;
         public string itemInventory;
+        public int id;
     }
 
     [Serializable]
@@ -279,10 +287,19 @@ public class GameManager : NetworkBehaviour
 
         public JsonInventory[] inventories;
     }
+    
+    [Serializable]
+    public class JsonItemIdTally{
+
+        public int idTally;
+    }
+
     public void SaveData(){
 
         if(!IsHost)
             return;
+
+        SaveIdTallyRpc();
         
         JsonUserDatas jsonUserDatas = new JsonUserDatas();
         jsonUserDatas.jsonUserDatas = new JsonUserData[userDatas.Count];
@@ -391,7 +408,8 @@ public class GameManager : NetworkBehaviour
                 size = items[i].size,
                 amount = items[i].amount,
                 weight = items[i].weight,
-                itemInventory = items[i].itemInventory.ToString()
+                itemInventory = items[i].itemInventory.ToString(),
+                id = items[i].id
             };
         }
 
@@ -418,7 +436,8 @@ public class GameManager : NetworkBehaviour
                     size = userI.backpack.inventory[j].size,
                     amount = userI.backpack.inventory[j].amount,
                     weight = userI.backpack.inventory[j].weight,
-                    itemInventory = userI.backpack.inventory[j].itemInventory.ToString()
+                    itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
+                    id = userI.backpack.inventory[j].id
                 };
             }
         }
@@ -432,6 +451,9 @@ public class GameManager : NetworkBehaviour
 
         if(!IsHost)
             yield break;
+
+        LoadIdTallyRpc();
+
         string output = File.ReadAllText($"{Application.persistentDataPath}/userdatas.json");
         JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(File.ReadAllText($"{Application.persistentDataPath}/conditions.json"));
         JsonUserDatas jsonUserDatas;
@@ -732,7 +754,8 @@ public class GameManager : NetworkBehaviour
                 size = item.size,
                 amount = item.amount,
                 weight = item.weight,
-                itemInventory = item.itemInventory.ToString()
+                itemInventory = item.itemInventory.ToString(),
+                id = item.id
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
@@ -788,7 +811,8 @@ public class GameManager : NetworkBehaviour
                                 size = item.size,
                                 amount = item.amount,
                                 weight = item.weight,
-                                itemInventory = item.itemInventory.ToString()
+                                itemInventory = item.itemInventory.ToString(),
+                                id = item.id
                             });
                         }
                     }
@@ -801,6 +825,27 @@ public class GameManager : NetworkBehaviour
             InitialLoad = false;
             LoadData();
         }
+        else{
+            interpreter.user.health.SetInitialValuesRpc();
+        }
+    }
+
+    [Rpc(SendTo.Server)]
+    void SaveIdTallyRpc(){
+
+        JsonItemIdTally jsonItemIdTally = new JsonItemIdTally();
+        jsonItemIdTally.idTally = itemIdTally.Value;
+
+        string output = JsonConvert.SerializeObject(jsonItemIdTally);
+        File.WriteAllText($"{Application.persistentDataPath}/idTally.json", output);
+    }
+    [Rpc(SendTo.Server)]
+    void LoadIdTallyRpc(){
+
+        string input = File.ReadAllText($"{Application.persistentDataPath}/idTally.json");
+        JsonItemIdTally jsonItemIdTally = JsonConvert.DeserializeObject<JsonItemIdTally>(input);
+
+        itemIdTally.Value = jsonItemIdTally.idTally;
     }
 
     [Rpc(SendTo.Everyone)]

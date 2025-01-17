@@ -13,7 +13,7 @@ public class User : NetworkBehaviour
 
     NetworkVariable<int> clientsReady = new NetworkVariable<int>(0);
 
-    Health health;
+    public Health health;
     public Stats stats;
     InqueCalendar calendar;
 

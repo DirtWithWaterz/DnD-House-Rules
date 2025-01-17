@@ -28,22 +28,22 @@ public class Backpack : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void AddItemRpc(string usernameI, item item){
+    public void AddItemRpc(string usernameI, item item, bool updateTally = true){
 
         if(usernameI != username)
             return;
         if(!IsOwner)
             return;
         
-        Debug.Log("owner client check passed.");
-        Debug.Log("entering for loop vvv");
+        // Debug.Log("owner client check passed.");
+        // Debug.Log("entering for loop vvv");
 
         for(int i = 0; i < inventory.Count; i++){
 
-            Debug.Log($"checking index {i}...");
-            Debug.Log($"{item.name.ToString()} == {inventory[i].name.ToString()} && {item.size} != {Size.L}?");
+            // Debug.Log($"checking index {i}...");
+            // Debug.Log($"{item.name.ToString()} == {inventory[i].name.ToString()} && {item.size} != {Size.L}?");
             if(item.name.ToString() == inventory[i].name.ToString() && item.size != Size.L && !(item.size == Size.S && item.amount + inventory[i].amount > 2) && !(item.size == Size.T && item.amount + inventory[i].amount > 4) && item.type != Type.backpack){
-                Debug.Log($"true");
+                // Debug.Log($"true");
                 
                 if(CapacityLogic(inventory[i])){
 
@@ -56,25 +56,30 @@ public class Backpack : NetworkBehaviour
                         size = inventory[i].size,
                         amount = inventory[i].amount + 1,
                         weight = inventory[i].weight + (inventory[i].weight / inventory[i].amount),
-                        itemInventory = inventory[i].itemInventory
+                        itemInventory = inventory[i].itemInventory,
+                        id = inventory[i].id
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
                 }
+                if(updateTally)
+                    GameManager.Singleton.UpdateIdTallyRpc();
                 return;
             }
             else{
 
-                Debug.Log("false");
+                // Debug.Log("false");
             }
         }
-        Debug.Log("exiting for loop ^^^");
-        Debug.Log("entering capacity logic vvv");
+        // Debug.Log("exiting for loop ^^^");
+        // Debug.Log("entering capacity logic vvv");
         if(CapacityLogic(item)){
-            Debug.Log("true");
-            Debug.Log("adding item to inventory...");
+            // Debug.Log("true");
+            // Debug.Log("adding item to inventory...");
             inventory.Add(item);
             RefreshItemDisplayBoxRpc(username);
+            if(updateTally)
+                GameManager.Singleton.UpdateIdTallyRpc();
         }
     }
 
@@ -101,14 +106,14 @@ public class Backpack : NetworkBehaviour
                     break;
             }
         }
-        Debug.Log($"setting large item capacity: {capacityL}");
-        Debug.Log($"setting small item capacity: {capacityS}");
-        Debug.Log($"setting tiny item capacity: {capacityT}");
+        // Debug.Log($"setting large item capacity: {capacityL}");
+        // Debug.Log($"setting small item capacity: {capacityS}");
+        // Debug.Log($"setting tiny item capacity: {capacityT}");
 
         switch(item.size){
 
             case Size.L:
-                Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
+                // Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
                 if(inventory.Count == 0)
                     return true;
                 float CountL = 0;
@@ -116,12 +121,12 @@ public class Backpack : NetworkBehaviour
 
                     CountL += inventoryItem.size == Size.S ? inventoryItem.amount*0.5f : inventoryItem.size == Size.T ? inventoryItem.amount*0.25f : inventoryItem.amount;
                 }
-                Debug.Log($"total count of all large items in inventory: {CountL} < large item capacity ({capacityL})?");
+                // Debug.Log($"total count of all large items in inventory: {CountL} < large item capacity ({capacityL})?");
                 if(Mathf.Ceil(CountL) < capacityL)
                     return true;
                 break;
             case Size.S:
-                Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
+                // Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
                 if(inventory.Count == 0)
                     return true;
                 float CountS = 0;
@@ -129,12 +134,12 @@ public class Backpack : NetworkBehaviour
                     
                     CountS += inventoryItem.size == Size.L ? inventoryItem.amount*2 : inventoryItem.size == Size.T ? inventoryItem.amount*0.5f : inventoryItem.amount;
                 }
-                Debug.Log($"total count of all small items in inventory: {CountS} < small item capacity ({capacityS})?");
+                // Debug.Log($"total count of all small items in inventory: {CountS} < small item capacity ({capacityS})?");
                 if(Mathf.Ceil(CountS) < capacityS)
                     return true;
                 break;
             case Size.T:
-                Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
+                // Debug.Log($"inventory.Count ({inventory.Count}) == 0?");
                 if(inventory.Count == 0)
                     return true;
                 float CountT = 0;
@@ -142,7 +147,7 @@ public class Backpack : NetworkBehaviour
 
                     CountT += inventoryItem.size == Size.L ? inventoryItem.amount*4 : inventoryItem.size == Size.S ? inventoryItem.amount*2 : inventoryItem.amount;
                 }
-                Debug.Log($"total count of all tiny items in inventory: {CountT} < tiny item capacity ({capacityT})?");
+                // Debug.Log($"total count of all tiny items in inventory: {CountT} < tiny item capacity ({capacityT})?");
                 if(Mathf.Ceil(CountT) < capacityT)
                     return true;
                 break;
@@ -158,19 +163,19 @@ public class Backpack : NetworkBehaviour
 
         if(username != usernameI)
             return;
-        Debug.Log($"Refreshing display box for {usernameI}.");
+        // Debug.Log($"Refreshing display box for {usernameI}.");
 
         GameObject userObject = GameObject.Find(usernameI);
         if (userObject == null)
         {
-            Debug.LogError($"No GameObject found with the name '{usernameI}'. returning.");
+            // Debug.LogError($"No GameObject found with the name '{usernameI}'. returning.");
             return;
         }
 
         User user = userObject.GetComponent<User>();
         if (user == null)
         {
-            Debug.LogError($"The GameObject '{usernameI}' does not have a User component. returning.");
+            // Debug.LogError($"The GameObject '{usernameI}' does not have a User component. returning.");
             return;
         }
         if(itemDisplays.Count > 0){
@@ -188,6 +193,7 @@ public class Backpack : NetworkBehaviour
             itemDisplay.nameText.text = item.name.ToString();
             itemDisplay.sizeText.text = $"{item.amount}{item.size}";
             itemDisplay.weightText.text = $"{item.weight} Lbs.";
+            itemDisplay.type = item.type;
             itemDisplays.Add(itemDisplayBox);
         }
     }

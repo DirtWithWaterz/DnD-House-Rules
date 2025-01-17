@@ -1,6 +1,4 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
@@ -18,6 +16,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
     public int amount;
     public int weight;
     public FixedString128Bytes itemInventory;
+    public int id;
 
     public item[] GetInventory(){
 
@@ -37,7 +36,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 size = jsonItemInventory.items[i].size,
                 amount = jsonItemInventory.items[i].amount,
                 weight = jsonItemInventory.items[i].weight,
-                itemInventory = jsonItemInventory.items[i].itemInventory
+                itemInventory = jsonItemInventory.items[i].itemInventory,
+                id = jsonItemInventory.items[i].id
             };
             Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
@@ -63,7 +63,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 size = items[i].size,
                 amount = items[i].amount,
                 weight = items[i].weight,
-                itemInventory = items[i].itemInventory.ToString()
+                itemInventory = items[i].itemInventory.ToString(),
+                id = items[i].id
             };
             switch(items[i].size){
 
@@ -105,7 +106,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 size = jsonItemInventory.items[i].size,
                 amount = jsonItemInventory.items[i].amount,
                 weight = jsonItemInventory.items[i].weight,
-                itemInventory = jsonItemInventory.items[i].itemInventory
+                itemInventory = jsonItemInventory.items[i].itemInventory,
+                id = jsonItemInventory.items[i].id
             };
             switch(jsonItemInventory.items[i].size){
 
@@ -129,7 +131,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
             size = item.size,
             amount = item.amount,
             weight = item.weight,
-            itemInventory = item.itemInventory.ToString()
+            itemInventory = item.itemInventory.ToString(),
+            id = item.id
         };
         switch(item.size){
 
@@ -144,7 +147,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 break;
         }
         string input = JsonConvert.SerializeObject(newjsonItemInventory);
-        string directory = $"{Application.persistentDataPath}/{name}Inventory.json";
+        string directory = $"{Application.persistentDataPath}/{name}{id} Inventory.json";
         File.WriteAllText(directory, input);
         if(sizeTally < value)
             itemInventory = directory;
@@ -165,6 +168,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         serializer.SerializeValue(ref amount);
         serializer.SerializeValue(ref weight);
         serializer.SerializeValue(ref itemInventory);
+        serializer.SerializeValue(ref id);
     }
 }
 
@@ -179,6 +183,7 @@ public class JsonItem{
     public int amount;
     public int weight;
     public string itemInventory;
+    public int id;
 }
 
 [Serializable]

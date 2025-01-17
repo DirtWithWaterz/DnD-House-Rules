@@ -5,6 +5,7 @@ using TMPro;
 using UnityEditor;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
+using System;
 
 public enum State{
 
@@ -186,23 +187,28 @@ public class Health : NetworkBehaviour
     void SetConditionInHealthRpc(string username, userData data){
         if(!IsHost)
             return;
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 0, GameManager.Singleton.conditionsValueKey[data.CONDITION_HEAD.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 1, GameManager.Singleton.conditionsValueKey[data.CONDITION_NECK.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 2, GameManager.Singleton.conditionsValueKey[data.CONDITION_CHEST.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 3, GameManager.Singleton.conditionsValueKey[data.CONDITION_ARM_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 4, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOREARM_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 5, GameManager.Singleton.conditionsValueKey[data.CONDITION_HAND_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 6, GameManager.Singleton.conditionsValueKey[data.CONDITION_ARM_RIGHT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 7, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOREARM_RIGHT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 8, GameManager.Singleton.conditionsValueKey[data.CONDITION_HAND_RIGHT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 9, GameManager.Singleton.conditionsValueKey[data.CONDITION_TORSO.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 10, GameManager.Singleton.conditionsValueKey[data.CONDITION_PELVIS.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 11, GameManager.Singleton.conditionsValueKey[data.CONDITION_THIGH_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 12, GameManager.Singleton.conditionsValueKey[data.CONDITION_CRUS_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 13, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOOT_LEFT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 14, GameManager.Singleton.conditionsValueKey[data.CONDITION_THIGH_RIGHT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 15, GameManager.Singleton.conditionsValueKey[data.CONDITION_CRUS_RIGHT.ToString()]);
-        GameManager.Singleton.interpreter.SetConditionRpc(username, 16, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOOT_RIGHT.ToString()]);
+        try {
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 0, GameManager.Singleton.conditionsValueKey[data.CONDITION_HEAD.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 1, GameManager.Singleton.conditionsValueKey[data.CONDITION_NECK.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 2, GameManager.Singleton.conditionsValueKey[data.CONDITION_CHEST.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 3, GameManager.Singleton.conditionsValueKey[data.CONDITION_ARM_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 4, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOREARM_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 5, GameManager.Singleton.conditionsValueKey[data.CONDITION_HAND_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 6, GameManager.Singleton.conditionsValueKey[data.CONDITION_ARM_RIGHT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 7, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOREARM_RIGHT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 8, GameManager.Singleton.conditionsValueKey[data.CONDITION_HAND_RIGHT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 9, GameManager.Singleton.conditionsValueKey[data.CONDITION_TORSO.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 10, GameManager.Singleton.conditionsValueKey[data.CONDITION_PELVIS.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 11, GameManager.Singleton.conditionsValueKey[data.CONDITION_THIGH_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 12, GameManager.Singleton.conditionsValueKey[data.CONDITION_CRUS_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 13, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOOT_LEFT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 14, GameManager.Singleton.conditionsValueKey[data.CONDITION_THIGH_RIGHT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 15, GameManager.Singleton.conditionsValueKey[data.CONDITION_CRUS_RIGHT.ToString()]);
+            GameManager.Singleton.interpreter.SetConditionRpc(username, 16, GameManager.Singleton.conditionsValueKey[data.CONDITION_FOOT_RIGHT.ToString()]);
+        } catch {
+
+            StartCoroutine(GameManager.Singleton.LoadData());
+        }
     }
 
     [Rpc(SendTo.Owner)]

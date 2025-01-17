@@ -998,7 +998,9 @@ public class Interpreter : NetworkBehaviour
                         type = (Type)int.Parse(args[4]),
                         size = (Size)int.Parse(args[5]),
                         amount = 1,
-                        weight = int.Parse(args[6])
+                        weight = int.Parse(args[6]),
+                        itemInventory = "",
+                        id = 0
                     };
                     GameManager.Singleton.items.Add(newItem);
                 }
@@ -1019,7 +1021,6 @@ public class Interpreter : NetworkBehaviour
 
                 return response;
             }
-
             if(args[1] == "condition"){
 
                 if(IsHost){
@@ -1367,19 +1368,57 @@ public class Interpreter : NetworkBehaviour
                 User userI = GameObject.Find(usernameI).GetComponent<User>();
 
                 string nameI = "";
+                int selfI = -1;
                 for(int i = 2; i < args.Length; i++){
-
+                    if(args[i] == username){
+                        
+                        selfI = i;
+                        break;
+                    }
                     nameI += $"{args[i]} ";
                 }
 
                 foreach(item item in GameManager.Singleton.items){
 
                     if(item.name.ToString() == nameI){
+                        if(item.type == Type.backpack && selfI != -1){
 
-                        userI.backpack.AddItemRpc(usernameI, item);
-                        response.Add($"giving 1 \"{nameI}\" to {usernameI}, if space is available in the users inventory.");
-                        response.Add("");
-                        return response;
+                            item newItem = new item(){
+
+                                name = $"{item.name.ToString()}{args[selfI + 1]} ",
+                                cost = item.cost,
+                                value = item.value,
+                                type = item.type,
+                                size = item.size,
+                                amount = item.amount,
+                                weight = item.weight,
+                                itemInventory = $"{Application.persistentDataPath}/{usernameI} {name} {args[selfI + 1]} Inventory.json",
+                                id = int.Parse(args[selfI + 1])
+                            };
+                            user.backpack.AddItemRpc(username, item, false);
+                            response.Add($"giving 1 \"{nameI}\" to {username}, if space is available in the users inventory.");
+                            response.Add("");
+                            return response;
+                        }
+                        else {
+
+                            item newItem = new item(){
+
+                                name = item.name.ToString() + (item.type == Type.backpack ? GameManager.Singleton.itemIdTally.Value + " " : ""),
+                                cost = item.cost,
+                                value = item.value,
+                                type = item.type,
+                                size = item.size,
+                                amount = item.amount,
+                                weight = item.weight,
+                                itemInventory = $"{Application.persistentDataPath}/{usernameI} {name} {GameManager.Singleton.itemIdTally.Value} Inventory.json",
+                                id = GameManager.Singleton.itemIdTally.Value
+                            };
+                            userI.backpack.AddItemRpc(usernameI, item);
+                            response.Add($"giving 1 \"{nameI}\" to {usernameI}, if space is available in the users inventory.");
+                            response.Add("");
+                            return response;
+                        }
                     }
                 }
                 response.Add($"the item, \"{nameI}\" does not exist.");
