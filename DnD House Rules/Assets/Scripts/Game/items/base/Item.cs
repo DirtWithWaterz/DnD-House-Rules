@@ -22,6 +22,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         if(type != Type.backpack)
             return null;
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         string output = File.ReadAllText(itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
         item[] items = new item[jsonItemInventory.items.Length];
@@ -47,6 +48,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         if(type != Type.backpack)
             return;
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         JsonItemInventory jsonItemInventory = new JsonItemInventory();
         jsonItemInventory.items = new JsonItem[items.Length];
         float sizeTally = 0;
@@ -89,6 +91,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         if(type != Type.backpack || item.type == Type.backpack)
             return;
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         string output = File.ReadAllText(itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
@@ -156,7 +159,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         if (type != Type.backpack || itemToRemove.type == Type.backpack)
             return;
-
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         string output = File.ReadAllText(itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
