@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,6 +8,7 @@ using UnityEngine.UI;
 public class RestConfirm : MonoBehaviour
 {
     public int index;
+    bool hovering;
 
     User user;
 
@@ -22,33 +24,39 @@ public class RestConfirm : MonoBehaviour
         user = transform.root.GetComponent<User>();
     }
 
-    void OnMouseOver(){
+    IEnumerator OnMouseOver(){
         if(!user.isInitialized.Value)
-            return;
+            yield break;
 
         background.color = Color.white;
         label.color = Color.black;
 
+        hovering = true;
+        if(Input.GetMouseButtonDown(0)){
 
-        if(Input.GetMouseButtonUp(0)){
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
+            if(hovering){
 
-            background.color = Color.black;
-            label.color = Color.white;
-            rest.DoRest(index);
-            switch(index){
+                background.color = Color.black;
+                label.color = Color.white;
+                rest.DoRest(index);
+                switch(index){
 
-                case 0:
-                    GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a long rest, healing 1 hp on their {rest.bodypartDict1[rest.selectedBodypartIndex]}");
-                    break;
-                case 1:
-                    GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a short rest.");
-                    break;
+                    case 0:
+                        GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a long rest, healing 1 hp on their {rest.bodypartDict1[rest.selectedBodypartIndex]}");
+                        break;
+                    case 1:
+                        GameManager.Singleton.interpreter.NoticeRpc($"notify all {transform.root.name} took a short rest.");
+                        break;
+                }
             }
         }
+
     }
 
     void OnMouseExit(){
 
+        hovering = false;
         background.color = Color.black;
         label.color = Color.white;
     }

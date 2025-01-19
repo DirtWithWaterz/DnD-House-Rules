@@ -1,3 +1,4 @@
+using System.Collections;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -6,6 +7,7 @@ public class CalendarButton : MonoBehaviour
 {
     CalendarUI calendarUI;
     public int index;
+    bool hovering;
 
     User user;
 
@@ -33,34 +35,39 @@ public class CalendarButton : MonoBehaviour
         user = transform.root.GetComponent<User>();
     }
 
-    void OnMouseOver(){
+    IEnumerator OnMouseOver(){
         if(!user.isInitialized.Value)
-            return;
+            yield break;
         if(!bottomEdge.activeInHierarchy && index!=-1)
-            return;
+            yield break;
 
         background.color = Color.white;
         label.color = Color.black;
 
+        hovering = true;
 
-        if(Input.GetMouseButtonUp(0) && index!=-1){
+        if(Input.GetMouseButtonDown(0)){
 
-            calendarUI.OpenTab(index);
-            background.color = Color.black;
-            label.color = Color.white;
-            // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
+            if(hovering && index!=-1){
+
+                calendarUI.OpenTab(index);
+                background.color = Color.black;
+                label.color = Color.white;
+                // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+            }
+            else if(hovering && index==-1){
+
+                GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
+                user.screen.GetComponent<Canvas>().enabled = false;
+                user.transform.position += Vector3.up*100;
+            }
         }
-        else if(Input.GetMouseButtonUp(0) && index==-1){
-
-            GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
-            user.screen.GetComponent<Canvas>().enabled = false;
-            user.transform.position += Vector3.up*100;
-        }
-
     }
 
     void OnMouseExit(){
 
+        hovering = false;
         background.color = Color.black;
         label.color = Color.white;
     }

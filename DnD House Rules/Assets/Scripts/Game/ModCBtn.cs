@@ -1,5 +1,6 @@
 using UnityEngine;
 using TMPro;
+using System.Collections;
 
 public enum Mod{
 
@@ -25,6 +26,8 @@ public class ModCBtn : MonoBehaviour
     Mod mod = Mod.NUL;
     Stats stat;
     Health health;
+
+    bool hovering;
 
 
     User user;
@@ -122,110 +125,125 @@ public class ModCBtn : MonoBehaviour
     }
 
 
-    void OnMouseOver(){
+    IEnumerator OnMouseOver(){
         if(!user.isInitialized.Value)
-            return;
-        if(Input.GetMouseButtonUp(0)){
+            yield break;
 
-            if (val <= 98) val++;
-            switch (mod)
-            {
-                case Mod.STR:
-                    stat.STR.Value = val;
-                    break;
-                case Mod.DEX:
-                    stat.DEX.Value = val;
-                    health.SetInitialValuesDexRpc();
-                    health.CalculateValues();
-                    break;
-                case Mod.CON:
-                    stat.CON.Value = val;
-                    health.SetInitialValuesRpc();
-                    health.CalculateValues();
-                    health.maxHP = health.currHP;
-                    break;
-                case Mod.INT:
-                    stat.INT.Value = val;
-                    break;
-                case Mod.WIS:
-                    stat.WIS.Value = val;
-                    break;
-                case Mod.CHA:
-                    stat.CHA.Value = val;
-                    break;
-                case Mod.WALK:
-                    stat.BASE_SPEED.Value = 44 + val;
-                    break;
-                case Mod.INIT:
-                    display.gameObject.SetActive(true);
-                    stat.addProf2Init.Value = true;
-                    break;
-                case Mod.ARMOR:
-                    display.gameObject.SetActive(true);
-                    stat.barbarian.Value = true;
-                    health.SetInitialValuesDexRpc();
-                    health.CalculateValues();
-                    break;
-                default:
-                    break;
-            }
-            if (mod != Mod.WALK && mod != Mod.INIT && mod != Mod.ARMOR)
-                display.text = (val >= 0 ? "+" : "") + val.ToString();
-            else if (mod != Mod.INIT && mod != Mod.ARMOR)
-                display.text = $"BASE: {44 + val}";
+        hovering = true;
+        if(Input.GetMouseButtonDown(0)){
 
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
+            if(hovering){
+
+                if (val <= 98) val++;
+                switch (mod)
+                {
+                    case Mod.STR:
+                        stat.STR.Value = val;
+                        break;
+                    case Mod.DEX:
+                        stat.DEX.Value = val;
+                        health.SetInitialValuesDexRpc();
+                        health.CalculateValues();
+                        break;
+                    case Mod.CON:
+                        stat.CON.Value = val;
+                        health.SetInitialValuesRpc();
+                        health.CalculateValues();
+                        health.maxHP = health.currHP;
+                        break;
+                    case Mod.INT:
+                        stat.INT.Value = val;
+                        break;
+                    case Mod.WIS:
+                        stat.WIS.Value = val;
+                        break;
+                    case Mod.CHA:
+                        stat.CHA.Value = val;
+                        break;
+                    case Mod.WALK:
+                        stat.BASE_SPEED.Value = 44 + val;
+                        break;
+                    case Mod.INIT:
+                        display.gameObject.SetActive(true);
+                        stat.addProf2Init.Value = true;
+                        break;
+                    case Mod.ARMOR:
+                        display.gameObject.SetActive(true);
+                        stat.barbarian.Value = true;
+                        health.SetInitialValuesDexRpc();
+                        health.CalculateValues();
+                        break;
+                    default:
+                        break;
+                }
+                if (mod != Mod.WALK && mod != Mod.INIT && mod != Mod.ARMOR)
+                    display.text = (val >= 0 ? "+" : "") + val.ToString();
+                else if (mod != Mod.INIT && mod != Mod.ARMOR)
+                    display.text = $"BASE: {44 + val}";
+
+            }   
         }
-        if (Input.GetMouseButtonUp(1)){
+        if(Input.GetMouseButtonDown(1)){
 
-            
-            if (val >= -98) val--;
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
+            if(hovering){
 
-            switch (mod)
-            {
-                case Mod.STR:
-                    stat.STR.Value = val;
-                    break;
-                case Mod.DEX:
-                    stat.DEX.Value = val;
-                    health.SetInitialValuesDexRpc();
-                    health.CalculateValues();
-                    break;
-                case Mod.CON:
-                    stat.CON.Value = val;
-                    health.SetInitialValuesRpc();
-                    health.CalculateValues();
-                    health.maxHP = health.currHP;
-                    break;
-                case Mod.INT:
-                    stat.INT.Value = val;
-                    break;
-                case Mod.WIS:
-                    stat.WIS.Value = val;
-                    break;
-                case Mod.CHA:
-                    stat.CHA.Value = val;
-                    break;
-                case Mod.WALK:
-                    stat.BASE_SPEED.Value = 44 + val;
-                    break;
-                case Mod.INIT:
-                    display.gameObject.SetActive(false);
-                    stat.addProf2Init.Value = false;
-                    break;
-                case Mod.ARMOR:
-                    display.gameObject.SetActive(false);
-                    stat.barbarian.Value = false;
-                    health.SetInitialValuesDexRpc();
-                    health.CalculateValues();
-                    break;
-                default:
-                    break;
-            }
-            if (mod != Mod.WALK && mod != Mod.INIT && mod != Mod.ARMOR)
-                display.text = (val >= 0 ? "+" : "") + val.ToString();
-            else if (mod != Mod.INIT && mod != Mod.ARMOR)
-                display.text = $"BASE: {44 + val}";
+                
+                if (val >= -98) val--;
+
+                switch (mod)
+                {
+                    case Mod.STR:
+                        stat.STR.Value = val;
+                        break;
+                    case Mod.DEX:
+                        stat.DEX.Value = val;
+                        health.SetInitialValuesDexRpc();
+                        health.CalculateValues();
+                        break;
+                    case Mod.CON:
+                        stat.CON.Value = val;
+                        health.SetInitialValuesRpc();
+                        health.CalculateValues();
+                        health.maxHP = health.currHP;
+                        break;
+                    case Mod.INT:
+                        stat.INT.Value = val;
+                        break;
+                    case Mod.WIS:
+                        stat.WIS.Value = val;
+                        break;
+                    case Mod.CHA:
+                        stat.CHA.Value = val;
+                        break;
+                    case Mod.WALK:
+                        stat.BASE_SPEED.Value = 44 + val;
+                        break;
+                    case Mod.INIT:
+                        display.gameObject.SetActive(false);
+                        stat.addProf2Init.Value = false;
+                        break;
+                    case Mod.ARMOR:
+                        display.gameObject.SetActive(false);
+                        stat.barbarian.Value = false;
+                        health.SetInitialValuesDexRpc();
+                        health.CalculateValues();
+                        break;
+                    default:
+                        break;
+                }
+                if (mod != Mod.WALK && mod != Mod.INIT && mod != Mod.ARMOR)
+                    display.text = (val >= 0 ? "+" : "") + val.ToString();
+                else if (mod != Mod.INIT && mod != Mod.ARMOR)
+                    display.text = $"BASE: {44 + val}";
+            } 
         }
         // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+    }
+
+    void OnMouseExit(){
+
+        hovering = false;
     }
 }

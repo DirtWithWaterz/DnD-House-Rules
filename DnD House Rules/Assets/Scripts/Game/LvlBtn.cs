@@ -8,7 +8,7 @@ public class LvlBtn : MonoBehaviour
 
     Stats stat;
 
-
+    bool hovering;
     User user;
 
     void Awake(){
@@ -19,17 +19,28 @@ public class LvlBtn : MonoBehaviour
     }
 
 
-    void OnMouseOver(){
+    IEnumerator OnMouseOver(){
         if(!user.isInitialized.Value)
-            return;
+            yield break;
+        hovering = true;
+        
         if(Input.GetMouseButtonDown(0) && stat.lvl.Value < 99){
 
-            stat.lvl.Value++;
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
+            if(hovering)
+                stat.lvl.Value++;
         }
         if(Input.GetMouseButtonDown(1) && stat.lvl.Value > 1){
 
-            stat.lvl.Value--;
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
+            if(hovering)
+                stat.lvl.Value--;
         }
         // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+    }
+
+    void OnMouseExit(){
+
+        hovering = false;
     }
 }

@@ -1,8 +1,10 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
@@ -231,6 +233,7 @@ public class Interpreter : NetworkBehaviour
             response.Add("begin -- begins the session.");
             response.Add("save -- saves all players data to json files.");
             response.Add("clear -- clears the terminal.");
+            response.Add("backpack [username] [give/take] [backpack name] : [item name]");
             response.Add("");
 
             return response;
@@ -790,6 +793,25 @@ public class Interpreter : NetworkBehaviour
                 response.Add($"Sunset: {calendar.currentSunset.x:00}:{calendar.currentSunset.y:00}");
                 response.Add("");
 
+                return response;
+            }
+            if(args[1] == "backpack"){
+
+                string usernameI = args[2];
+                string backpackName = "";
+                int backpackId = int.Parse(args[args.Length-1]);
+                for(int i = 3; i < args.Length; i++){
+
+                    backpackName += $"{args[i]} ";
+                }
+                string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+                GameManager.Singleton.RequestJsonRpc(username, usernameI, directory);
+                JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(directory));
+                foreach(JsonItem item in jsonItemInventory.items){
+
+                    response.Add(item.name);
+                }
+                response.Add("");
                 return response;
             }
         }
@@ -1461,50 +1483,74 @@ public class Interpreter : NetworkBehaviour
         
         if(args[0] == "backpack"){ // testing backpack functionality, not to use in finished product.
 
-            if(args[1] == "set"){
-                User userI = GameObject.Find(username).GetComponent<User>();
-                for(int i = 0; i < userI.backpack.inventory.Count; i++){
+            if(IsHost){
+                
+                if(args[2] == "give"){
+                    string usernameI = args[1];
+                    string backpackName = "";
+                    int semiColIndex = 0;
+                    for(int i = 3; i < args.Length; i++){
 
-                    if(userI.backpack.inventory[i].type == Type.backpack){
+                        if(args[i] == ":"){
 
-                        List<item> items = new List<item>
-                        {
-                            GameManager.Singleton.items[0],
-                            GameManager.Singleton.items[0],
-                            GameManager.Singleton.items[0],
-                            GameManager.Singleton.items[0],
-                            GameManager.Singleton.items[4],
-                            GameManager.Singleton.items[5]
-                        };
-
-                        userI.backpack.inventory[i].SetInventory(items.ToArray());
-                        response.Add($"Adding {items} to {userI.backpack.inventory[i].name} inventory");
-
-                        return response;
-                    }
-                }
-                response.Add("no backpacks found");
-                return response;
-            }
-            if(args[1] == "get"){
-
-                User userI = GameObject.Find(username).GetComponent<User>();
-                for(int i = 0; i < userI.backpack.inventory.Count; i++){
-
-                    if(userI.backpack.inventory[i].type == Type.backpack){
-
-                        response.Add($"returning {userI.backpack.inventory[i].name}inventory...");
-                        foreach(item item in userI.backpack.inventory[i].GetInventory()){
-
-                            response.Add(item.name.ToString());
-                            Debug.Log(item.name.ToString());
+                            semiColIndex = i;
+                            break;
                         }
-
-                        return response;
+                        backpackName += $"{args[i]} ";
                     }
+                    string itemName = "";
+                    for(int i = semiColIndex+1; i < args.Length; i++){
+
+                        itemName += $"{args[i]} ";
+                    }
+
+                    int backpackId = int.Parse(args[semiColIndex-1]);
+
+                    foreach(item item in GameManager.Singleton.items){
+
+                        if(itemName == item.name.ToString()){
+
+                            AddItemToBackpackRpc(usernameI, backpackName, backpackId, item);
+                            response.Add("Sent.");
+                            return response;
+                        }
+                    }
+                    response.Add("Failed.");
+                    return response;
                 }
-                response.Add("no backpacks found");
-                return response;
+                if(args[2] == "take"){
+                    string usernameI = args[1];
+                    string backpackName = "";
+                    int semiColIndex = 0;
+                    for(int i = 3; i < args.Length; i++){
+
+                        if(args[i] == ":"){
+
+                            semiColIndex = i;
+                            break;
+                        }
+                        backpackName += $"{args[i]} ";
+                    }
+                    string itemName = "";
+                    for(int i = semiColIndex+1; i < args.Length; i++){
+
+                        itemName += $"{args[i]} ";
+                    }
+
+                    int backpackId = int.Parse(args[semiColIndex-1]);
+
+                    foreach(item item in GameManager.Singleton.items){
+
+                        if(itemName == item.name.ToString()){
+
+                            RemoveItemFromBackpackRpc(usernameI, backpackName, backpackId, item);
+                            response.Add("Sent.");
+                            return response;
+                        }
+                    }
+                    response.Add("Failed.");
+                    return response;
+                }
             }
         }
 
@@ -1691,6 +1737,42 @@ public class Interpreter : NetworkBehaviour
                 break;
         }
     }
+
+    [Rpc(SendTo.Everyone)]
+    public void AddItemToBackpackRpc(string usernameI, string backpackName, int backpackId, item item){
+
+        if(username != usernameI)
+            return;
+        string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+        GameManager.Singleton.RequestJsonRpc(usernameI, "host", directory);
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+        for(int i = 0; i < userI.backpack.inventory.Count; i++){
+
+            if(userI.backpack.inventory[i].name.ToString() == backpackName){
+
+                userI.backpack.inventory[i].AddInventory(item);
+            }
+        }
+    }
+    [Rpc(SendTo.Everyone)]
+    public void RemoveItemFromBackpackRpc(string usernameI, string backpackName, int backpackId, item item){
+
+        if(username != usernameI)
+            return;
+        string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+        GameManager.Singleton.RequestJsonRpc(usernameI, "host", directory);
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+        for(int i = 0; i < userI.backpack.inventory.Count; i++){
+
+            if(userI.backpack.inventory[i].name.ToString() == backpackName){
+
+                userI.backpack.inventory[i].RemoveInventory(item);
+            }
+        }
+    }
+
     [Rpc(SendTo.NotMe)]
     public void NoticeRpc(string message){
 
@@ -1812,11 +1894,22 @@ public class Interpreter : NetworkBehaviour
     IEnumerator Waitio(){
 
         yield return new WaitForSeconds(0.25f);
-        terminal.userInputLine.transform.SetAsLastSibling();
-        terminal.userInputLine.SetActive(true);
+        try{
 
-        terminal.terminalInput.ActivateInputField();
-        terminal.terminalInput.Select();
+            terminal.userInputLine.transform.SetAsLastSibling();
+            terminal.userInputLine.SetActive(true);
+
+            terminal.terminalInput.ActivateInputField();
+            terminal.terminalInput.Select();
+        }catch{
+
+            GameManager.Singleton.LoadData();
+            terminal.userInputLine.transform.SetAsLastSibling();
+            terminal.userInputLine.SetActive(true);
+
+            terminal.terminalInput.ActivateInputField();
+            terminal.terminalInput.Select();
+        }
     }
 
     async void SignUp(string user, string pass){

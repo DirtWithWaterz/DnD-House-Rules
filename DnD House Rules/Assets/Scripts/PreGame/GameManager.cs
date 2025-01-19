@@ -158,7 +158,7 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
@@ -827,6 +827,39 @@ public class GameManager : NetworkBehaviour
         }
         else{
             interpreter.user.health.SetInitialValuesRpc();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SaveJsonRpc(string directory, string output){
+
+        // Debug.Log(directory);
+        // Debug.Log(output);
+        File.WriteAllText(directory, output);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void RequestJsonRpc(string requestingUser, string requestedUser, string requestedJsonDirectory){
+
+        if(requestedUser == interpreter.GetUsername){
+
+            SendJsonRpc(File.ReadAllText(requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+        }
+        if(requestedUser == "host"){
+
+            if(IsHost){
+
+                SendJsonRpc(File.ReadAllText(requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+            }
+        }
+
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SendJsonRpc(string input, string directory, string sendTo){
+
+        if(interpreter.GetUsername == sendTo){
+
+            File.WriteAllText(directory, input);
         }
     }
 

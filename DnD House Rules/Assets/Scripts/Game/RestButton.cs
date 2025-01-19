@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,6 +8,7 @@ using UnityEngine.UI;
 public class RestButton : MonoBehaviour
 {
     public int index;
+    bool hovering;
 
     User user;
 
@@ -22,31 +24,38 @@ public class RestButton : MonoBehaviour
         user = transform.root.GetComponent<User>();
     }
 
-    void OnMouseOver(){
-        if(!user.isInitialized.Value)
-            return;
+    IEnumerator OnMouseOver(){
 
+        if(!user.isInitialized.Value)
+            yield break;
         background.color = Color.white;
         label.color = Color.black;
         if(GameManager.Singleton.interpreter.transform.root.GetChild(0).gameObject.activeInHierarchy)
-            return;
+            yield break;
+        
+        hovering = true;
+        if(Input.GetMouseButtonDown(0)){
 
-        if(Input.GetMouseButtonUp(0) && index==0){
+            yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
 
-            background.color = Color.black;
-            label.color = Color.white;
-            popup.SetActive(true);
-        }
-        else if(Input.GetMouseButtonUp(0) && index==1){
+            if(hovering && index==0){
 
-            background.color = Color.black;
-            label.color = Color.white;
-            popup.SetActive(true);
+                background.color = Color.black;
+                label.color = Color.white;
+                popup.SetActive(true);
+            }
+            else if(hovering && index==1){
+
+                background.color = Color.black;
+                label.color = Color.white;
+                popup.SetActive(true);
+            }
         }
     }
 
     void OnMouseExit(){
 
+        hovering = false;
         background.color = Color.black;
         label.color = Color.white;
     }

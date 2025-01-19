@@ -8,7 +8,7 @@ public class Backpack : NetworkBehaviour
 {
 
     public NetworkList<item> inventory = new NetworkList<item>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    List<NetworkObject> itemDisplays = new List<NetworkObject>();
+    public List<NetworkObject> itemDisplays = new List<NetworkObject>();
     [SerializeField] GameObject Panel;
 
     User user;
@@ -194,6 +194,7 @@ public class Backpack : NetworkBehaviour
             itemDisplay.sizeText.text = $"{item.amount}{item.size}";
             itemDisplay.weightText.text = $"{item.weight} Lbs.";
             itemDisplay.type = item.type;
+            itemDisplay.id = item.id;
             itemDisplays.Add(itemDisplayBox);
         }
     }
