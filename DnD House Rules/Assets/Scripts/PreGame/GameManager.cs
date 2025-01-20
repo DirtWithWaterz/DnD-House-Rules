@@ -833,6 +833,8 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    bool recieved = false;
+
     [Rpc(SendTo.Everyone)]
     public void SendItemInventoriesRpc(){
 
@@ -843,15 +845,29 @@ public class GameManager : NetworkBehaviour
                 if(data.username.ToString() == interpreter.GetUsername){
 
                     User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
-                    foreach(item item in userI.backpack.inventory){
+                    for(int j = 0; j < userI.backpack.itemDisplays.Count; j++){
 
-                        if(item.type == Type.backpack){
+                        if(userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().type == Type.backpack){
 
-                            RequestJsonRpc(data.username.ToString(), "host", $"/{data.username.ToString()} {item.name.ToString()}{item.id} Inventory.json");
+                            RequestJsonRpc(data.username.ToString(), "host", $"/{data.username.ToString()} {userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().nameText.text}{userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().id} Inventory.json");
+                            StartCoroutine(LoadSmallInv(userI, j));
                         }
                     }
                 }
             }
+        }
+    }
+
+    IEnumerator LoadSmallInv(User userI, int index){
+
+        if(userI == null)
+            yield break;
+        yield return new WaitUntil(() => recieved);
+        try{
+
+            userI.backpack.itemDisplays[index].transform.GetChild(0).GetComponentInChildren<InventorySmall>().LoadInventory();
+        } catch{
+            
         }
     }
 
@@ -861,11 +877,16 @@ public class GameManager : NetworkBehaviour
         // Debug.Log(directory);
         // Debug.Log(output);
         File.WriteAllText(Application.persistentDataPath + directory, output);
+        SendItemInventoriesRpc();
     }
 
     [Rpc(SendTo.Everyone)]
     public void RequestJsonRpc(string requestingUser, string requestedUser, string requestedJsonDirectory){
 
+        if(requestingUser == interpreter.GetUsername){
+
+            recieved = false;
+        }
         if(requestedUser == interpreter.GetUsername){
 
             SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser);
@@ -885,6 +906,7 @@ public class GameManager : NetworkBehaviour
         if(interpreter.GetUsername == sendTo){
 
             File.WriteAllText(Application.persistentDataPath + directory, input);
+            recieved = true;
         }
     }
 

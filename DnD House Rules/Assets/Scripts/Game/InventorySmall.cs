@@ -33,7 +33,7 @@ public class InventorySmall : NetworkBehaviour
         LoadInventory();
     }
 
-    private void LoadInventory()
+    public void LoadInventory()
     {
         string filePath = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {thisItem.nameText.text}{thisItem.id} Inventory.json";
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(filePath));
