@@ -71,6 +71,7 @@ MonoBehaviour:
   isInitialized:
     m_InternalValue: 0
   screen: {fileID: 0}
+  health: {fileID: 0}
   stats: {fileID: 0}
   bodyparts: []
   backpack: {fileID: 0}

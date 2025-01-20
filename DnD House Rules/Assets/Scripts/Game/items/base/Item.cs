@@ -52,6 +52,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         JsonItemInventory jsonItemInventory = new JsonItemInventory();
         jsonItemInventory.items = new JsonItem[items.Length];
         float sizeTally = 0;
+        int calculatedWeight = 0;
         for(int i = 0; i < items.Length; i++){
             
             if(items[i].type == Type.backpack)
@@ -80,6 +81,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
                     sizeTally += (float)items[i].amount / 4;
                     break;
             }
+            calculatedWeight += jsonItemInventory.items[i].weight;
         }
         string input = JsonConvert.SerializeObject(jsonItemInventory);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
@@ -89,6 +91,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
             Debug.Log("true");
             GameManager.Singleton.SaveJsonRpc(directory, input);
             itemInventory = directory;
+            GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, calculatedWeight);
         }
         else{
 
@@ -106,6 +109,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
         newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length + 1];
         float sizeTally = 0;
+        int calculatedWeight = 0;
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
 
             newjsonItemInventory.items[i] = new JsonItem(){
@@ -138,6 +142,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
                     // Debug.Log($"size tally now equals: {sizeTally}");
                     break;
             }
+            calculatedWeight += jsonItemInventory.items[i].weight;
         }
         newjsonItemInventory.items[jsonItemInventory.items.Length] = new JsonItem(){
 
@@ -163,15 +168,17 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 sizeTally += 0.25f;
                 break;
         }
+        calculatedWeight += item.weight;
         // Debug.Log($"after item to add, size tally equals: {sizeTally}");
         string input = JsonConvert.SerializeObject(newjsonItemInventory);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
         // Debug.Log($"{sizeTally} <= {value} ?");
         if(sizeTally <= value){
 
-            Debug.Log("true");
+            // Debug.Log("true");
             GameManager.Singleton.SaveJsonRpc(directory, input);
             itemInventory = directory;
+            GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, calculatedWeight);
         }
         else{
 
@@ -188,11 +195,13 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         // Find the first instance of the item to remove
         int indexToRemove = -1;
+        int weightToRemove = 0;
         for (int i = 0; i < jsonItemInventory.items.Length; i++)
         {
             if (jsonItemInventory.items[i].name == itemToRemove.name.ToString())
             {
                 indexToRemove = i;
+                weightToRemove = jsonItemInventory.items[i].weight;
                 break;
             }
         }
@@ -223,6 +232,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         // Update the itemInventory field
         itemInventory = directory;
+        GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, weight - weightToRemove);
     }
 
 

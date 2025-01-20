@@ -872,6 +872,42 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
+    public void SetItemStatsRpc(string usernameI, string itemName, int itemId, int cost = 0, int value = 0, int amount = 1, int weight = 1){
+
+        if(interpreter.GetUsername != usernameI)
+            return;
+        
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        for(int itemIndex = 0; itemIndex < userI.backpack.inventory.Count; itemIndex++){
+
+            if(userI.backpack.inventory[itemIndex].name.ToString() == itemName && userI.backpack.inventory[itemIndex].id == itemId){
+
+                userI.backpack.inventory[itemIndex] = new item{
+
+                    name = userI.backpack.inventory[itemIndex].name,
+                    cost = cost,
+                    value = value,
+                    type = userI.backpack.inventory[itemIndex].type,
+                    size = userI.backpack.inventory[itemIndex].size,
+                    amount = amount,
+                    weight = weight,
+                    itemInventory = userI.backpack.inventory[itemIndex].itemInventory,
+                    id = userI.backpack.inventory[itemIndex].id
+                };
+                foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
+
+                    ItemDisplay itemDisplay = networkObject.GetComponent<ItemDisplay>();
+
+                    if(itemDisplay.nameText.text == userI.backpack.inventory[itemIndex].name.ToString()){
+
+                        itemDisplay.weightText.text = $"{userI.backpack.inventory[itemIndex].weight} Lbs.";
+                    }
+                }
+            }
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
     public void SaveJsonRpc(string directory, string output){
 
         // Debug.Log(directory);

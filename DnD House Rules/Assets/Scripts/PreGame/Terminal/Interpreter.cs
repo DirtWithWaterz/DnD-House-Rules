@@ -1889,7 +1889,13 @@ public class Interpreter : NetworkBehaviour
 
     void SceneChanged(Scene arg0, Scene arg1){
 
-        StartCoroutine(Waitio());
+        try{
+
+            StartCoroutine(Waitio());
+        }catch{
+
+            GameManager.Singleton.LoadData();
+        }
     }
     IEnumerator Waitio(){
 
