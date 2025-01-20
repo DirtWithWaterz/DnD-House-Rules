@@ -158,7 +158,7 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject, itemDisplayObjectSmall;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();

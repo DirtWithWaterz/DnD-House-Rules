@@ -22,25 +22,15 @@ public class ItemDisplay : MonoBehaviour
     public int id;
     public bool isOpen = false;
 
-    [SerializeField] ItemDisplayBoxMouse fake;
-
     Camera cam;
 
-    IEnumerator Start(){
+    void Start(){
 
         transformRect = GetComponent<RectTransform>();
         User user = GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>();
         cam = user.transform.GetChild(0).GetComponent<Camera>();
-        fake = user.GetComponentInChildren<ItemDisplayBoxMouse>();
-        yield return new WaitUntil(() => user.isInitialized.Value);
-        fake.gameObject.SetActive(false);
     }
 
-    void Update(){
-
-        if(fake.isActiveAndEnabled)
-            fake.transform.position = cam.ScreenToWorldPoint(Input.mousePosition);
-    }
 
     IEnumerator OnMouseOver(){
 
@@ -82,10 +72,13 @@ public class ItemDisplay : MonoBehaviour
         if(Input.GetMouseButtonDown(1)){
 
             // instantiate a new gameobject that follows the mouse
-            fake.gameObject.SetActive(true);
-            fake.nameText.text = nameText.text;
-            fake.sizeText.text = sizeText.text;
-            fake.weightText.text = weightText.text;
+            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.parent.parent);
+            ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
+            fakeDisplay.nameText.text = nameText.text;
+            fakeDisplay.sizeText.text = sizeText.text;
+            fakeDisplay.weightText.text = weightText.text;
+            fake.transform.localScale *= 1.1f;
+            transform.GetChild(0).gameObject.SetActive(false);
             yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
             // raycast from mouse y coordinate and this items x coordinate
             RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -94,7 +87,9 @@ public class ItemDisplay : MonoBehaviour
                 // if we hit a different item in the inventory, switch that items place in the hierarchy with this one.
                 transform.SetSiblingIndex(hit2D.transform.GetSiblingIndex());
             }
-            fake.gameObject.SetActive(false);
+            Destroy(fake.gameObject);
+            transform.GetChild(0).gameObject.SetActive(true);
+
 
         }
     }

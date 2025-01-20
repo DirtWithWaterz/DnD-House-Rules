@@ -392,6 +392,7 @@ MonoBehaviour:
   terminalManager: {fileID: 0}
   itemDisplayObject: {fileID: 6437086073024150627, guid: a8fb1f799a6c2ab449dc72defd85921f, type: 3}
   itemDisplayObjectSmall: {fileID: 6437086073024150627, guid: e5c44667f0ffed94d822f9ed799403c4, type: 3}
+  itemDisplayBoxMouse: {fileID: 4489792486955451911, guid: bb52df92e8fc7ba409f745a96267c8d7, type: 3}
   itemIdTally:
     m_InternalValue: 0
 --- !u!4 &1775000833
