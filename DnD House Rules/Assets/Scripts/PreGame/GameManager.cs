@@ -658,7 +658,7 @@ public class GameManager : NetworkBehaviour
 
             foreach(userData data in userDatas){
 
-                if(data.username == jsonUserDatas.jsonUserDatas[i].username){
+                if(data.username.ToString() == jsonUserDatas.jsonUserDatas[i].username){
 
                     userDatas[i] = new userData(){
 
@@ -796,7 +796,7 @@ public class GameManager : NetworkBehaviour
 
             foreach(userData data in userDatas){
 
-                if(data.username == jsonInventories.inventories[i].username){
+                if(data.username.ToString() == jsonInventories.inventories[i].username){
 
                     if(jsonInventories.inventories[i].items.Length != 0){
                         User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
@@ -819,6 +819,9 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+
+        SendItemInventoriesRpc();
+
         if(InitialLoad){
 
             // yield return new WaitForSeconds(5f);
@@ -831,11 +834,33 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
+    public void SendItemInventoriesRpc(){
+
+        for(int i = 0; i < userDatas.Count; i++){
+
+            foreach(userData data in userDatas){
+
+                if(data.username.ToString() == interpreter.GetUsername){
+
+                    User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+                    foreach(item item in userI.backpack.inventory){
+
+                        if(item.type == Type.backpack){
+
+                            RequestJsonRpc(data.username.ToString(), "host", $"/{data.username.ToString()} {item.name.ToString()}{item.id} Inventory.json");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
     public void SaveJsonRpc(string directory, string output){
 
         // Debug.Log(directory);
         // Debug.Log(output);
-        File.WriteAllText(directory, output);
+        File.WriteAllText(Application.persistentDataPath + directory, output);
     }
 
     [Rpc(SendTo.Everyone)]
@@ -843,13 +868,13 @@ public class GameManager : NetworkBehaviour
 
         if(requestedUser == interpreter.GetUsername){
 
-            SendJsonRpc(File.ReadAllText(requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+            SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser);
         }
         if(requestedUser == "host"){
 
             if(IsHost){
 
-                SendJsonRpc(File.ReadAllText(requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+                SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser);
             }
         }
 
@@ -859,7 +884,7 @@ public class GameManager : NetworkBehaviour
 
         if(interpreter.GetUsername == sendTo){
 
-            File.WriteAllText(directory, input);
+            File.WriteAllText(Application.persistentDataPath + directory, input);
         }
     }
 

@@ -23,7 +23,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         if(type != Type.backpack)
             return null;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
         item[] items = new item[jsonItemInventory.items.Length];
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
@@ -71,28 +71,36 @@ public struct item:IEquatable<item>,INetworkSerializable{
             switch(items[i].size){
 
                 case Size.L:
-                    sizeTally += items[i].amount;
+                    sizeTally += (float)items[i].amount;
                     break;
                 case Size.S:
-                    sizeTally += items[i].amount / 2;
+                    sizeTally += (float)items[i].amount / 2;
                     break;
                 case Size.T:
-                    sizeTally += items[i].amount / 4;
+                    sizeTally += (float)items[i].amount / 4;
                     break;
             }
         }
         string input = JsonConvert.SerializeObject(jsonItemInventory);
-        string directory = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
-        GameManager.Singleton.SaveJsonRpc(directory, input);
-        if(sizeTally < value)
+        string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
+        Debug.Log($"{sizeTally} < {value} ?");
+        if(sizeTally < value){
+
+            Debug.Log("true");
+            GameManager.Singleton.SaveJsonRpc(directory, input);
             itemInventory = directory;
+        }
+        else{
+
+            Debug.Log("false");
+        }
     }
     public void AddInventory(item item){
 
         if(type != Type.backpack || item.type == Type.backpack)
             return;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
@@ -115,13 +123,19 @@ public struct item:IEquatable<item>,INetworkSerializable{
             switch(jsonItemInventory.items[i].size){
 
                 case Size.L:
-                    sizeTally += jsonItemInventory.items[i].amount;
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Large. Adding {(float)jsonItemInventory.items[i].amount} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
                     break;
                 case Size.S:
-                    sizeTally += jsonItemInventory.items[i].amount / 2;
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Small. Adding {(float)jsonItemInventory.items[i].amount / 2} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount / 2;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
                     break;
                 case Size.T:
-                    sizeTally += jsonItemInventory.items[i].amount / 4;
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Tiny. Adding {(float)jsonItemInventory.items[i].amount / 4} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount / 4;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
                     break;
             }
         }
@@ -149,18 +163,27 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 sizeTally += 0.25f;
                 break;
         }
+        // Debug.Log($"after item to add, size tally equals: {sizeTally}");
         string input = JsonConvert.SerializeObject(newjsonItemInventory);
-        string directory = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
-        GameManager.Singleton.SaveJsonRpc(directory, input);
-        if(sizeTally < value)
+        string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
+        // Debug.Log($"{sizeTally} <= {value} ?");
+        if(sizeTally <= value){
+
+            Debug.Log("true");
+            GameManager.Singleton.SaveJsonRpc(directory, input);
             itemInventory = directory;
+        }
+        else{
+
+            Debug.Log("false");
+        }
     }
     public void RemoveInventory(item itemToRemove){
 
         if (type != Type.backpack || itemToRemove.type == Type.backpack)
             return;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         // Find the first instance of the item to remove
@@ -195,7 +218,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         // Update the inventory
         JsonItemInventory newJsonItemInventory = new JsonItemInventory { items = newItems };
         string input = JsonConvert.SerializeObject(newJsonItemInventory);
-        string directory = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
+        string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
         GameManager.Singleton.SaveJsonRpc(directory, input);
 
         // Update the itemInventory field

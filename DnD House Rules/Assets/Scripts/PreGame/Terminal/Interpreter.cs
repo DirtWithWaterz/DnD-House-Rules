@@ -804,7 +804,7 @@ public class Interpreter : NetworkBehaviour
 
                     backpackName += $"{args[i]} ";
                 }
-                string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+                string directory = $"/{usernameI} {backpackName}{backpackId} Inventory.json";
                 GameManager.Singleton.RequestJsonRpc(username, usernameI, directory);
                 JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(directory));
                 foreach(JsonItem item in jsonItemInventory.items){
@@ -1743,7 +1743,7 @@ public class Interpreter : NetworkBehaviour
 
         if(username != usernameI)
             return;
-        string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+        string directory = $"/{usernameI} {backpackName}{backpackId} Inventory.json";
         GameManager.Singleton.RequestJsonRpc(usernameI, "host", directory);
         User userI = GameObject.Find(usernameI).GetComponent<User>();
 
@@ -1760,7 +1760,7 @@ public class Interpreter : NetworkBehaviour
 
         if(username != usernameI)
             return;
-        string directory = $"{Application.persistentDataPath}/{usernameI} {backpackName}{backpackId} Inventory.json";
+        string directory = $"/{usernameI} {backpackName}{backpackId} Inventory.json";
         GameManager.Singleton.RequestJsonRpc(usernameI, "host", directory);
         User userI = GameObject.Find(usernameI).GetComponent<User>();
 
