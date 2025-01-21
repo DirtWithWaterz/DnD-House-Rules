@@ -182,7 +182,8 @@ public class Backpack : NetworkBehaviour
 
             foreach(NetworkObject itemDis in itemDisplays){
 
-                Destroy(itemDis.gameObject);
+                if(itemDis != null)
+                    Destroy(itemDis.gameObject);
             }
             itemDisplays.Clear();
         }
@@ -195,6 +196,8 @@ public class Backpack : NetworkBehaviour
             itemDisplay.weightText.text = $"{item.weight} Lbs.";
             itemDisplay.type = item.type;
             itemDisplay.id = item.id;
+            itemDisplay.thisItem = item;
+            itemDisplay.occupiedInventory = this;
             itemDisplays.Add(itemDisplayBox);
         }
     }

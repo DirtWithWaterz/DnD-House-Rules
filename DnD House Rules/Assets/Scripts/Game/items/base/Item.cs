@@ -40,14 +40,14 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id
             };
-            Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
+            // Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
         return items;
     }
-    public void SetInventory(item[] items){
+    public bool SetInventory(item[] items){
 
         if(type != Type.backpack)
-            return;
+            return true;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         JsonItemInventory jsonItemInventory = new JsonItemInventory();
         jsonItemInventory.items = new JsonItem[items.Length];
@@ -56,7 +56,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         for(int i = 0; i < items.Length; i++){
             
             if(items[i].type == Type.backpack)
-                return;
+                return true;
             jsonItemInventory.items[i] = new JsonItem(){
 
                 name = items[i].name.ToString(),
@@ -85,18 +85,21 @@ public struct item:IEquatable<item>,INetworkSerializable{
         }
         string input = JsonConvert.SerializeObject(jsonItemInventory);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
-        Debug.Log($"{sizeTally} < {value} ?");
+        // Debug.Log($"{sizeTally} < {value} ?");
         if(sizeTally < value){
 
-            Debug.Log("true");
+            // Debug.Log("true");
+            // GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>().backpack.RefreshItemDisplayBoxRpc(GameManager.Singleton.interpreter.GetUsername);
             GameManager.Singleton.SaveJsonRpc(directory, input);
             itemInventory = directory;
             GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, calculatedWeight);
         }
         else{
 
-            Debug.Log("false");
+            // Debug.Log("false");
         }
+        GameManager.Singleton.SaveData();
+        return true;
     }
     public void AddInventory(item item){
 
@@ -119,7 +122,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 value = jsonItemInventory.items[i].value,
                 type = jsonItemInventory.items[i].type,
                 size = jsonItemInventory.items[i].size,
-                amount = jsonItemInventory.items[i].amount,
+                amount = 1,
                 weight = jsonItemInventory.items[i].weight,
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id
@@ -151,7 +154,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
             value = item.value,
             type = item.type,
             size = item.size,
-            amount = item.amount,
+            amount = 1,
             weight = item.weight,
             itemInventory = item.itemInventory.ToString(),
             id = item.id
@@ -184,7 +187,17 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
             Debug.Log("false");
         }
+        GameManager.Singleton.SaveData();
     }
+    
+    public void AddInventory(item[] items){
+
+        foreach(item item in items){
+
+            AddInventory(item);
+        }
+    }
+
     public void RemoveInventory(item itemToRemove){
 
         if (type != Type.backpack || itemToRemove.type == Type.backpack)
@@ -233,8 +246,16 @@ public struct item:IEquatable<item>,INetworkSerializable{
         // Update the itemInventory field
         itemInventory = directory;
         GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, weight - weightToRemove);
+        GameManager.Singleton.SaveData();
     }
 
+    public void RemoveInventory(item[] itemsToRemove){
+
+        foreach(item item in itemsToRemove){
+
+            RemoveInventory(item);
+        }
+    }
 
     public bool Equals(item other)
     {

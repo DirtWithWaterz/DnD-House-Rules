@@ -847,6 +847,9 @@ public class GameManager : NetworkBehaviour
                     User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
                     for(int j = 0; j < userI.backpack.itemDisplays.Count; j++){
 
+                        if(userI.backpack.itemDisplays[j] == null)
+                            continue;
+
                         if(userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().type == Type.backpack){
 
                             RequestJsonRpc(data.username.ToString(), "host", $"/{data.username.ToString()} {userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().nameText.text}{userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().id} Inventory.json");
@@ -896,6 +899,8 @@ public class GameManager : NetworkBehaviour
                 };
                 foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
 
+                    if(networkObject == null)
+                        continue;
                     ItemDisplay itemDisplay = networkObject.GetComponent<ItemDisplay>();
 
                     if(itemDisplay.nameText.text == userI.backpack.inventory[itemIndex].name.ToString()){
@@ -906,6 +911,23 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+
+    // [Rpc(SendTo.Everyone)]
+    // public void SetItemInventoryRpc(string usernameI, string itemName, int itemId, item[] items){
+
+    //     if(interpreter.GetUsername != usernameI)
+    //         return;
+        
+    //     User userI = GameObject.Find(usernameI).GetComponent<User>();
+        
+    //     foreach(item item in userI.backpack.inventory){
+
+    //         if(item.name.ToString() == itemName && item.id == itemId){
+
+    //             item.SetInventory(items);
+    //         }
+    //     }
+    // }
 
     [Rpc(SendTo.Everyone)]
     public void SaveJsonRpc(string directory, string output){
@@ -972,7 +994,7 @@ public class GameManager : NetworkBehaviour
 
         User userI = GameObject.Find(usernameI).GetComponent<User>();
 
-        userI.backpack.AddItemRpc(usernameI, item);
+        userI.backpack.AddItemRpc(usernameI, item, false);
     }
 
     [Rpc(SendTo.Server)]

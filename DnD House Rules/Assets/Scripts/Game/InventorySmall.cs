@@ -6,36 +6,36 @@ using UnityEngine;
 
 public class InventorySmall : NetworkBehaviour
 {
-    ItemDisplay thisItem;
+    public ItemDisplay thisItemDisplay;
     item[] inventory;
     List<NetworkObject> itemDisplays = new List<NetworkObject>();
     [SerializeField] GameObject Panel;
 
     void Start()
     {
-        thisItem = transform.parent.parent.GetComponent<ItemDisplay>();
+        thisItemDisplay = transform.parent.parent.GetComponent<ItemDisplay>();
 
-        if (thisItem.type != Type.backpack || !IsOwner)
+        if (thisItemDisplay.type != Type.backpack || !IsOwner)
             return;
 
-        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {thisItem.nameText.text}{thisItem.id} Inventory.json");
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json");
         LoadInventory();
     }
 
     void OnEnable()
     {
-        thisItem = transform.parent.parent.GetComponent<ItemDisplay>();
+        thisItemDisplay = transform.parent.parent.GetComponent<ItemDisplay>();
 
-        if (thisItem.type != Type.backpack)
+        if (thisItemDisplay.type != Type.backpack)
             return;
 
-        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {thisItem.nameText.text}{thisItem.id} Inventory.json");
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json");
         LoadInventory();
     }
 
     public void LoadInventory()
     {
-        string filePath = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {thisItem.nameText.text}{thisItem.id} Inventory.json";
+        string filePath = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json";
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(filePath));
 
         List<item> inventoryList = new List<item>();
@@ -103,6 +103,8 @@ public class InventorySmall : NetworkBehaviour
             itemDisplay.sizeText.text = $"{item.amount}{item.size}";
             itemDisplay.weightText.text = $"{item.weight} Lbs.";
             itemDisplay.type = item.type;
+            itemDisplay.thisItem = item;
+            itemDisplay.occupiedInventory = this;
             itemDisplays.Add(itemDisplayBox);
         }
     }

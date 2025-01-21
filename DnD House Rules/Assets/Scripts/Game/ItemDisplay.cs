@@ -1,4 +1,6 @@
 using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
@@ -7,6 +9,10 @@ using UnityEngine.UI;
 
 public class ItemDisplay : MonoBehaviour
 {
+
+    public item thisItem;
+    public Backpack occupiedInventory;
+
     bool hovering;
     public TMP_Text nameText;
     public TMP_Text sizeText;
@@ -22,7 +28,7 @@ public class ItemDisplay : MonoBehaviour
     public int id;
     public bool isOpen = false;
 
-    Camera cam;
+    public Camera cam;
 
     void Start(){
 
@@ -68,7 +74,7 @@ public class ItemDisplay : MonoBehaviour
                 }
             }
         }
-    
+
         if(Input.GetMouseButtonDown(1)){
 
             // instantiate a new gameobject that follows the mouse
@@ -85,7 +91,43 @@ public class ItemDisplay : MonoBehaviour
             if(hit2D.collider != null){
 
                 // if we hit a different item in the inventory, switch that items place in the hierarchy with this one.
-                transform.SetSiblingIndex(hit2D.transform.GetSiblingIndex());
+                
+                if(hit2D.transform.name.Contains("Item Display Box Small") && thisItem.type != Type.backpack){
+
+                    ItemDisplaySmall itemDisplay = hit2D.transform.GetComponent<ItemDisplaySmall>();
+                    for(int i = 0; i < thisItem.amount; i++){
+
+                        itemDisplay.occupiedInventory.thisItemDisplay.thisItem.AddInventory(new item{
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id
+                        });
+                    }
+                    // GameManager.Singleton.SaveData();
+                    yield return new WaitForEndOfFrame();
+                    for(int i = 0; i < occupiedInventory.inventory.Count; i++){
+
+                        if(occupiedInventory.inventory[i].name.ToString() == thisItem.name.ToString() && occupiedInventory.inventory[i].id == thisItem.id){
+
+                            Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
+                            occupiedInventory.inventory.RemoveAt(i);
+                            // GameManager.Singleton.SaveData();
+                        }
+                    }
+                    Destroy(gameObject);
+                }
+                else if(hit2D.transform.name.Contains("Item Display Box")){
+
+                    transform.SetSiblingIndex(hit2D.transform.GetSiblingIndex());
+                    // ItemDisplay otherItemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
+                }
             }
             Destroy(fake.gameObject);
             transform.GetChild(0).gameObject.SetActive(true);
