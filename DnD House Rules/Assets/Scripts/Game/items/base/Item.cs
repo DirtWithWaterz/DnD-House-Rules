@@ -259,7 +259,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
     public bool Equals(item other)
     {
-        return other.name == name;
+        return other.name == name && other.id == id;
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -315,4 +315,23 @@ public enum Size{
     T = 0,
     S = 1,
     L = 2
+}
+
+[Serializable]
+public struct itemShort:IEquatable<item>, INetworkSerializable
+{
+
+    public FixedString32Bytes name;
+    public int id;
+
+    public bool Equals(item other)
+    {
+        return other.name == name && other.id == id;
+    }
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        serializer.SerializeValue(ref name);
+        serializer.SerializeValue(ref id);
+    }
 }

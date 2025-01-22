@@ -444,7 +444,7 @@ public class GameManager : NetworkBehaviour
         output = JsonConvert.SerializeObject(jsonInventories);
         File.WriteAllText($"{Application.persistentDataPath}/inventories.json", output);
         
-        Debug.Log($"Writing to directory: {Application.persistentDataPath}");
+        // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
     }
     bool InitialLoad = true;
     public IEnumerator LoadData(){
@@ -833,7 +833,7 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    bool recieved = false;
+    bool recieved, recieved0;
 
     [Rpc(SendTo.Everyone)]
     public void SendItemInventoriesRpc(){
@@ -856,6 +856,7 @@ public class GameManager : NetworkBehaviour
                             StartCoroutine(LoadSmallInv(userI, j));
                         }
                     }
+                    recieved = false;
                 }
             }
         }
@@ -912,6 +913,72 @@ public class GameManager : NetworkBehaviour
         }
     }
 
+    [Rpc(SendTo.Everyone)]
+    public void ReorderInventoryRpc(string usernameI, itemShort[] itemsOrdered){
+
+        // Debug.Log($"{usernameI} == {interpreter.GetUsername} ?");
+        if(usernameI != interpreter.GetUsername)
+            return;
+        
+        // Debug.Log("true. Continuing.");
+        
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+            
+        JsonInventory newOrderedJsonInventory = new JsonInventory();
+        newOrderedJsonInventory.username = usernameI;
+        newOrderedJsonInventory.items = new JsonItem[itemsOrdered.Length];
+
+        for(int i = 0; i < itemsOrdered.Length; i++){
+
+            for(int j = 0; j < userI.backpack.inventory.Count; j++){
+
+                if(itemsOrdered[i].Equals(userI.backpack.inventory[j])){
+
+                    newOrderedJsonInventory.items[i] = new JsonItem{
+
+                        name = userI.backpack.inventory[j].name.ToString(),
+                        cost = userI.backpack.inventory[j].cost,
+                        value = userI.backpack.inventory[j].value,
+                        type = userI.backpack.inventory[j].type,
+                        size = userI.backpack.inventory[j].size,
+                        amount = userI.backpack.inventory[j].amount,
+                        weight = userI.backpack.inventory[j].weight,
+                        itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
+                        id = userI.backpack.inventory[j].id
+                    };
+                    break;
+                }
+            }
+        }
+        // Debug.Log("requesting json on channel 0");
+        RequestJsonRpc(usernameI, "host", $"/inventories.json", 0);
+        StartCoroutine(SetInventoryAndSave(newOrderedJsonInventory));
+
+    }
+
+    IEnumerator SetInventoryAndSave(JsonInventory jsonInv2Set){
+
+        // Debug.Log("waiting for channel 0 request to return.");
+        yield return new WaitUntil(() => recieved0);
+
+        // Debug.Log("channel 0 request returned!");
+
+        JsonInventories inventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
+
+        for(int i = 0; i < inventories.inventories.Length; i++){
+
+            if(inventories.inventories[i].username == jsonInv2Set.username){
+
+                inventories.inventories[i] = jsonInv2Set;
+                break;
+            }
+        }
+        // File.WriteAllText($"{Application.persistentDataPath}/inventories.json", JsonConvert.SerializeObject(inventories));
+        // Debug.Log("Calling save json rpc on all users.");
+        SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(inventories));
+        recieved0 = false;
+    }
+
     // [Rpc(SendTo.Everyone)]
     // public void SetItemInventoryRpc(string usernameI, string itemName, int itemId, item[] items){
 
@@ -939,32 +1006,38 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void RequestJsonRpc(string requestingUser, string requestedUser, string requestedJsonDirectory){
+    public void RequestJsonRpc(string requestingUser, string requestedUser, string requestedJsonDirectory, int channel = -1){
 
         if(requestingUser == interpreter.GetUsername){
 
-            recieved = false;
+            if(channel == -1)
+                recieved = false;
+            else if(channel == 0)
+                recieved0 = false;
         }
         if(requestedUser == interpreter.GetUsername){
 
-            SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+            SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
         }
         if(requestedUser == "host"){
 
             if(IsHost){
 
-                SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser);
+                SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
             }
         }
 
     }
     [Rpc(SendTo.Everyone)]
-    public void SendJsonRpc(string input, string directory, string sendTo){
+    public void SendJsonRpc(string input, string directory, string sendTo, int channel = -1){
 
         if(interpreter.GetUsername == sendTo){
 
             File.WriteAllText(Application.persistentDataPath + directory, input);
-            recieved = true;
+            if(channel == -1)
+                recieved = true;
+            else if(channel == 0)
+                recieved0 = true;
         }
     }
 

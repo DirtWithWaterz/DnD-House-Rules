@@ -100,6 +100,17 @@ public class ItemDisplaySmall : MonoBehaviour
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     itemDisplay.occupiedInventory.inventory.Add(thisItem);
                     // GameManager.Singleton.SaveData();
+                    List<itemShort> itemShorts = new List<itemShort>();
+                    foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                        itemShorts.Add(new itemShort{
+
+                            name = itemDisplay1.nameText.text,
+                            id = itemDisplay1.id
+                        });
+                    }
+                    GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
                     yield return new WaitForEndOfFrame();
                     itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
@@ -109,7 +120,7 @@ public class ItemDisplaySmall : MonoBehaviour
 
                         if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
 
-                            Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                            // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
                             thisItemInventory.RemoveAt(i);
                             i = -1;
                         }

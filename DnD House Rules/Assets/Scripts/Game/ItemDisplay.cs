@@ -1,10 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using Unity.Netcode;
 using UnityEngine;
-using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
 public class ItemDisplay : MonoBehaviour
@@ -110,13 +108,24 @@ public class ItemDisplay : MonoBehaviour
                             id = thisItem.id
                         });
                     }
+                    List<itemShort> itemShorts = new List<itemShort>();
+                    foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                        itemShorts.Add(new itemShort{
+
+                            name = itemDisplay1.nameText.text,
+                            id = itemDisplay1.id
+                        });
+                    }
+                    GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
                     // GameManager.Singleton.SaveData();
                     yield return new WaitForEndOfFrame();
                     for(int i = 0; i < occupiedInventory.inventory.Count; i++){
 
                         if(occupiedInventory.inventory[i].name.ToString() == thisItem.name.ToString() && occupiedInventory.inventory[i].id == thisItem.id){
 
-                            Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
+                            // Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
                             occupiedInventory.inventory.RemoveAt(i);
                             // GameManager.Singleton.SaveData();
                         }
@@ -127,6 +136,18 @@ public class ItemDisplay : MonoBehaviour
 
                     transform.SetSiblingIndex(hit2D.transform.GetSiblingIndex());
                     // ItemDisplay otherItemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
+
+                    List<itemShort> itemShorts = new List<itemShort>();
+                    foreach(ItemDisplay itemDisplay in occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                        itemShorts.Add(new itemShort{
+
+                            name = itemDisplay.nameText.text,
+                            id = itemDisplay.id
+                        });
+                    }
+                    GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
                 }
             }
             Destroy(fake.gameObject);
