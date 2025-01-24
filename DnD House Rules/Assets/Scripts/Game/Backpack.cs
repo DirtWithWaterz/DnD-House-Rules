@@ -76,7 +76,18 @@ public class Backpack : NetworkBehaviour
         if(CapacityLogic(item)){
             // Debug.Log("true");
             // Debug.Log("adding item to inventory...");
-            inventory.Add(item);
+            inventory.Add(new item{
+
+                name = item.name,
+                cost = item.cost,
+                value = item.value,
+                type = item.type,
+                size = item.size,
+                amount = item.amount,
+                weight = item.weight,
+                itemInventory = item.itemInventory,
+                id = item.id
+            });
             RefreshItemDisplayBoxRpc(username);
             if(updateTally)
                 GameManager.Singleton.UpdateIdTallyRpc();

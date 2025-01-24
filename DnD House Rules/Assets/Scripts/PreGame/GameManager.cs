@@ -294,6 +294,11 @@ public class GameManager : NetworkBehaviour
         public int idTally;
     }
 
+    void OnApplicationQuit(){
+
+        SaveData();
+    }
+
     public void SaveData(){
 
         if(!IsHost)
@@ -301,86 +306,169 @@ public class GameManager : NetworkBehaviour
 
         SaveIdTallyRpc();
         
-        JsonUserDatas jsonUserDatas = new JsonUserDatas();
-        jsonUserDatas.jsonUserDatas = new JsonUserData[userDatas.Count];
+        JsonUserDatas jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/userdatas.json"));
 
         for(int i = 0; i < userDatas.Count; i++){
             
-            jsonUserDatas.jsonUserDatas[i] = new JsonUserData(){
-
-                id = userDatas[i].id.ToString(),
-                username = userDatas[i].username.ToString(),
-
-                Str = userDatas[i].Str,
-                Dex = userDatas[i].Dex,
-                Con = userDatas[i].Con,
-                Int = userDatas[i].Int,
-                Wis = userDatas[i].Wis,
-                Cha = userDatas[i].Cha,
-
-                Lvl = userDatas[i].Lvl,
+            for(int j = 0; j < jsonUserDatas.jsonUserDatas.Length; j++){
                 
-                HP_NECK = userDatas[i].HP_NECK,
-                HP_HEAD = userDatas[i].HP_HEAD,
-                HP_CHEST = userDatas[i].HP_CHEST,
-                HP_ARM_LEFT = userDatas[i].HP_ARM_LEFT,
-                HP_FOREARM_LEFT = userDatas[i].HP_FOREARM_LEFT,
-                HP_HAND_LEFT = userDatas[i].HP_HAND_LEFT,
-                HP_ARM_RIGHT = userDatas[i].HP_ARM_RIGHT,
-                HP_FOREARM_RIGHT = userDatas[i].HP_FOREARM_RIGHT,
-                HP_HAND_RIGHT = userDatas[i].HP_HAND_RIGHT,
-                HP_TORSO = userDatas[i].HP_TORSO,
-                HP_PELVIS = userDatas[i].HP_PELVIS,
-                HP_THIGH_LEFT = userDatas[i].HP_THIGH_LEFT,
-                HP_CRUS_LEFT = userDatas[i].HP_CRUS_LEFT,
-                HP_FOOT_LEFT = userDatas[i].HP_FOOT_LEFT,
-                HP_THIGH_RIGHT = userDatas[i].HP_THIGH_RIGHT,
-                HP_CRUS_RIGHT = userDatas[i].HP_CRUS_RIGHT,
-                HP_FOOT_RIGHT = userDatas[i].HP_FOOT_RIGHT,
+                if(userDatas[i].username.ToString() == jsonUserDatas.jsonUserDatas[j].username){
 
-                AC_NECK = userDatas[i].AC_NECK,
-                AC_HEAD = userDatas[i].AC_HEAD,
-                AC_CHEST = userDatas[i].AC_CHEST,
-                AC_ARM_LEFT = userDatas[i].AC_ARM_LEFT,
-                AC_FOREARM_LEFT = userDatas[i].AC_FOREARM_LEFT,
-                AC_HAND_LEFT = userDatas[i].AC_HAND_LEFT,
-                AC_ARM_RIGHT = userDatas[i].AC_ARM_RIGHT,
-                AC_FOREARM_RIGHT = userDatas[i].AC_FOREARM_RIGHT,
-                AC_HAND_RIGHT = userDatas[i].AC_HAND_RIGHT,
-                AC_TORSO = userDatas[i].AC_TORSO,
-                AC_PELVIS = userDatas[i].AC_PELVIS,
-                AC_THIGH_LEFT = userDatas[i].AC_THIGH_LEFT,
-                AC_CRUS_LEFT = userDatas[i].AC_CRUS_LEFT,
-                AC_FOOT_LEFT = userDatas[i].AC_FOOT_LEFT,
-                AC_THIGH_RIGHT = userDatas[i].AC_THIGH_RIGHT,
-                AC_CRUS_RIGHT = userDatas[i].AC_CRUS_RIGHT,
-                AC_FOOT_RIGHT = userDatas[i].AC_FOOT_RIGHT,
+                    jsonUserDatas.jsonUserDatas[j] = new JsonUserData(){
 
-                CONDITION_NECK = userDatas[i].CONDITION_NECK.ToString(),
-                CONDITION_HEAD = userDatas[i].CONDITION_HEAD.ToString(),
-                CONDITION_CHEST = userDatas[i].CONDITION_CHEST.ToString(),
-                CONDITION_ARM_LEFT = userDatas[i].CONDITION_ARM_LEFT.ToString(),
-                CONDITION_FOREARM_LEFT = userDatas[i].CONDITION_FOREARM_LEFT.ToString(),
-                CONDITION_HAND_LEFT = userDatas[i].CONDITION_HAND_LEFT.ToString(),
-                CONDITION_ARM_RIGHT = userDatas[i].CONDITION_ARM_RIGHT.ToString(),
-                CONDITION_FOREARM_RIGHT = userDatas[i].CONDITION_FOREARM_RIGHT.ToString(),
-                CONDITION_HAND_RIGHT = userDatas[i].CONDITION_HAND_RIGHT.ToString(),
-                CONDITION_TORSO = userDatas[i].CONDITION_TORSO.ToString(),
-                CONDITION_PELVIS = userDatas[i].CONDITION_PELVIS.ToString(),
-                CONDITION_THIGH_LEFT = userDatas[i].CONDITION_THIGH_LEFT.ToString(),
-                CONDITION_CRUS_LEFT = userDatas[i].CONDITION_CRUS_LEFT.ToString(),
-                CONDITION_FOOT_LEFT = userDatas[i].CONDITION_FOOT_LEFT.ToString(),
-                CONDITION_THIGH_RIGHT = userDatas[i].CONDITION_THIGH_RIGHT.ToString(),
-                CONDITION_CRUS_RIGHT = userDatas[i].CONDITION_CRUS_RIGHT.ToString(),
-                CONDITION_FOOT_RIGHT = userDatas[i].CONDITION_FOOT_RIGHT.ToString(),
+                        id = userDatas[i].id.ToString(),
+                        username = userDatas[i].username.ToString(),
 
+                        Str = userDatas[i].Str,
+                        Dex = userDatas[i].Dex,
+                        Con = userDatas[i].Con,
+                        Int = userDatas[i].Int,
+                        Wis = userDatas[i].Wis,
+                        Cha = userDatas[i].Cha,
+
+                        Lvl = userDatas[i].Lvl,
+                        
+                        HP_NECK = userDatas[i].HP_NECK,
+                        HP_HEAD = userDatas[i].HP_HEAD,
+                        HP_CHEST = userDatas[i].HP_CHEST,
+                        HP_ARM_LEFT = userDatas[i].HP_ARM_LEFT,
+                        HP_FOREARM_LEFT = userDatas[i].HP_FOREARM_LEFT,
+                        HP_HAND_LEFT = userDatas[i].HP_HAND_LEFT,
+                        HP_ARM_RIGHT = userDatas[i].HP_ARM_RIGHT,
+                        HP_FOREARM_RIGHT = userDatas[i].HP_FOREARM_RIGHT,
+                        HP_HAND_RIGHT = userDatas[i].HP_HAND_RIGHT,
+                        HP_TORSO = userDatas[i].HP_TORSO,
+                        HP_PELVIS = userDatas[i].HP_PELVIS,
+                        HP_THIGH_LEFT = userDatas[i].HP_THIGH_LEFT,
+                        HP_CRUS_LEFT = userDatas[i].HP_CRUS_LEFT,
+                        HP_FOOT_LEFT = userDatas[i].HP_FOOT_LEFT,
+                        HP_THIGH_RIGHT = userDatas[i].HP_THIGH_RIGHT,
+                        HP_CRUS_RIGHT = userDatas[i].HP_CRUS_RIGHT,
+                        HP_FOOT_RIGHT = userDatas[i].HP_FOOT_RIGHT,
+
+                        AC_NECK = userDatas[i].AC_NECK,
+                        AC_HEAD = userDatas[i].AC_HEAD,
+                        AC_CHEST = userDatas[i].AC_CHEST,
+                        AC_ARM_LEFT = userDatas[i].AC_ARM_LEFT,
+                        AC_FOREARM_LEFT = userDatas[i].AC_FOREARM_LEFT,
+                        AC_HAND_LEFT = userDatas[i].AC_HAND_LEFT,
+                        AC_ARM_RIGHT = userDatas[i].AC_ARM_RIGHT,
+                        AC_FOREARM_RIGHT = userDatas[i].AC_FOREARM_RIGHT,
+                        AC_HAND_RIGHT = userDatas[i].AC_HAND_RIGHT,
+                        AC_TORSO = userDatas[i].AC_TORSO,
+                        AC_PELVIS = userDatas[i].AC_PELVIS,
+                        AC_THIGH_LEFT = userDatas[i].AC_THIGH_LEFT,
+                        AC_CRUS_LEFT = userDatas[i].AC_CRUS_LEFT,
+                        AC_FOOT_LEFT = userDatas[i].AC_FOOT_LEFT,
+                        AC_THIGH_RIGHT = userDatas[i].AC_THIGH_RIGHT,
+                        AC_CRUS_RIGHT = userDatas[i].AC_CRUS_RIGHT,
+                        AC_FOOT_RIGHT = userDatas[i].AC_FOOT_RIGHT,
+
+                        CONDITION_NECK = userDatas[i].CONDITION_NECK.ToString(),
+                        CONDITION_HEAD = userDatas[i].CONDITION_HEAD.ToString(),
+                        CONDITION_CHEST = userDatas[i].CONDITION_CHEST.ToString(),
+                        CONDITION_ARM_LEFT = userDatas[i].CONDITION_ARM_LEFT.ToString(),
+                        CONDITION_FOREARM_LEFT = userDatas[i].CONDITION_FOREARM_LEFT.ToString(),
+                        CONDITION_HAND_LEFT = userDatas[i].CONDITION_HAND_LEFT.ToString(),
+                        CONDITION_ARM_RIGHT = userDatas[i].CONDITION_ARM_RIGHT.ToString(),
+                        CONDITION_FOREARM_RIGHT = userDatas[i].CONDITION_FOREARM_RIGHT.ToString(),
+                        CONDITION_HAND_RIGHT = userDatas[i].CONDITION_HAND_RIGHT.ToString(),
+                        CONDITION_TORSO = userDatas[i].CONDITION_TORSO.ToString(),
+                        CONDITION_PELVIS = userDatas[i].CONDITION_PELVIS.ToString(),
+                        CONDITION_THIGH_LEFT = userDatas[i].CONDITION_THIGH_LEFT.ToString(),
+                        CONDITION_CRUS_LEFT = userDatas[i].CONDITION_CRUS_LEFT.ToString(),
+                        CONDITION_FOOT_LEFT = userDatas[i].CONDITION_FOOT_LEFT.ToString(),
+                        CONDITION_THIGH_RIGHT = userDatas[i].CONDITION_THIGH_RIGHT.ToString(),
+                        CONDITION_CRUS_RIGHT = userDatas[i].CONDITION_CRUS_RIGHT.ToString(),
+                        CONDITION_FOOT_RIGHT = userDatas[i].CONDITION_FOOT_RIGHT.ToString(),
+
+                        
+
+                        barbarian = userDatas[i].barbarian,
+                        baseSpeed = userDatas[i].baseSpeed,
+                        initProf = userDatas[i].initProf
+
+                    };
+                }
+                else if (j == jsonUserDatas.jsonUserDatas.Length - 1){ // Reached the end, user doesn't exist
                 
+                    Array.Resize(ref jsonUserDatas.jsonUserDatas, jsonUserDatas.jsonUserDatas.Length + 1);
 
-                barbarian = userDatas[i].barbarian,
-                baseSpeed = userDatas[i].baseSpeed,
-                initProf = userDatas[i].initProf
+                    jsonUserDatas.jsonUserDatas[^1] = new JsonUserData{
 
-            };
+                        id = userDatas[i].id.ToString(),
+                        username = userDatas[i].username.ToString(),
+
+                        Str = userDatas[i].Str,
+                        Dex = userDatas[i].Dex,
+                        Con = userDatas[i].Con,
+                        Int = userDatas[i].Int,
+                        Wis = userDatas[i].Wis,
+                        Cha = userDatas[i].Cha,
+
+                        Lvl = userDatas[i].Lvl,
+
+                        HP_NECK = userDatas[i].HP_NECK,
+                        HP_HEAD = userDatas[i].HP_HEAD,
+                        HP_CHEST = userDatas[i].HP_CHEST,
+                        HP_ARM_LEFT = userDatas[i].HP_ARM_LEFT,
+                        HP_FOREARM_LEFT = userDatas[i].HP_FOREARM_LEFT,
+                        HP_HAND_LEFT = userDatas[i].HP_HAND_LEFT,
+                        HP_ARM_RIGHT = userDatas[i].HP_ARM_RIGHT,
+                        HP_FOREARM_RIGHT = userDatas[i].HP_FOREARM_RIGHT,
+                        HP_HAND_RIGHT = userDatas[i].HP_HAND_RIGHT,
+                        HP_TORSO = userDatas[i].HP_TORSO,
+                        HP_PELVIS = userDatas[i].HP_PELVIS,
+                        HP_THIGH_LEFT = userDatas[i].HP_THIGH_LEFT,
+                        HP_CRUS_LEFT = userDatas[i].HP_CRUS_LEFT,
+                        HP_FOOT_LEFT = userDatas[i].HP_FOOT_LEFT,
+                        HP_THIGH_RIGHT = userDatas[i].HP_THIGH_RIGHT,
+                        HP_CRUS_RIGHT = userDatas[i].HP_CRUS_RIGHT,
+                        HP_FOOT_RIGHT = userDatas[i].HP_FOOT_RIGHT,
+
+                        AC_NECK = userDatas[i].AC_NECK,
+                        AC_HEAD = userDatas[i].AC_HEAD,
+                        AC_CHEST = userDatas[i].AC_CHEST,
+                        AC_ARM_LEFT = userDatas[i].AC_ARM_LEFT,
+                        AC_FOREARM_LEFT = userDatas[i].AC_FOREARM_LEFT,
+                        AC_HAND_LEFT = userDatas[i].AC_HAND_LEFT,
+                        AC_ARM_RIGHT = userDatas[i].AC_ARM_RIGHT,
+                        AC_FOREARM_RIGHT = userDatas[i].AC_FOREARM_RIGHT,
+                        AC_HAND_RIGHT = userDatas[i].AC_HAND_RIGHT,
+                        AC_TORSO = userDatas[i].AC_TORSO,
+                        AC_PELVIS = userDatas[i].AC_PELVIS,
+                        AC_THIGH_LEFT = userDatas[i].AC_THIGH_LEFT,
+                        AC_CRUS_LEFT = userDatas[i].AC_CRUS_LEFT,
+                        AC_FOOT_LEFT = userDatas[i].AC_FOOT_LEFT,
+                        AC_THIGH_RIGHT = userDatas[i].AC_THIGH_RIGHT,
+                        AC_CRUS_RIGHT = userDatas[i].AC_CRUS_RIGHT,
+                        AC_FOOT_RIGHT = userDatas[i].AC_FOOT_RIGHT,
+
+                        CONDITION_NECK = userDatas[i].CONDITION_NECK.ToString(),
+                        CONDITION_HEAD = userDatas[i].CONDITION_HEAD.ToString(),
+                        CONDITION_CHEST = userDatas[i].CONDITION_CHEST.ToString(),
+                        CONDITION_ARM_LEFT = userDatas[i].CONDITION_ARM_LEFT.ToString(),
+                        CONDITION_FOREARM_LEFT = userDatas[i].CONDITION_FOREARM_LEFT.ToString(),
+                        CONDITION_HAND_LEFT = userDatas[i].CONDITION_HAND_LEFT.ToString(),
+                        CONDITION_ARM_RIGHT = userDatas[i].CONDITION_ARM_RIGHT.ToString(),
+                        CONDITION_FOREARM_RIGHT = userDatas[i].CONDITION_FOREARM_RIGHT.ToString(),
+                        CONDITION_HAND_RIGHT = userDatas[i].CONDITION_HAND_RIGHT.ToString(),
+                        CONDITION_TORSO = userDatas[i].CONDITION_TORSO.ToString(),
+                        CONDITION_PELVIS = userDatas[i].CONDITION_PELVIS.ToString(),
+                        CONDITION_THIGH_LEFT = userDatas[i].CONDITION_THIGH_LEFT.ToString(),
+                        CONDITION_CRUS_LEFT = userDatas[i].CONDITION_CRUS_LEFT.ToString(),
+                        CONDITION_FOOT_LEFT = userDatas[i].CONDITION_FOOT_LEFT.ToString(),
+                        CONDITION_THIGH_RIGHT = userDatas[i].CONDITION_THIGH_RIGHT.ToString(),
+                        CONDITION_CRUS_RIGHT = userDatas[i].CONDITION_CRUS_RIGHT.ToString(),
+                        CONDITION_FOOT_RIGHT = userDatas[i].CONDITION_FOOT_RIGHT.ToString(),
+
+                        barbarian = userDatas[i].barbarian,
+                        baseSpeed = userDatas[i].baseSpeed,
+                        initProf = userDatas[i].initProf
+                    };
+                }
+
+            }
         }
 
         string output = JsonConvert.SerializeObject(jsonUserDatas);
@@ -416,29 +504,78 @@ public class GameManager : NetworkBehaviour
         output = JsonConvert.SerializeObject(jsonItems);
         File.WriteAllText($"{Application.persistentDataPath}/items.json", output);
 
-        JsonInventories jsonInventories = new JsonInventories();
-        jsonInventories.inventories = new JsonInventory[userDatas.Count];
+        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
 
         for(int i = 0; i < userDatas.Count; i++){
 
-            jsonInventories.inventories[i] = new JsonInventory();
-            User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
-            jsonInventories.inventories[i].username = userDatas[i].username.ToString();
-            jsonInventories.inventories[i].items = new JsonItem[userI.backpack.inventory.Count];
-            for(int j = 0; j < userI.backpack.inventory.Count; j++){
+            for(int k = 0; k < jsonInventories.inventories.Length; k++){
 
-                jsonInventories.inventories[i].items[j] = new JsonItem(){
+                if(userDatas[i].username.ToString() == jsonInventories.inventories[k].username){
 
-                    name = userI.backpack.inventory[j].name.ToString(),
-                    cost = userI.backpack.inventory[j].cost,
-                    value = userI.backpack.inventory[j].value,
-                    type = userI.backpack.inventory[j].type,
-                    size = userI.backpack.inventory[j].size,
-                    amount = userI.backpack.inventory[j].amount,
-                    weight = userI.backpack.inventory[j].weight,
-                    itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
-                    id = userI.backpack.inventory[j].id
-                };
+                    jsonInventories.inventories[k] = new JsonInventory();
+                    User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
+                    jsonInventories.inventories[k].username = userDatas[i].username.ToString();
+                    jsonInventories.inventories[k].items = new JsonItem[userI.backpack.inventory.Count];
+                    for(int j = 0; j < userI.backpack.inventory.Count; j++){
+
+                        jsonInventories.inventories[k].items[j] = new JsonItem(){
+
+                            name = userI.backpack.inventory[j].name.ToString(),
+                            cost = userI.backpack.inventory[j].cost,
+                            value = userI.backpack.inventory[j].value,
+                            type = userI.backpack.inventory[j].type,
+                            size = userI.backpack.inventory[j].size,
+                            amount = userI.backpack.inventory[j].amount,
+                            weight = userI.backpack.inventory[j].weight,
+                            itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
+                            id = userI.backpack.inventory[j].id
+                        };
+                    }
+                    break;
+                }
+                else if (k == jsonInventories.inventories.Length - 1){ // Reached the end, inventory doesn't exist
+
+                    Array.Resize(ref jsonInventories.inventories, jsonInventories.inventories.Length + 1);
+
+                    User userI = GameObject.Find(userDatas[i].username.ToString())?.GetComponent<User>();
+
+                    if (userI != null){
+
+                        var inventoryList = userI.backpack.inventory; // NetworkList
+                        var itemsArray = new JsonItem[inventoryList.Count]; // Create an array for JsonItems
+
+                        for (int j = 0; j < inventoryList.Count; j++){ // Populate itemsArray
+
+                            itemsArray[j] = new JsonItem{
+
+                                name = inventoryList[j].name.ToString(),
+                                cost = inventoryList[j].cost,
+                                value = inventoryList[j].value,
+                                type = inventoryList[j].type,
+                                size = inventoryList[j].size,
+                                amount = inventoryList[j].amount,
+                                weight = inventoryList[j].weight,
+                                itemInventory = inventoryList[j].itemInventory.ToString(),
+                                id = inventoryList[j].id
+                            };
+                        }
+
+                        jsonInventories.inventories[^1] = new JsonInventory{
+
+                            username = userDatas[i].username.ToString(),
+                            items = itemsArray
+                        };
+                    }
+                    else
+                    {
+                        // Handle case where userI is null (e.g., User not found in the scene)
+                        jsonInventories.inventories[^1] = new JsonInventory
+                        {
+                            username = userDatas[i].username.ToString(),
+                            items = Array.Empty<JsonItem>() // Empty inventory for this user
+                        };
+                    }
+                }
             }
         }
         output = JsonConvert.SerializeObject(jsonInventories);
@@ -453,6 +590,7 @@ public class GameManager : NetworkBehaviour
             yield break;
 
         LoadIdTallyRpc();
+        // Debug.Log(itemIdTally.Value);
 
         string output = File.ReadAllText($"{Application.persistentDataPath}/userdatas.json");
         JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(File.ReadAllText($"{Application.persistentDataPath}/conditions.json"));

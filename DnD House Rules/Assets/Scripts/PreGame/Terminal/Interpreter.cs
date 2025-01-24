@@ -1382,74 +1382,119 @@ public class Interpreter : NetworkBehaviour
             return response;
         }
 
-        if(args[0] == "give"){
-
-            if(IsHost){
-
+        if (args[0] == "give")
+        {
+            if (IsHost)
+            {
                 string usernameI = args[1];
-                User userI = GameObject.Find(usernameI).GetComponent<User>();
+                User userI = GameObject.Find(usernameI)?.GetComponent<User>();
+                if (userI == null)
+                {
+                    response.Add($"The user \"{usernameI}\" does not exist or could not be found.");
+                    response.Add("");
+                    return response;
+                }
 
                 string nameI = "";
-                int selfI = -1;
-                for(int i = 2; i < args.Length; i++){
-                    if(args[i] == username){
-                        
-                        selfI = i;
+                int selfI = -1; // Used to track if we are transferring a backpack
+                for (int i = 2; i < args.Length; i++)
+                {
+                    if (args[i] == username)
+                    {
+                        selfI = i; // Found the "source" user for the backpack
                         break;
                     }
                     nameI += $"{args[i]} ";
                 }
 
-                foreach(item item in GameManager.Singleton.items){
+                // nameI = nameI.TrimEnd(); // Remove trailing space
 
-                    if(item.name.ToString() == nameI){
-                        if(item.type == Type.backpack && selfI != -1){
+                foreach (item item in GameManager.Singleton.items)
+                {
+                    if (item.name.ToString() == nameI)
+                    {
+                        // Handle the backpack transfer case
+                        if (item.type == Type.backpack && selfI != -1)
+                        {
+                            string sourceUsername = args[selfI]; // Get source user
+                            User sourceUser = GameObject.Find(sourceUsername)?.GetComponent<User>();
+                            if (sourceUser == null)
+                            {
+                                response.Add($"The source user \"{sourceUsername}\" does not exist or could not be found.");
+                                response.Add("");
+                                return response;
+                            }
 
-                            item newItem = new item(){
+                            // Find the specific backpack by ID in the source user's inventory
+                            int sourceId = int.Parse(args[selfI + 1]);
+                            foreach (item sourceItem in sourceUser.backpack.inventory)
+                            {
+                                if (sourceItem.id == sourceId && sourceItem.name.ToString() == nameI)
+                                {
+                                    // Create a copy of the source backpack with the same ID and details
+                                    item newItem = new item
+                                    {
+                                        name = sourceItem.name.ToString(),
+                                        cost = sourceItem.cost,
+                                        value = sourceItem.value,
+                                        type = sourceItem.type,
+                                        size = sourceItem.size,
+                                        amount = sourceItem.amount,
+                                        weight = sourceItem.weight,
+                                        itemInventory = sourceItem.itemInventory,
+                                        id = sourceItem.id
+                                    };
 
-                                name = $"{item.name.ToString()}{args[selfI + 1]} ",
-                                cost = item.cost,
-                                value = item.value,
-                                type = item.type,
-                                size = item.size,
-                                amount = item.amount,
-                                weight = item.weight,
-                                itemInventory = $"{Application.persistentDataPath}/{usernameI} {name} {args[selfI + 1]} Inventory.json",
-                                id = int.Parse(args[selfI + 1])
-                            };
-                            user.backpack.AddItemRpc(username, item, false);
-                            response.Add($"giving 1 \"{nameI}\" to {username}, if space is available in the users inventory.");
+                                    userI.backpack.AddItemRpc(usernameI, newItem, false);
+                                    response.Add($"Giving \"{nameI}\" (ID: {sourceId}) from {sourceUsername} to {usernameI}, if space is available.");
+                                    response.Add("");
+                                    return response;
+                                }
+                            }
+
+                            response.Add($"The item \"{nameI}\" with ID {sourceId} was not found in {sourceUsername}'s inventory.");
                             response.Add("");
                             return response;
                         }
-                        else {
+                        else // Handle giving a new item (including backpacks) to the user
+                        {
+                            int newId = (item.type == Type.backpack)
+                                ? GameManager.Singleton.itemIdTally.Value
+                                : GameManager.Singleton.itemIdTally.Value;
 
-                            item newItem = new item(){
-
-                                name = item.name.ToString() + (item.type == Type.backpack ? GameManager.Singleton.itemIdTally.Value + " " : ""),
+                            item newItem = new item
+                            {
+                                name = item.name.ToString() + (item.type == Type.backpack ? $"{newId} " : ""),
                                 cost = item.cost,
                                 value = item.value,
                                 type = item.type,
                                 size = item.size,
                                 amount = item.amount,
                                 weight = item.weight,
-                                itemInventory = $"{Application.persistentDataPath}/{usernameI} {name} {GameManager.Singleton.itemIdTally.Value} Inventory.json",
-                                id = GameManager.Singleton.itemIdTally.Value
+                                itemInventory = $"/{usernameI} {item.name}{newId} {newId} Inventory.json",
+                                id = newId
                             };
-                            userI.backpack.AddItemRpc(usernameI, item);
-                            response.Add($"giving 1 \"{nameI}\" to {usernameI}, if space is available in the users inventory.");
+
+                            if (item.type == Type.backpack)
+                                GameManager.Singleton.itemIdTally.Value++; // Increment the ID tally for backpacks
+
+                            userI.backpack.AddItemRpc(usernameI, newItem, false);
+                            response.Add($"Giving 1 \"{nameI}\" to {usernameI}, if space is available.");
                             response.Add("");
                             return response;
                         }
                     }
                 }
-                response.Add($"the item, \"{nameI}\" does not exist.");
+
+                response.Add($"The item \"{nameI}\" does not exist.");
                 response.Add("");
                 return response;
             }
+
             response.Add("");
             return response;
         }
+
         if(args[0] == "take"){
 
             if(IsHost){

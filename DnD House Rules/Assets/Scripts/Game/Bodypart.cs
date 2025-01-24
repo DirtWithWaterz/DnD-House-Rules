@@ -1,8 +1,46 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
+
+[Serializable]
+public struct itemSlot : IEquatable<item>, INetworkSerializable
+{
+
+    // public FixedString64Bytes itemName;
+    // public int itemId;
+
+    // public Type itemType;
+
+    public item item;
+
+    public byte slotType;
+
+    public FixedString64Bytes bodypart;
+
+    public bool Empty(){
+
+        return item.id == -1;
+    }
+
+    public bool Equals(item other)
+    {
+        // return other.name == itemName && other.id == itemId;
+        return other.name == item.name && other.id == item.id;
+    }
+
+    public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
+    {
+        // serializer.SerializeValue(ref itemName);
+        // serializer.SerializeValue(ref itemId);
+        // serializer.SerializeValue(ref itemType);
+        serializer.SerializeValue(ref item);
+        serializer.SerializeValue(ref slotType);
+        serializer.SerializeValue(ref bodypart);
+    }
+}
 
 public class Bodypart : NetworkBehaviour
 {
@@ -20,6 +58,8 @@ public class Bodypart : NetworkBehaviour
 
     Health h;
     User user;
+
+    [SerializeField] itemSlot[] slot;
 
     public bool shot = false;
 
@@ -43,7 +83,23 @@ public class Bodypart : NetworkBehaviour
         h = transform.root.GetComponentInChildren<Health>();
 
         user = transform.root.GetComponent<User>();
-        
+    }
+
+    void Start(){
+
+        slot = new itemSlot[2];
+        for(int i = 0; i < slot.Length; i++){
+
+            slot[i] = new itemSlot{
+
+                item = new item{
+
+                    id = -1
+                },
+                slotType = (byte)i,
+                bodypart = gameObject.name
+            };
+        }
     }
 
     // Update is called once per frame
