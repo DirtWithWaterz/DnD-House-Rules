@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
@@ -76,7 +77,7 @@ public class ItemDisplay : MonoBehaviour
         if(Input.GetMouseButtonDown(1)){
 
             // instantiate a new gameobject that follows the mouse
-            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.parent.parent);
+            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent : transform.parent.parent.parent);
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
             fakeDisplay.nameText.text = nameText.text;
             fakeDisplay.sizeText.text = sizeText.text;
@@ -105,7 +106,8 @@ public class ItemDisplay : MonoBehaviour
                             amount = 1,
                             weight = thisItem.weight / thisItem.amount,
                             itemInventory = thisItem.itemInventory,
-                            id = thisItem.id
+                            id = thisItem.id,
+                            equippable = thisItem.equippable
                         });
                     }
                     List<itemShort> itemShorts = new List<itemShort>();
@@ -148,6 +150,62 @@ public class ItemDisplay : MonoBehaviour
                     }
                     GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                     // Debug.Log($"Reorder inventory rpc called.");
+                }
+                else if(hit2D.transform.name.Contains("Slot")){
+
+                    if(!thisItem.equippable)
+                        yield break;
+
+                    ArmorSlot armorSlot = hit2D.transform.GetComponent<ArmorSlot>();
+                    if(armorSlot.description.bodypart.slot[armorSlot.index].Empty()){
+
+                        armorSlot.description.bodypart.slot[armorSlot.index].item = new item{
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id,
+                            equippable = thisItem.equippable
+                        };
+                        switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
+
+                            case Type.heavyArmor:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                break;
+                            case Type.lightArmor:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                break;
+                            case Type.capacityMult:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultL:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultS:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultT:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.medical:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
+                                break;
+                            default:
+                                armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
+                                break;
+                        }
+                        occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+                    }
+                    else{
+
+                        // swap the item in the armor slot with this item.
+                        throw new NotImplementedException();
+                    }
                 }
             }
             Destroy(fake.gameObject);

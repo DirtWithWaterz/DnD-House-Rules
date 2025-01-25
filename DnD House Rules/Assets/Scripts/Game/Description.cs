@@ -22,15 +22,46 @@ public class Description : NetworkBehaviour
     public int ac;
     public string condition;
 
+    public Bodypart bodypart;
+
+    public static Dictionary<string, byte> slotNum = new Dictionary<string, byte>(){
+
+        {"BODY_HEAD", 1},
+        {"BODY_NECK", 0},
+        {"BODY_CHEST", 3},
+        {"BODY_ARM_LEFT", 1},
+        {"BODY_FOREARM_LEFT", 1},
+        {"BODY_HAND_LEFT", 1},
+        {"BODY_ARM_RIGHT", 1},
+        {"BODY_FOREARM_RIGHT", 1},
+        {"BODY_HAND_RIGHT", 1},
+        {"BODY_TORSO", 2},
+        {"BODY_PELVIS", 2},
+        {"BODY_THIGH_LEFT", 1},
+        {"BODY_CRUS_LEFT", 1},
+        {"BODY_FOOT_LEFT", 1},
+        {"BODY_THIGH_RIGHT", 1},
+        {"BODY_CRUS_RIGHT", 1},
+        {"BODY_FOOT_RIGHT", 1}
+    };
 
     string oldStatus;
     int oldHealth;
     int oldAc;
     string oldCondition;
 
+    public ArmorSlot[] armorSlots;
+    int accessibleASS; // accessible armor slots lmfao
+
     void Start(){
 
         this.gameObject.SetActive(false);
+
+        for(int i = 0; i < armorSlots.Length; i++){
+
+            armorSlots[i].description = this;
+            armorSlots[i].index = i;
+        }
     }
 
     void Update(){
@@ -59,5 +90,20 @@ public class Description : NetworkBehaviour
 
             oldCondition = condition;
         }
+
+        if(bodypart != null)
+            accessibleASS = slotNum[bodypart.name];
+        else
+            accessibleASS = 0;
+        
+        foreach(ArmorSlot armorSlot in armorSlots){
+
+            armorSlot.gameObject.SetActive(false);
+        }
+        for(int i = 0; i < accessibleASS; i++){
+
+            armorSlots[i].gameObject.SetActive(true);
+        }
+
     }
 }

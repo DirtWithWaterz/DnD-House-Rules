@@ -57,7 +57,8 @@ public class Backpack : NetworkBehaviour
                         amount = inventory[i].amount + 1,
                         weight = inventory[i].weight + (inventory[i].weight / inventory[i].amount),
                         itemInventory = inventory[i].itemInventory,
-                        id = inventory[i].id
+                        id = inventory[i].id,
+                        equippable = inventory[i].equippable
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
@@ -86,7 +87,8 @@ public class Backpack : NetworkBehaviour
                 amount = item.amount,
                 weight = item.weight,
                 itemInventory = item.itemInventory,
-                id = item.id
+                id = item.id,
+                equippable = item.equippable
             });
             RefreshItemDisplayBoxRpc(username);
             if(updateTally)
@@ -214,7 +216,7 @@ public class Backpack : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void RemoveItemRpc(string usernameI, string itemName){
+    public void RemoveItemRpc(string usernameI, string itemName, bool checkId = false, int itemId = 0){
 
         if(usernameI != username)
             return;
@@ -223,7 +225,7 @@ public class Backpack : NetworkBehaviour
 
         for(int i = 0; i < inventory.Count; i++){
 
-            if(itemName == inventory[i].name.ToString()){
+            if(itemName == inventory[i].name.ToString() && (itemId == inventory[i].id && checkId)){
 
                 if(inventory[i].amount > 1){
 
@@ -236,7 +238,9 @@ public class Backpack : NetworkBehaviour
                         size = inventory[i].size,
                         amount = inventory[i].amount - 1,
                         weight = inventory[i].weight - (inventory[i].weight / inventory[i].amount),
-                        itemInventory = inventory[i].itemInventory
+                        itemInventory = inventory[i].itemInventory,
+                        id = inventory[i].id,
+                        equippable = inventory[i].equippable
                     };
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";

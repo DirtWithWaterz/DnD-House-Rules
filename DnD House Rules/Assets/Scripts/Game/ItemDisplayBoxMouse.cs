@@ -17,6 +17,9 @@ public class ItemDisplayBoxMouse : MonoBehaviour
     void Update(){
 
         transform.position = cam.ScreenToWorldPoint(Input.mousePosition);
-        transform.localPosition = new Vector3(90f, transform.localPosition.y, 0);
+        if(!Input.GetKey(KeyCode.LeftShift))
+            transform.localPosition = new Vector3(90f, transform.localPosition.y, 0);
+        else
+            transform.localPosition = new Vector3(transform.localPosition.x, transform.localPosition.y, 0);
     }
 }

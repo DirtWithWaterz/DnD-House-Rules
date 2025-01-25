@@ -1000,7 +1000,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
                     string nameI = "";
-                    for(int i = 7; i < args.Length; i++){
+                    for(int i = 8; i < args.Length; i++){
 
                         nameI += $"{args[i]} ";
                     }
@@ -1022,7 +1022,8 @@ public class Interpreter : NetworkBehaviour
                         amount = 1,
                         weight = int.Parse(args[6]),
                         itemInventory = "",
-                        id = 0
+                        id = 0,
+                        equippable = args[7] == "true" ? true : false
                     };
                     GameManager.Singleton.items.Add(newItem);
                 }
@@ -1442,7 +1443,8 @@ public class Interpreter : NetworkBehaviour
                                         amount = sourceItem.amount,
                                         weight = sourceItem.weight,
                                         itemInventory = sourceItem.itemInventory,
-                                        id = sourceItem.id
+                                        id = sourceItem.id,
+                                        equippable = sourceItem.equippable
                                     };
 
                                     userI.backpack.AddItemRpc(usernameI, newItem, false);
@@ -1472,7 +1474,8 @@ public class Interpreter : NetworkBehaviour
                                 amount = item.amount,
                                 weight = item.weight,
                                 itemInventory = $"/{usernameI} {item.name}{newId} {newId} Inventory.json",
-                                id = newId
+                                id = newId,
+                                equippable = item.equippable
                             };
 
                             if (item.type == Type.backpack)

@@ -16,7 +16,7 @@ public struct itemSlot : IEquatable<item>, INetworkSerializable
 
     public item item;
 
-    public byte slotType;
+    public SlotModifierType slotModifierType;
 
     public FixedString64Bytes bodypart;
 
@@ -37,9 +37,17 @@ public struct itemSlot : IEquatable<item>, INetworkSerializable
         // serializer.SerializeValue(ref itemId);
         // serializer.SerializeValue(ref itemType);
         serializer.SerializeValue(ref item);
-        serializer.SerializeValue(ref slotType);
+        serializer.SerializeValue(ref slotModifierType);
         serializer.SerializeValue(ref bodypart);
     }
+}
+
+public enum SlotModifierType{
+
+    none = 0,
+    ac = 1,
+    hp = 2,
+    storage = 3
 }
 
 public class Bodypart : NetworkBehaviour
@@ -59,7 +67,7 @@ public class Bodypart : NetworkBehaviour
     Health h;
     User user;
 
-    [SerializeField] itemSlot[] slot;
+    public itemSlot[] slot;
 
     public bool shot = false;
 
@@ -87,7 +95,10 @@ public class Bodypart : NetworkBehaviour
 
     void Start(){
 
-        slot = new itemSlot[2];
+        if(deselect)
+            return;
+
+        slot = new itemSlot[Description.slotNum[name]];
         for(int i = 0; i < slot.Length; i++){
 
             slot[i] = new itemSlot{
@@ -96,7 +107,7 @@ public class Bodypart : NetworkBehaviour
 
                     id = -1
                 },
-                slotType = (byte)i,
+                slotModifierType = SlotModifierType.none,
                 bodypart = gameObject.name
             };
         }
@@ -270,10 +281,31 @@ public class Bodypart : NetworkBehaviour
 
         if(selected && !deselect){
 
+            description.bodypart = this;
             description.status = status.Value.ToString();
             description.health = currentHP.Value;
             description.ac = ac.Value;
             description.condition = condition.Value.ToString();
+            for(int i = 0; i < Description.slotNum[name]; i++){
+                
+                if(!slot[i].Empty()){
+
+                    description.armorSlots[i].itemName.text = slot[i].item.name.ToString();
+                    string addon = slot[i].item.value > 0 ? "+" : "";
+                    switch(slot[i].slotModifierType){
+
+                        case SlotModifierType.ac:
+                            description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} AC";
+                            break;
+                        case SlotModifierType.hp:
+                            description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} HP";
+                            break;
+                        case SlotModifierType.storage:
+                            description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size.ToString()}";
+                            break;
+                    }
+                }
+            }
         }
     }
 
@@ -314,10 +346,31 @@ public class Bodypart : NetworkBehaviour
 
         description.gameObject.SetActive(true);
 
+        description.bodypart = this;
         description.status = status.Value.ToString();
         description.health = currentHP.Value;
         description.ac = ac.Value;
         description.condition = condition.Value.ToString();
+        for(int i = 0; i < Description.slotNum[name]; i++){
+                
+            if(!slot[i].Empty()){
+
+                description.armorSlots[i].itemName.text = slot[i].item.name.ToString();
+                string addon = slot[i].item.value >= 0 ? "+" : "";
+                switch(slot[i].slotModifierType){
+
+                    case SlotModifierType.ac:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} AC";
+                        break;
+                    case SlotModifierType.hp:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} HP";
+                        break;
+                    case SlotModifierType.storage:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size.ToString()}";
+                        break;
+                }
+            }
+        }
 
         selected = true;
     }

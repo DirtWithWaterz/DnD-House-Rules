@@ -77,7 +77,8 @@ public class InventorySmall : NetworkBehaviour
                     amount = 1, // Each JSON item starts with 1
                     weight = jsonItem.weight, // Weight of a single item
                     itemInventory = jsonItem.itemInventory,
-                    id = jsonItem.id
+                    id = jsonItem.id,
+                    equippable = jsonItem.equippable
                 });
             }
         }

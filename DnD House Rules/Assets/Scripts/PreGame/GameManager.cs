@@ -267,6 +267,7 @@ public class GameManager : NetworkBehaviour
         public int weight;
         public string itemInventory;
         public int id;
+        public bool equippable;
     }
 
     [Serializable]
@@ -497,7 +498,8 @@ public class GameManager : NetworkBehaviour
                 amount = items[i].amount,
                 weight = items[i].weight,
                 itemInventory = items[i].itemInventory.ToString(),
-                id = items[i].id
+                id = items[i].id,
+                equippable = items[i].equippable
             };
         }
 
@@ -528,7 +530,8 @@ public class GameManager : NetworkBehaviour
                             amount = userI.backpack.inventory[j].amount,
                             weight = userI.backpack.inventory[j].weight,
                             itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
-                            id = userI.backpack.inventory[j].id
+                            id = userI.backpack.inventory[j].id,
+                            equippable = userI.backpack.inventory[j].equippable
                         };
                     }
                     break;
@@ -556,7 +559,8 @@ public class GameManager : NetworkBehaviour
                                 amount = inventoryList[j].amount,
                                 weight = inventoryList[j].weight,
                                 itemInventory = inventoryList[j].itemInventory.ToString(),
-                                id = inventoryList[j].id
+                                id = inventoryList[j].id,
+                                equippable = inventoryList[j].equippable
                             };
                         }
 
@@ -893,7 +897,8 @@ public class GameManager : NetworkBehaviour
                 amount = item.amount,
                 weight = item.weight,
                 itemInventory = item.itemInventory.ToString(),
-                id = item.id
+                id = item.id,
+                equippable = item.equippable
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
@@ -950,7 +955,8 @@ public class GameManager : NetworkBehaviour
                                 amount = item.amount,
                                 weight = item.weight,
                                 itemInventory = item.itemInventory.ToString(),
-                                id = item.id
+                                id = item.id,
+                                equippable = item.equippable
                             });
                         }
                     }
@@ -1034,7 +1040,8 @@ public class GameManager : NetworkBehaviour
                     amount = amount,
                     weight = weight,
                     itemInventory = userI.backpack.inventory[itemIndex].itemInventory,
-                    id = userI.backpack.inventory[itemIndex].id
+                    id = userI.backpack.inventory[itemIndex].id,
+                    equippable = userI.backpack.inventory[itemIndex].equippable
                 };
                 foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
 
@@ -1082,7 +1089,8 @@ public class GameManager : NetworkBehaviour
                         amount = userI.backpack.inventory[j].amount,
                         weight = userI.backpack.inventory[j].weight,
                         itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
-                        id = userI.backpack.inventory[j].id
+                        id = userI.backpack.inventory[j].id,
+                        equippable = userI.backpack.inventory[j].equippable
                     };
                     break;
                 }

@@ -18,6 +18,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
     public FixedString128Bytes itemInventory;
     public int id;
 
+    public bool equippable;
+
     public item[] GetInventory(){
 
         if(type != Type.backpack)
@@ -38,7 +40,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 amount = jsonItemInventory.items[i].amount,
                 weight = jsonItemInventory.items[i].weight,
                 itemInventory = jsonItemInventory.items[i].itemInventory,
-                id = jsonItemInventory.items[i].id
+                id = jsonItemInventory.items[i].id,
+                equippable = jsonItemInventory.items[i].equippable
             };
             // Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
@@ -67,7 +70,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 amount = items[i].amount,
                 weight = items[i].weight,
                 itemInventory = items[i].itemInventory.ToString(),
-                id = items[i].id
+                id = items[i].id,
+                equippable = items[i].equippable
             };
             switch(items[i].size){
 
@@ -125,7 +129,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 amount = 1,
                 weight = jsonItemInventory.items[i].weight,
                 itemInventory = jsonItemInventory.items[i].itemInventory,
-                id = jsonItemInventory.items[i].id
+                id = jsonItemInventory.items[i].id,
+                equippable = jsonItemInventory.items[i].equippable
             };
             switch(jsonItemInventory.items[i].size){
 
@@ -157,7 +162,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
             amount = 1,
             weight = item.weight,
             itemInventory = item.itemInventory.ToString(),
-            id = item.id
+            id = item.id,
+            equippable = item.equippable
         };
         switch(item.size){
 
@@ -273,6 +279,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         serializer.SerializeValue(ref weight);
         serializer.SerializeValue(ref itemInventory);
         serializer.SerializeValue(ref id);
+        serializer.SerializeValue(ref equippable);
     }
 }
 
@@ -288,6 +295,7 @@ public class JsonItem{
     public int weight;
     public string itemInventory;
     public int id;
+    public bool equippable;
 }
 
 [Serializable]
