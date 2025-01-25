@@ -295,10 +295,10 @@ public class GameManager : NetworkBehaviour
         public int idTally;
     }
 
-    void OnApplicationQuit(){
+    // void OnApplicationQuit(){
 
-        SaveData();
-    }
+    //     SaveData();
+    // }
 
     public void SaveData(){
 
@@ -468,7 +468,6 @@ public class GameManager : NetworkBehaviour
                         initProf = userDatas[i].initProf
                     };
                 }
-
             }
         }
 
@@ -696,7 +695,7 @@ public class GameManager : NetworkBehaviour
         conditionsKeyValue = jsonConditions.conditionsKeyValue;
         conditionsValueKey = jsonConditions.conditionsValueKey;
 
-        if(jsonUserDatas.jsonUserDatas.Count() < userDatas.Count){
+        if(jsonUserDatas.jsonUserDatas.Length < userDatas.Count){
 
             JsonUserDatas newJsonUserDatas = new JsonUserDatas();
             newJsonUserDatas.jsonUserDatas = new JsonUserData[userDatas.Count];

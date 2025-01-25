@@ -305,6 +305,11 @@ public class Bodypart : NetworkBehaviour
                             break;
                     }
                 }
+                else{
+
+                    description.armorSlots[i].itemName.text = "";
+                    description.armorSlots[i].bonus.text = "";
+                }
             }
         }
     }
@@ -368,7 +373,18 @@ public class Bodypart : NetworkBehaviour
                     case SlotModifierType.storage:
                         description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size.ToString()}";
                         break;
+                    case SlotModifierType.none:
+                        description.armorSlots[i].bonus.text = "";
+                        break;
+                    default:
+                        description.armorSlots[i].bonus.text = "";
+                        break;
                 }
+            }
+            else{
+
+                description.armorSlots[i].itemName.text = "";
+                description.armorSlots[i].bonus.text = "";
             }
         }
 

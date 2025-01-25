@@ -96,7 +96,7 @@ public class Backpack : NetworkBehaviour
         }
     }
 
-    bool CapacityLogic(item item){
+    public bool CapacityLogic(item item){
 
         int capacityL = capacity.Value, capacityS = capacity.Value * 2, capacityT = capacity.Value * 4;
         foreach(item inventoryItem in inventory){
@@ -135,7 +135,7 @@ public class Backpack : NetworkBehaviour
                     CountL += inventoryItem.size == Size.S ? inventoryItem.amount*0.5f : inventoryItem.size == Size.T ? inventoryItem.amount*0.25f : inventoryItem.amount;
                 }
                 // Debug.Log($"total count of all large items in inventory: {CountL} < large item capacity ({capacityL})?");
-                if(Mathf.Ceil(CountL) < capacityL)
+                if(Mathf.Ceil(CountL + item.amount) <= capacityL)
                     return true;
                 break;
             case Size.S:
@@ -148,7 +148,7 @@ public class Backpack : NetworkBehaviour
                     CountS += inventoryItem.size == Size.L ? inventoryItem.amount*2 : inventoryItem.size == Size.T ? inventoryItem.amount*0.5f : inventoryItem.amount;
                 }
                 // Debug.Log($"total count of all small items in inventory: {CountS} < small item capacity ({capacityS})?");
-                if(Mathf.Ceil(CountS) < capacityS)
+                if(Mathf.Ceil(CountS + item.amount) <= capacityS)
                     return true;
                 break;
             case Size.T:
@@ -161,7 +161,7 @@ public class Backpack : NetworkBehaviour
                     CountT += inventoryItem.size == Size.L ? inventoryItem.amount*4 : inventoryItem.size == Size.S ? inventoryItem.amount*2 : inventoryItem.amount;
                 }
                 // Debug.Log($"total count of all tiny items in inventory: {CountT} < tiny item capacity ({capacityT})?");
-                if(Mathf.Ceil(CountT) < capacityT)
+                if(Mathf.Ceil(CountT + item.amount) <= capacityT)
                     return true;
                 break;
             default:
@@ -225,7 +225,7 @@ public class Backpack : NetworkBehaviour
 
         for(int i = 0; i < inventory.Count; i++){
 
-            if(itemName == inventory[i].name.ToString() && (itemId == inventory[i].id && checkId)){
+            if(itemName == inventory[i].name.ToString() && (checkId ? itemId == inventory[i].id : true)){
 
                 if(inventory[i].amount > 1){
 

@@ -20,6 +20,61 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
     public bool equippable;
 
+    public bool CapacityLogic(item item){
+
+        if(type != Type.backpack || item.type == Type.backpack)
+            return false;
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
+        JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
+
+        JsonItemInventory newjsonItemInventory = new JsonItemInventory();
+        newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length + 1];
+        float sizeTally = 0;
+        for(int i = 0; i < jsonItemInventory.items.Length; i++){
+
+            switch(jsonItemInventory.items[i].size){
+
+                case Size.L:
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Large. Adding {(float)jsonItemInventory.items[i].amount} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
+                    break;
+                case Size.S:
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Small. Adding {(float)jsonItemInventory.items[i].amount / 2} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount / 2;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
+                    break;
+                case Size.T:
+                    // Debug.Log($"{jsonItemInventory.items[i].name} size is Tiny. Adding {(float)jsonItemInventory.items[i].amount / 4} to size tally: {sizeTally}");
+                    sizeTally += (float)jsonItemInventory.items[i].amount / 4;
+                    // Debug.Log($"size tally now equals: {sizeTally}");
+                    break;
+            }
+        }
+        switch(item.size){
+
+            case Size.L:
+                sizeTally += 1f * item.amount;
+                break;
+            case Size.S:
+                sizeTally += 0.5f * item.amount;
+                break;
+            case Size.T:
+                sizeTally += 0.25f * item.amount;
+                break;
+        }
+
+        if(sizeTally <= value){
+
+            return true;
+        }
+        else{
+
+            return false;
+        }
+    }
+
     public item[] GetInventory(){
 
         if(type != Type.backpack)

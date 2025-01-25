@@ -35,6 +35,15 @@ public class ItemDisplaySmall : MonoBehaviour
         cam = occupiedInventory.thisItemDisplay.cam;
     }
 
+    void Update(){
+
+        if(Input.GetKey(KeyCode.LeftShift)){
+
+            // if key released vvv
+            // stop coroutine and safely reset vars
+        }
+    }
+
     IEnumerator OnMouseOver(){
 
         hovering = true;
@@ -75,7 +84,7 @@ public class ItemDisplaySmall : MonoBehaviour
         if(Input.GetMouseButtonDown(1)){
 
             // instantiate a new gameobject that follows the mouse
-            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.parent.parent.parent.parent.parent.parent);
+            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent.parent.parent.parent.parent : transform.parent.parent.parent.parent.parent.parent.parent);
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
             fakeDisplay.nameText.text = nameText.text;
             fakeDisplay.sizeText.text = sizeText.text;
@@ -97,37 +106,146 @@ public class ItemDisplaySmall : MonoBehaviour
 
                     ItemDisplay itemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
                     
-                    // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
-                    itemDisplay.occupiedInventory.inventory.Add(thisItem);
-                    // GameManager.Singleton.SaveData();
-                    List<itemShort> itemShorts = new List<itemShort>();
-                    foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                    if(itemDisplay.occupiedInventory.CapacityLogic(thisItem)){
 
-                        itemShorts.Add(new itemShort{
+                        // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        itemDisplay.occupiedInventory.inventory.Add(thisItem);
+                        // GameManager.Singleton.SaveData();
+                        List<itemShort> itemShorts = new List<itemShort>();
+                        foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
-                            name = itemDisplay1.nameText.text,
-                            id = itemDisplay1.id
-                        });
+                            itemShorts.Add(new itemShort{
+
+                                name = itemDisplay1.nameText.text,
+                                id = itemDisplay1.id
+                            });
+                        }
+                        GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                        // Debug.Log($"Reorder inventory rpc called.");
+                        yield return new WaitForEndOfFrame();
+                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+
+                        List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                        for(int i = 0; i < thisItemInventory.Count; i++){
+
+                            if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                thisItemInventory.RemoveAt(i);
+                                i = -1;
+                            }
+                        }
+                        occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                        // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        // Destroy(gameObject);
                     }
-                    GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
-                    // Debug.Log($"Reorder inventory rpc called.");
-                    yield return new WaitForEndOfFrame();
-                    itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                }
+                else if(hit2D.transform.name.Contains("Slot")){
 
-                    List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+                    if(thisItem.equippable){
 
-                    for(int i = 0; i < thisItemInventory.Count; i++){
+                        ArmorSlot armorSlot = hit2D.transform.GetComponent<ArmorSlot>();
+                        if(armorSlot.description.bodypart.slot[armorSlot.index].Empty()){
 
-                        if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+                            armorSlot.description.bodypart.slot[armorSlot.index].item = new item{
 
-                            // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
-                            thisItemInventory.RemoveAt(i);
-                            i = -1;
+                                name = thisItem.name,
+                                cost = thisItem.cost,
+                                value = thisItem.value,
+                                type = thisItem.type,
+                                size = thisItem.size,
+                                amount = 1,
+                                weight = thisItem.weight / thisItem.amount,
+                                itemInventory = thisItem.itemInventory,
+                                id = thisItem.id,
+                                equippable = thisItem.equippable
+                            };
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
+
+                                case Type.heavyArmor:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                    break;
+                                case Type.lightArmor:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                    break;
+                                case Type.capacityMult:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultL:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultS:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultT:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.medical:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
+                                    break;
+                                default:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
+                                    break;
+                            }
+                            List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                            for(int i = 0; i < thisItemInventory.Count; i++){
+
+                                if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                    // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                    thisItemInventory.RemoveAt(i);
+                                }
+                            }
+                            occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                        }
+                        else if(thisItem.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
+
+                            occupiedInventory.thisItemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, armorSlot.description.bodypart.slot[armorSlot.index].item, false);
+                            armorSlot.description.bodypart.slot[armorSlot.index].item = new item{
+
+                                name = thisItem.name,
+                                cost = thisItem.cost,
+                                value = thisItem.value,
+                                type = thisItem.type,
+                                size = thisItem.size,
+                                amount = 1,
+                                weight = thisItem.weight / thisItem.amount,
+                                itemInventory = thisItem.itemInventory,
+                                id = thisItem.id,
+                                equippable = thisItem.equippable
+                            };
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
+
+                                case Type.heavyArmor:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                    break;
+                                case Type.lightArmor:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.ac;
+                                    break;
+                                case Type.capacityMult:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultL:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultS:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.capacityMultT:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
+                                    break;
+                                case Type.medical:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
+                                    break;
+                                default:
+                                    armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
+                                    break;
+                            }
+                            occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                     }
-                    occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
-                    // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
-                    // Destroy(gameObject);
                 }
             }
             Destroy(fake.gameObject);
