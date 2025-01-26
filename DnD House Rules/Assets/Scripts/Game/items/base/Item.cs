@@ -19,6 +19,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
     public int id;
 
     public bool equippable;
+    public bool isEquipped;
 
     public bool CapacityLogic(item item){
 
@@ -96,7 +97,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 weight = jsonItemInventory.items[i].weight,
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id,
-                equippable = jsonItemInventory.items[i].equippable
+                equippable = jsonItemInventory.items[i].equippable,
+                isEquipped = false
             };
             // Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
@@ -335,6 +337,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         serializer.SerializeValue(ref itemInventory);
         serializer.SerializeValue(ref id);
         serializer.SerializeValue(ref equippable);
+        serializer.SerializeValue(ref isEquipped);
     }
 }
 

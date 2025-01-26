@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using Unity.Collections;
 using Unity.Netcode;
 using UnityEngine;
 
 [Serializable]
-public struct itemSlot : IEquatable<item>, INetworkSerializable
+public struct itemSlot:IEquatable<item>,IEquatable<itemSlot>, INetworkSerializable
 {
 
     // public FixedString64Bytes itemName;
@@ -29,6 +30,11 @@ public struct itemSlot : IEquatable<item>, INetworkSerializable
     {
         // return other.name == itemName && other.id == itemId;
         return other.name == item.name && other.id == item.id;
+    }
+
+    public bool Equals(itemSlot other)
+    {
+        return other.bodypart == bodypart && other.item.Equals(item);
     }
 
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
@@ -111,6 +117,19 @@ public class Bodypart : NetworkBehaviour
                 bodypart = gameObject.name
             };
         }
+    }
+
+    public void EmptySlot(int index){
+
+        slot[index] = new itemSlot{
+
+            item = new item{
+
+                id = -1
+            },
+            slotModifierType = SlotModifierType.none,
+            bodypart = gameObject.name
+        };
     }
 
     // Update is called once per frame
@@ -301,7 +320,13 @@ public class Bodypart : NetworkBehaviour
                             description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} HP";
                             break;
                         case SlotModifierType.storage:
-                            description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size.ToString()}";
+                            description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size}";
+                            break;
+                        case SlotModifierType.none:
+                            description.armorSlots[i].bonus.text = "";
+                            break;
+                        default:
+                            description.armorSlots[i].bonus.text = "";
                             break;
                     }
                 }
@@ -371,7 +396,7 @@ public class Bodypart : NetworkBehaviour
                         description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} HP";
                         break;
                     case SlotModifierType.storage:
-                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size.ToString()}";
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size}";
                         break;
                     case SlotModifierType.none:
                         description.armorSlots[i].bonus.text = "";

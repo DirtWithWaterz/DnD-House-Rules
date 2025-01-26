@@ -55,13 +55,21 @@ public class Description : NetworkBehaviour
 
     void Start(){
 
-        this.gameObject.SetActive(false);
-
+        armorSlots = new ArmorSlot[3];
         for(int i = 0; i < armorSlots.Length; i++){
+
+            NetworkObject slot = Instantiate(GameManager.Singleton.armorSlotDisplayObject, transform.GetChild(3));
+            armorSlots[i] = slot.GetComponent<ArmorSlot>();
+            slot.transform.localPosition += Vector3.down*75*i;
+            slot.name = $"Slot {i+1}";
 
             armorSlots[i].description = this;
             armorSlots[i].index = i;
+
+            // slot.Spawn();
         }
+
+        this.gameObject.SetActive(false);
     }
 
     void Update(){

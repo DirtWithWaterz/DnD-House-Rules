@@ -109,7 +109,8 @@ public class ItemDisplay : MonoBehaviour
                                 weight = thisItem.weight / thisItem.amount,
                                 itemInventory = thisItem.itemInventory,
                                 id = thisItem.id,
-                                equippable = thisItem.equippable
+                                equippable = thisItem.equippable,
+                                isEquipped = false
                             });
                         }
                         List<itemShort> itemShorts = new List<itemShort>();
@@ -172,7 +173,8 @@ public class ItemDisplay : MonoBehaviour
                                 weight = thisItem.weight / thisItem.amount,
                                 itemInventory = thisItem.itemInventory,
                                 id = thisItem.id,
-                                equippable = thisItem.equippable
+                                equippable = thisItem.equippable,
+                                isEquipped = true
                             };
                             switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -219,7 +221,8 @@ public class ItemDisplay : MonoBehaviour
                                 weight = thisItem.weight / thisItem.amount,
                                 itemInventory = thisItem.itemInventory,
                                 id = thisItem.id,
-                                equippable = thisItem.equippable
+                                equippable = thisItem.equippable,
+                                isEquipped = true
                             };
                             switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 

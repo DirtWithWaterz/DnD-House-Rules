@@ -1023,7 +1023,8 @@ public class Interpreter : NetworkBehaviour
                         weight = int.Parse(args[6]),
                         itemInventory = "",
                         id = 0,
-                        equippable = args[7] == "true" ? true : false
+                        equippable = args[7] == "true" ? true : false,
+                        isEquipped = false
                     };
                     GameManager.Singleton.items.Add(newItem);
                 }
@@ -1444,7 +1445,8 @@ public class Interpreter : NetworkBehaviour
                                         weight = sourceItem.weight,
                                         itemInventory = sourceItem.itemInventory,
                                         id = sourceItem.id,
-                                        equippable = sourceItem.equippable
+                                        equippable = sourceItem.equippable,
+                                        isEquipped = false
                                     };
 
                                     userI.backpack.AddItemRpc(usernameI, newItem, false);
@@ -1475,7 +1477,8 @@ public class Interpreter : NetworkBehaviour
                                 weight = item.weight,
                                 itemInventory = $"/{usernameI} {item.name}{newId} {newId} Inventory.json",
                                 id = newId,
-                                equippable = item.equippable
+                                equippable = item.equippable,
+                                isEquipped = false
                             };
 
                             if (item.type == Type.backpack)

@@ -13,6 +13,8 @@ public class User : NetworkBehaviour
 
     NetworkVariable<int> clientsReady = new NetworkVariable<int>(0);
 
+    public NetworkList<itemSlot> itemSlots = new NetworkList<itemSlot>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
     public Health health;
     public Stats stats;
     InqueCalendar calendar;
@@ -44,6 +46,8 @@ public class User : NetworkBehaviour
         backpack = GetComponentInChildren<Backpack>();
 
         bodyparts = new List<Bodypart>();
+        itemSlots = new NetworkList<itemSlot>();
+        itemSlots.Initialize(this);
 
         if(IsOwner){
             interpreter.user = this;
@@ -69,6 +73,25 @@ public class User : NetworkBehaviour
         yield return new WaitUntil(() => isInitialized.Value);
         UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
+    
+    [Rpc(SendTo.Everyone)]
+    public void UpdateNetworkedSlotsRpc(string usernameI){
+
+        if(usernameI != name)
+            return;
+        if(!IsOwner)
+            return;
+
+        itemSlots.Clear();
+        for(int i = 0; i < bodyparts.Count; i++){
+            
+            foreach(itemSlot itemSlot in bodyparts[i].slot){
+                
+                itemSlots.Add(itemSlot);
+            }
+        }
+    }
+    
     [Rpc(SendTo.Server)]
     void ClientReadyRpc(){
 

@@ -109,7 +109,10 @@ public class ItemDisplaySmall : MonoBehaviour
                     if(itemDisplay.occupiedInventory.CapacityLogic(thisItem)){
 
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        // don't use AddInventoryRpc here, it's only used for single item transfers.
                         itemDisplay.occupiedInventory.inventory.Add(thisItem);
+                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        yield return new WaitForEndOfFrame();
                         // GameManager.Singleton.SaveData();
                         List<itemShort> itemShorts = new List<itemShort>();
                         foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
@@ -122,8 +125,6 @@ public class ItemDisplaySmall : MonoBehaviour
                         }
                         GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                         // Debug.Log($"Reorder inventory rpc called.");
-                        yield return new WaitForEndOfFrame();
-                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
                         List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
@@ -159,7 +160,8 @@ public class ItemDisplaySmall : MonoBehaviour
                                 weight = thisItem.weight / thisItem.amount,
                                 itemInventory = thisItem.itemInventory,
                                 id = thisItem.id,
-                                equippable = thisItem.equippable
+                                equippable = thisItem.equippable,
+                                isEquipped = true
                             };
                             switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -214,7 +216,8 @@ public class ItemDisplaySmall : MonoBehaviour
                                 weight = thisItem.weight / thisItem.amount,
                                 itemInventory = thisItem.itemInventory,
                                 id = thisItem.id,
-                                equippable = thisItem.equippable
+                                equippable = thisItem.equippable,
+                                isEquipped = true
                             };
                             switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 

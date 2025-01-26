@@ -158,7 +158,7 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse, armorSlotDisplayObject;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
@@ -294,6 +294,26 @@ public class GameManager : NetworkBehaviour
 
         public int idTally;
     }
+
+    [Serializable]
+    public class JsonItemSlot{
+
+        public item item;
+        public SlotModifierType slotModifierType;
+        public string bodypart;
+    }
+    [Serializable]
+    public class JsonBodyArray{
+
+        public string username;
+        public JsonItemSlot[] itemSlots;
+    }
+    [Serializable]
+    public class JsonBodyArrays{
+
+        public JsonBodyArray[] bodyArrays;
+    }
+
 
     // void OnApplicationQuit(){
 
@@ -583,7 +603,77 @@ public class GameManager : NetworkBehaviour
         }
         output = JsonConvert.SerializeObject(jsonInventories);
         File.WriteAllText($"{Application.persistentDataPath}/inventories.json", output);
+
+        JsonBodyArrays jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
+
+        for(int i = 0; i < userDatas.Count; i++){
+
+            for(int j = 0; j < jsonBodyArrays.bodyArrays.Length; j++){
+
+                if(userDatas[i].username.ToString() == jsonBodyArrays.bodyArrays[j].username){
+
+                    jsonBodyArrays.bodyArrays[j] = new JsonBodyArray();
+                    User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
+                    userI.UpdateNetworkedSlotsRpc(userI.name);
+                    jsonBodyArrays.bodyArrays[j].username = userDatas[i].username.ToString();
+                    jsonBodyArrays.bodyArrays[j].itemSlots = new JsonItemSlot[userI.itemSlots.Count];
+                    for(int k = 0; k < userI.itemSlots.Count; k++){
+
+                        jsonBodyArrays.bodyArrays[j].itemSlots[k] = new JsonItemSlot{
+
+                            item = userI.itemSlots[k].item,
+                            slotModifierType = userI.itemSlots[k].slotModifierType,
+                            bodypart = userI.itemSlots[k].bodypart.ToString()
+                        };
+                    }
+                }
+                else if (j == jsonBodyArrays.bodyArrays.Length - 1){ // Reached the end, body array doesn't exist
+
+                    // Resize the array to add a new entry for this user
+                    Array.Resize(ref jsonBodyArrays.bodyArrays, jsonBodyArrays.bodyArrays.Length + 1);
+
+                    User userI = GameObject.Find(userDatas[i].username.ToString())?.GetComponent<User>();
+
+                    if (userI != null)
+                    {
+                        userI.UpdateNetworkedSlotsRpc(userI.name);
+
+                        var itemSlotsList = userI.itemSlots; // List of item slots
+                        var itemSlotsArray = new JsonItemSlot[itemSlotsList.Count]; // Create an array for JsonItemSlots
+
+                        for (int k = 0; k < itemSlotsList.Count; k++) // Populate itemSlotsArray
+                        {
+                            itemSlotsArray[k] = new JsonItemSlot
+                            {
+                                item = itemSlotsList[k].item,
+                                slotModifierType = itemSlotsList[k].slotModifierType,
+                                bodypart = itemSlotsList[k].bodypart.ToString()
+                            };
+                        }
+
+                        // Add the new entry for the user
+                        jsonBodyArrays.bodyArrays[^1] = new JsonBodyArray
+                        {
+                            username = userDatas[i].username.ToString(),
+                            itemSlots = itemSlotsArray
+                        };
+                    }
+                    else
+                    {
+                        // Handle case where userI is null (e.g., User not found in the scene)
+                        jsonBodyArrays.bodyArrays[^1] = new JsonBodyArray
+                        {
+                            username = userDatas[i].username.ToString(),
+                            itemSlots = Array.Empty<JsonItemSlot>() // Empty item slots for this user
+                        };
+                    }
+                }
+            }
+        }
         
+        output = JsonConvert.SerializeObject(jsonBodyArrays);
+        File.WriteAllText($"{Application.persistentDataPath}/bodyarrays.json", output);
+
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
     }
     bool InitialLoad = true;
@@ -897,7 +987,8 @@ public class GameManager : NetworkBehaviour
                 weight = item.weight,
                 itemInventory = item.itemInventory.ToString(),
                 id = item.id,
-                equippable = item.equippable
+                equippable = item.equippable,
+                isEquipped = false
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
@@ -906,6 +997,7 @@ public class GameManager : NetworkBehaviour
             User userI = GameObject.Find(userData.username.ToString()).GetComponent<User>();
             userI.backpack.ClearRpc(userI.name);
         }
+
         JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
         if(jsonInventories.inventories.Count() < userDatas.Count){
 
@@ -955,7 +1047,8 @@ public class GameManager : NetworkBehaviour
                                 weight = item.weight,
                                 itemInventory = item.itemInventory.ToString(),
                                 id = item.id,
-                                equippable = item.equippable
+                                equippable = item.equippable,
+                                isEquipped = false
                             });
                         }
                     }
@@ -964,6 +1057,18 @@ public class GameManager : NetworkBehaviour
         }
 
         SendItemInventoriesRpc();
+
+        JsonBodyArrays jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
+        // Load all bodypart item slots
+        // not implemented.
+        if(jsonBodyArrays.bodyArrays.Count() < userDatas.Count){
+
+            throw new NotImplementedException();
+        }
+        for(int i = 0; i < userDatas.Count; i++){
+
+            throw new NotImplementedException();
+        }
 
         if(InitialLoad){
 
@@ -1040,7 +1145,8 @@ public class GameManager : NetworkBehaviour
                     weight = weight,
                     itemInventory = userI.backpack.inventory[itemIndex].itemInventory,
                     id = userI.backpack.inventory[itemIndex].id,
-                    equippable = userI.backpack.inventory[itemIndex].equippable
+                    equippable = userI.backpack.inventory[itemIndex].equippable,
+                    isEquipped = false
                 };
                 foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
 
