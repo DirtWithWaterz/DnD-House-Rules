@@ -35,15 +35,15 @@ public class Backpack : NetworkBehaviour
 
     IEnumerator ArmorSlotLogic(Camera cam, NetworkObject fake, item thisItem, ArmorSlot armorSlot){
 
-        Debug.Log("waiting for mouse button to be released...");
+        // Debug.Log("waiting for mouse button to be released...");
         yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
-        Debug.Log("mouse button released. Raycasting...");
+        // Debug.Log("mouse button released. Raycasting...");
         // raycast from mouse y coordinate and this items x coordinate
         RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
         if(hit2D.collider != null){
 
             // if we hit a different item in the inventory, switch that items place in the hierarchy with this one.
-            Debug.Log(hit2D.transform.name);
+            // Debug.Log(hit2D.transform.name);
             if(hit2D.transform.name.Contains("Item Display Box Small") && thisItem.type != Type.backpack){
                 
                 ItemDisplaySmall itemDisplay = hit2D.transform.GetComponent<ItemDisplaySmall>();
@@ -64,7 +64,7 @@ public class Backpack : NetworkBehaviour
                             id = thisItem.id,
                             equippable = thisItem.equippable,
                             isEquipped = false
-                        });
+                        }, itemDisplay.transform.GetSiblingIndex());
                     }
                     List<itemShort> itemShorts = new List<itemShort>();
                     foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
@@ -90,7 +90,8 @@ public class Backpack : NetworkBehaviour
                 if(itemDisplay.occupiedInventory.CapacityLogic(thisItem)){
 
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
-                    itemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem);
+                    int siblingIndex = itemDisplay.transform.GetSiblingIndex();
+                    itemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false, siblingIndex);
                     // GameManager.Singleton.SaveData();
                     List<itemShort> itemShorts = new List<itemShort>();
                     foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
@@ -104,7 +105,6 @@ public class Backpack : NetworkBehaviour
                     GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                     // Debug.Log($"Reorder inventory rpc called.");
                     yield return new WaitForEndOfFrame();
-                    itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
@@ -255,15 +255,16 @@ public class Backpack : NetworkBehaviour
             }
         }
         else{
-            Debug.Log("Raycast did not hit any colliders.");
+            // Debug.Log("Raycast did not hit any colliders.");
         }
-        Debug.Log("Destroying fake.");
+        // Debug.Log("Destroying fake.");
         Destroy(fake.gameObject);
+        GameManager.Singleton.SaveData();
         armorSlot.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     [Rpc(SendTo.Everyone)]
-    public void AddItemRpc(string usernameI, item item, bool updateTally = true){
+    public void AddItemRpc(string usernameI, item item, bool updateTally = true, int siblingIndex = -1){
 
         if(usernameI != username)
             return;
@@ -313,7 +314,12 @@ public class Backpack : NetworkBehaviour
         if(CapacityLogic(item)){
             // Debug.Log("true");
             // Debug.Log("adding item to inventory...");
-            inventory.Add(new item{
+            if(siblingIndex == -1)
+                siblingIndex = inventory.Count;
+
+            // Debug.Log(siblingIndex);
+
+            inventory.Insert(siblingIndex, new item{
 
                 name = item.name,
                 cost = item.cost,

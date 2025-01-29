@@ -110,21 +110,21 @@ public class ItemDisplaySmall : MonoBehaviour
 
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                         // don't use AddInventoryRpc here, it's only used for single item transfers.
-                        itemDisplay.occupiedInventory.inventory.Add(thisItem);
-                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
-                        yield return new WaitForEndOfFrame();
+                        itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), thisItem);
                         // GameManager.Singleton.SaveData();
-                        List<itemShort> itemShorts = new List<itemShort>();
-                        foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                        // List<itemShort> itemShorts = new List<itemShort>();
+                        // foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
-                            itemShorts.Add(new itemShort{
+                        //     itemShorts.Add(new itemShort{
 
-                                name = itemDisplay1.nameText.text,
-                                id = itemDisplay1.id
-                            });
-                        }
-                        GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                        //         name = itemDisplay1.nameText.text,
+                        //         id = itemDisplay1.id
+                        //     });
+                        // }
+                        // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                         // Debug.Log($"Reorder inventory rpc called.");
+                        yield return new WaitForEndOfFrame();
+                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
                         List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
@@ -252,6 +252,7 @@ public class ItemDisplaySmall : MonoBehaviour
                 }
             }
             Destroy(fake.gameObject);
+            GameManager.Singleton.SaveData();
             transform.GetChild(0).gameObject.SetActive(true);
         }
     

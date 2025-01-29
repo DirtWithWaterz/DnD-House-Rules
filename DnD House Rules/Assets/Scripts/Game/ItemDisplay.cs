@@ -74,7 +74,7 @@ public class ItemDisplay : MonoBehaviour
             }
         }
 
-        if(Input.GetMouseButtonDown(1)){
+        if(Input.GetMouseButtonDown(1) && !(thisItem.type == Type.backpack && isOpen)){
 
             // instantiate a new gameobject that follows the mouse
             NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent : transform.parent.parent.parent);
@@ -111,7 +111,7 @@ public class ItemDisplay : MonoBehaviour
                                 id = thisItem.id,
                                 equippable = thisItem.equippable,
                                 isEquipped = false
-                            });
+                            }, itemDisplay.transform.GetSiblingIndex());
                         }
                         List<itemShort> itemShorts = new List<itemShort>();
                         foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
@@ -257,6 +257,7 @@ public class ItemDisplay : MonoBehaviour
                 }
             }
             Destroy(fake.gameObject);
+            GameManager.Singleton.SaveData();
             transform.GetChild(0).gameObject.SetActive(true);
 
 

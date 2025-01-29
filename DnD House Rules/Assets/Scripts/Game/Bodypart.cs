@@ -21,6 +21,8 @@ public struct itemSlot:IEquatable<item>,IEquatable<itemSlot>, INetworkSerializab
 
     public FixedString64Bytes bodypart;
 
+    public int index;
+
     public bool Empty(){
 
         return item.id == -1;
@@ -45,6 +47,7 @@ public struct itemSlot:IEquatable<item>,IEquatable<itemSlot>, INetworkSerializab
         serializer.SerializeValue(ref item);
         serializer.SerializeValue(ref slotModifierType);
         serializer.SerializeValue(ref bodypart);
+        serializer.SerializeValue(ref index);
     }
 }
 
@@ -114,7 +117,8 @@ public class Bodypart : NetworkBehaviour
                     id = -1
                 },
                 slotModifierType = SlotModifierType.none,
-                bodypart = gameObject.name
+                bodypart = gameObject.name,
+                index = i
             };
         }
     }
@@ -128,7 +132,8 @@ public class Bodypart : NetworkBehaviour
                 id = -1
             },
             slotModifierType = SlotModifierType.none,
-            bodypart = gameObject.name
+            bodypart = gameObject.name,
+            index = index
         };
     }
 
@@ -335,6 +340,45 @@ public class Bodypart : NetworkBehaviour
                     description.armorSlots[i].itemName.text = "";
                     description.armorSlots[i].bonus.text = "";
                 }
+            }
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void RefreshSlotsRpc(string usernameI){
+
+        if(usernameI != GameManager.Singleton.interpreter.GetUsername)
+            return;
+
+        for(int i = 0; i < Description.slotNum[name]; i++){
+                
+            if(!slot[i].Empty()){
+
+                description.armorSlots[i].itemName.text = slot[i].item.name.ToString();
+                string addon = slot[i].item.value >= 0 ? "+" : "";
+                switch(slot[i].slotModifierType){
+
+                    case SlotModifierType.ac:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} AC";
+                        break;
+                    case SlotModifierType.hp:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} HP";
+                        break;
+                    case SlotModifierType.storage:
+                        description.armorSlots[i].bonus.text = $"{addon}{slot[i].item.value} {slot[i].item.size}";
+                        break;
+                    case SlotModifierType.none:
+                        description.armorSlots[i].bonus.text = "";
+                        break;
+                    default:
+                        description.armorSlots[i].bonus.text = "";
+                        break;
+                }
+            }
+            else{
+
+                description.armorSlots[i].itemName.text = "";
+                description.armorSlots[i].bonus.text = "";
             }
         }
     }

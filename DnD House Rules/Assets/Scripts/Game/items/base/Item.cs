@@ -162,7 +162,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         GameManager.Singleton.SaveData();
         return true;
     }
-    public void AddInventory(item item){
+    public void AddInventory(item item, int siblingIndex = -1){
 
         if(type != Type.backpack || item.type == Type.backpack)
             return;
@@ -171,7 +171,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
-        newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length + 1];
+        newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length];
         float sizeTally = 0;
         int calculatedWeight = 0;
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
@@ -209,7 +209,9 @@ public struct item:IEquatable<item>,INetworkSerializable{
             }
             calculatedWeight += jsonItemInventory.items[i].weight;
         }
-        newjsonItemInventory.items[jsonItemInventory.items.Length] = new JsonItem(){
+        if(siblingIndex == -1)
+            siblingIndex = newjsonItemInventory.items.Length;
+        newjsonItemInventory.items = InsertIntoArray(newjsonItemInventory.items,  new JsonItem(){
 
             name = item.name.ToString(),
             cost = item.cost,
@@ -221,7 +223,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
             itemInventory = item.itemInventory.ToString(),
             id = item.id,
             equippable = item.equippable
-        };
+        }, siblingIndex);
         switch(item.size){
 
             case Size.L:
@@ -318,6 +320,33 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
             RemoveInventory(item);
         }
+    }
+
+    public static T[] InsertIntoArray<T>(T[] array, T item, int index)
+    {
+        // Ensure the index is within bounds
+        if (index < 0) index = 0;
+        if (index > array.Length) index = array.Length;
+
+        // Create a new array with one additional slot
+        T[] newArray = new T[array.Length + 1];
+
+        // Copy elements up to the insertion index
+        for (int i = 0; i < index; i++)
+        {
+            newArray[i] = array[i];
+        }
+
+        // Insert the new item at the specified index
+        newArray[index] = item;
+
+        // Copy the remaining elements after the insertion index
+        for (int i = index; i < array.Length; i++)
+        {
+            newArray[i + 1] = array[i];
+        }
+
+        return newArray;
     }
 
     public bool Equals(item other)

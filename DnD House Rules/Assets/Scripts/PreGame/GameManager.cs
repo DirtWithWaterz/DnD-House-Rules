@@ -298,9 +298,10 @@ public class GameManager : NetworkBehaviour
     [Serializable]
     public class JsonItemSlot{
 
-        public item item;
+        public JsonItem item;
         public SlotModifierType slotModifierType;
         public string bodypart;
+        public int index;
     }
     [Serializable]
     public class JsonBodyArray{
@@ -621,9 +622,22 @@ public class GameManager : NetworkBehaviour
 
                         jsonBodyArrays.bodyArrays[j].itemSlots[k] = new JsonItemSlot{
 
-                            item = userI.itemSlots[k].item,
+                            item = new JsonItem{
+
+                                name = userI.itemSlots[k].item.name.ToString(),
+                                cost = userI.itemSlots[k].item.cost,
+                                value = userI.itemSlots[k].item.value,
+                                type = userI.itemSlots[k].item.type,
+                                size = userI.itemSlots[k].item.size,
+                                amount = userI.itemSlots[k].item.amount,
+                                weight = userI.itemSlots[k].item.weight,
+                                itemInventory = userI.itemSlots[k].item.itemInventory.ToString(),
+                                id = userI.itemSlots[k].item.id,
+                                equippable = userI.itemSlots[k].item.equippable
+                            },
                             slotModifierType = userI.itemSlots[k].slotModifierType,
-                            bodypart = userI.itemSlots[k].bodypart.ToString()
+                            bodypart = userI.itemSlots[k].bodypart.ToString(),
+                            index = userI.itemSlots[k].index
                         };
                     }
                 }
@@ -645,9 +659,22 @@ public class GameManager : NetworkBehaviour
                         {
                             itemSlotsArray[k] = new JsonItemSlot
                             {
-                                item = itemSlotsList[k].item,
+                                item = new JsonItem{
+
+                                name = userI.itemSlots[k].item.name.ToString(),
+                                cost = userI.itemSlots[k].item.cost,
+                                value = userI.itemSlots[k].item.value,
+                                type = userI.itemSlots[k].item.type,
+                                size = userI.itemSlots[k].item.size,
+                                amount = userI.itemSlots[k].item.amount,
+                                weight = userI.itemSlots[k].item.weight,
+                                itemInventory = userI.itemSlots[k].item.itemInventory.ToString(),
+                                id = userI.itemSlots[k].item.id,
+                                equippable = userI.itemSlots[k].item.equippable
+                            },
                                 slotModifierType = itemSlotsList[k].slotModifierType,
-                                bodypart = itemSlotsList[k].bodypart.ToString()
+                                bodypart = itemSlotsList[k].bodypart.ToString(),
+                                index = itemSlotsList[k].index
                             };
                         }
 
@@ -1063,11 +1090,66 @@ public class GameManager : NetworkBehaviour
         // not implemented.
         if(jsonBodyArrays.bodyArrays.Count() < userDatas.Count){
 
-            throw new NotImplementedException();
+            JsonBodyArrays newJsonBodyArrays = new JsonBodyArrays();
+            newJsonBodyArrays.bodyArrays = new JsonBodyArray[userDatas.Count];
+
+            for(int i = 0; i < userDatas.Count; i++){
+
+                User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
+                try{
+
+                    newJsonBodyArrays.bodyArrays[i] = jsonBodyArrays.bodyArrays[i];
+                }
+                catch (Exception){
+
+                    newJsonBodyArrays.bodyArrays[i] = new JsonBodyArray(){
+
+                        username = userDatas[i].username.ToString(),
+                        itemSlots = new JsonItemSlot[0]
+                    };
+                }
+            }
+
+            output = JsonConvert.SerializeObject(newJsonBodyArrays);
+
+            File.WriteAllText($"{Application.persistentDataPath}/bodyarrays.json", output);
+            jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
         }
         for(int i = 0; i < userDatas.Count; i++){
 
-            throw new NotImplementedException();
+            foreach(userData data in userDatas){
+
+                if(data.username.ToString() == jsonBodyArrays.bodyArrays[i].username){
+
+                    if(jsonBodyArrays.bodyArrays[i].itemSlots.Length != 0){
+
+                        User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+                        foreach(JsonItemSlot itemSlot in jsonBodyArrays.bodyArrays[i].itemSlots){
+
+                            LoadItemSlotRpc(data.username.ToString(), new itemSlot{
+
+                                item = new item{
+
+                                    name = itemSlot.item.name.ToString(),
+                                    cost = itemSlot.item.cost,
+                                    value = itemSlot.item.value,
+                                    type = itemSlot.item.type,
+                                    size = itemSlot.item.size,
+                                    amount = itemSlot.item.amount,
+                                    weight = itemSlot.item.weight,
+                                    itemInventory = itemSlot.item.itemInventory.ToString(),
+                                    id = itemSlot.item.id,
+                                    equippable = itemSlot.item.equippable,
+                                    isEquipped = true
+                                },
+                                slotModifierType = itemSlot.slotModifierType,
+                                bodypart = itemSlot.bodypart,
+                                index = itemSlot.index
+                            });
+                        }
+                    }
+                }
+            }
         }
 
         if(InitialLoad){
@@ -1078,6 +1160,23 @@ public class GameManager : NetworkBehaviour
         }
         else{
             interpreter.user.health.SetInitialValuesRpc();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void LoadItemSlotRpc(string usernameI, itemSlot itemSlot){
+
+        if(usernameI != interpreter.GetUsername)
+            return;
+        
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        foreach(Bodypart bodypart in userI.bodyparts){
+
+            if(bodypart.name == itemSlot.bodypart){
+
+                bodypart.slot[itemSlot.index] = itemSlot;
+                bodypart.RefreshSlotsRpc(usernameI);
+            }
         }
     }
 
@@ -1203,11 +1302,11 @@ public class GameManager : NetworkBehaviour
         }
         // Debug.Log("requesting json on channel 0");
         RequestJsonRpc(usernameI, "host", $"/inventories.json", 0);
-        StartCoroutine(SetInventoryAndSave(newOrderedJsonInventory));
+        StartCoroutine(SetInventoryAndSave(newOrderedJsonInventory, userI));
 
     }
 
-    IEnumerator SetInventoryAndSave(JsonInventory jsonInv2Set){
+    IEnumerator SetInventoryAndSave(JsonInventory jsonInv2Set, User userI){
 
         // Debug.Log("waiting for channel 0 request to return.");
         yield return new WaitUntil(() => recieved0);
@@ -1227,6 +1326,7 @@ public class GameManager : NetworkBehaviour
         // File.WriteAllText($"{Application.persistentDataPath}/inventories.json", JsonConvert.SerializeObject(inventories));
         // Debug.Log("Calling save json rpc on all users.");
         SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(inventories));
+        // userI.backpack.RefreshItemDisplayBoxRpc(userI.name);
         recieved0 = false;
     }
 

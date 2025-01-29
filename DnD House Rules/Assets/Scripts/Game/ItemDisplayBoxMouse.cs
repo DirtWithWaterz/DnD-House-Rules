@@ -8,7 +8,7 @@ public class ItemDisplayBoxMouse : MonoBehaviour
     public TMP_Text weightText;
 
     Camera cam;
-
+    
     void Start(){
 
         User user = GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>();
