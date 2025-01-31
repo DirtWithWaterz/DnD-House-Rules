@@ -40,6 +40,7 @@ public class ArmorSlot : MonoBehaviour
             fakeDisplay.weightText.text = $"{thisItem.weight} Lbs.";
             fake.transform.localScale *= 1.1f;
             transform.GetChild(0).gameObject.SetActive(false);
+            fake.transform.GetChild(0).gameObject.SetActive(true);
             user.backpack.RunArmorSlotLogic(cam, fake, thisItem, this);
         }
     }

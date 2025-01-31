@@ -34,6 +34,7 @@ public class ItemDisplay : MonoBehaviour
         transformRect = GetComponent<RectTransform>();
         User user = GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>();
         cam = user.transform.GetChild(0).GetComponent<Camera>();
+        // Debug.Log("Item display was instantiated");
     }
 
 
@@ -84,6 +85,8 @@ public class ItemDisplay : MonoBehaviour
             fakeDisplay.weightText.text = weightText.text;
             fake.transform.localScale *= 1.1f;
             transform.GetChild(0).gameObject.SetActive(false);
+            yield return new WaitForEndOfFrame();
+            fake.transform.GetChild(0).gameObject.SetActive(true);
             yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
             // raycast from mouse y coordinate and this items x coordinate
             RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);

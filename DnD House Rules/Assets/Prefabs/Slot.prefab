@@ -445,6 +445,7 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1947636724576281924}
+  - {fileID: 2801212426844245593}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
@@ -553,7 +554,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 4060344286
+  GlobalObjectIdHash: 2749113377
   InScenePlacedSourceGlobalObjectIdHash: 0
   AlwaysReplicateAsRoot: 0
   SynchronizeTransform: 1
@@ -735,7 +736,6 @@ RectTransform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 8230509735806140571}
-  - {fileID: 2801212426844245593}
   - {fileID: 7916577010667360675}
   - {fileID: 7207370937170939005}
   m_Father: {fileID: 5298666004868465600}
@@ -777,7 +777,7 @@ RectTransform:
   - {fileID: 8709580636566154396}
   - {fileID: 4276502966430124193}
   - {fileID: 4020597512820467495}
-  m_Father: {fileID: 1947636724576281924}
+  m_Father: {fileID: 5298666004868465600}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
