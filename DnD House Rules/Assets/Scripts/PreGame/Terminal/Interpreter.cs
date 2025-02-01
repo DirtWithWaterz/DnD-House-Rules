@@ -242,6 +242,7 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "quit"){
 
+            GameManager.Singleton.SaveDataRpc();
             response.Add("");
             Application.Quit();
 
@@ -849,7 +850,7 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "save"){
 
-            GameManager.Singleton.SaveData();
+            GameManager.Singleton.SaveDataRpc();
             response.Add("data saved.");
             response.Add("");
             return response;

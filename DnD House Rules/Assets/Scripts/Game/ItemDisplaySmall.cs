@@ -85,7 +85,7 @@ public class ItemDisplaySmall : MonoBehaviour
         if(Input.GetMouseButtonDown(1)){
 
             // instantiate a new gameobject that follows the mouse
-            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent.parent.parent.parent.parent : transform.parent.parent.parent.parent.parent.parent.parent);
+            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent.parent.parent.parent.parent : transform.parent.parent.parent.parent.parent.parent.parent.parent);
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
             fakeDisplay.nameText.text = nameText.text;
             fakeDisplay.sizeText.text = sizeText.text;
@@ -114,7 +114,7 @@ public class ItemDisplaySmall : MonoBehaviour
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                         // don't use AddInventoryRpc here, it's only used for single item transfers.
                         itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), thisItem);
-                        // GameManager.Singleton.SaveData();
+                        // GameManager.Singleton.SaveDataRpc();
                         // List<itemShort> itemShorts = new List<itemShort>();
                         // foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
@@ -202,6 +202,7 @@ public class ItemDisplaySmall : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
+                            GameManager.Singleton.SaveDataRpc();
                             List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
                             for(int i = 0; i < thisItemInventory.Count; i++){
@@ -276,13 +277,14 @@ public class ItemDisplaySmall : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
+                            GameManager.Singleton.SaveDataRpc();
                             occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                     }
                 }
             }
             Destroy(fake.gameObject);
-            GameManager.Singleton.SaveData();
+            GameManager.Singleton.SaveDataRpc();
             transform.GetChild(0).gameObject.SetActive(true);
         }
     

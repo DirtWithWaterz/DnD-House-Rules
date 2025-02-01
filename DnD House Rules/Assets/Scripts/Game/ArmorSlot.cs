@@ -19,7 +19,10 @@ public class ArmorSlot : MonoBehaviour
 
     void Start(){
 
-        user = GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>();
+
+        user = GameObject.Find(transform.root.name).GetComponent<User>();
+        if(!user.IsOwner)
+            return;
         cam = user.transform.GetChild(0).GetComponent<Camera>();
     }
 

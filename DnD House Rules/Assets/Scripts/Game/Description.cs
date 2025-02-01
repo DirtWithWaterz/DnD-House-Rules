@@ -4,6 +4,7 @@ using UnityEngine;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
+using UnityEngine.SceneManagement;
 
 public class Description : NetworkBehaviour
 {
@@ -53,15 +54,15 @@ public class Description : NetworkBehaviour
     public ArmorSlot[] armorSlots;
     int accessibleASS; // accessible armor slots lmfao
 
-    void Start(){
+    User user;
 
-        armorSlots = new ArmorSlot[3];
+    IEnumerator Start(){
+        if(!IsOwner)
+            yield break;
+        user = transform.root.GetComponent<User>();
+        yield return new WaitUntil(() => SceneManager.GetActiveScene().name == "Game");
+        yield return new WaitUntil(() => user.isInitialized.Value);
         for(int i = 0; i < armorSlots.Length; i++){
-
-            NetworkObject slot = Instantiate(GameManager.Singleton.armorSlotDisplayObject, transform.GetChild(3));
-            armorSlots[i] = slot.GetComponent<ArmorSlot>();
-            slot.transform.localPosition += Vector3.down*75*i;
-            slot.name = $"Slot {i+1}";
 
             armorSlots[i].description = this;
             armorSlots[i].index = i;
@@ -73,7 +74,12 @@ public class Description : NetworkBehaviour
     }
 
     void Update(){
-
+        if(!IsOwner)
+            return;
+        if(SceneManager.GetActiveScene().name != "Game")
+            return;
+        if(!user.isInitialized.Value)
+            return;
         if(status != oldStatus){
 
             displayStatus.text = $"Status: {status}";

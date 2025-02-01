@@ -74,20 +74,17 @@ public class User : NetworkBehaviour
         UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
     
-    [Rpc(SendTo.Everyone)]
+    [Rpc(SendTo.Server)]
     public void UpdateNetworkedSlotsRpc(string usernameI){
-
-        if(usernameI != name)
-            return;
-        if(!IsOwner)
-            return;
-
-        itemSlots.Clear();
+        
+        User userI = GameObject.Find(usernameI)?.GetComponent<User>();
+        Debug.Log($"server is attempting to edit {userI.name}");
+        userI.itemSlots.Clear();
         for(int i = 0; i < bodyparts.Count; i++){
             
             foreach(itemSlot itemSlot in bodyparts[i].slot){
                 
-                itemSlots.Add(itemSlot);
+                userI.itemSlots.Add(itemSlot);
             }
         }
     }

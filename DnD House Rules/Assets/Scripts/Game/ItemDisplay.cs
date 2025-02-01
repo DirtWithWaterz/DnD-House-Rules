@@ -127,7 +127,7 @@ public class ItemDisplay : MonoBehaviour
                         }
                         GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                         // Debug.Log($"Reorder inventory rpc called.");
-                        // GameManager.Singleton.SaveData();
+                        // GameManager.Singleton.SaveDataRpc();
                         yield return new WaitForEndOfFrame();
                         for(int i = 0; i < occupiedInventory.inventory.Count; i++){
 
@@ -135,7 +135,7 @@ public class ItemDisplay : MonoBehaviour
 
                                 // Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
                                 occupiedInventory.inventory.RemoveAt(i);
-                                // GameManager.Singleton.SaveData();
+                                // GameManager.Singleton.SaveDataRpc();
                             }
                         }
                         Destroy(gameObject);
@@ -215,6 +215,7 @@ public class ItemDisplay : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
+                            GameManager.Singleton.SaveDataRpc();
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                         else if(occupiedInventory.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
@@ -281,13 +282,14 @@ public class ItemDisplay : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
+                            GameManager.Singleton.SaveDataRpc();
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                     }
                 }
             }
             Destroy(fake.gameObject);
-            GameManager.Singleton.SaveData();
+            GameManager.Singleton.SaveDataRpc();
             transform.GetChild(0).gameObject.SetActive(true);
 
 

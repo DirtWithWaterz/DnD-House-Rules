@@ -158,7 +158,7 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse, armorSlotDisplayObject;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
@@ -316,192 +316,121 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    // void OnApplicationQuit(){
+    void OnApplicationQuit(){
 
-    //     SaveData();
-    // }
+        SaveData();
+    }
 
-    public void SaveData(){
+    [Rpc(SendTo.Everyone)]
+    public void SaveDataRpc(){
 
         if(!IsHost)
             return;
+        
+        SaveData();
+    }
+
+    void SaveData(){
+
+        if (!IsHost)
+            return;
 
         SaveIdTallyRpc();
-        
-        JsonUserDatas jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/userdatas.json"));
 
-        for(int i = 0; i < userDatas.Count; i++){
-            
-            for(int j = 0; j < jsonUserDatas.jsonUserDatas.Length; j++){
-                
-                if(userDatas[i].username.ToString() == jsonUserDatas.jsonUserDatas[j].username){
+        string path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json";
 
-                    jsonUserDatas.jsonUserDatas[j] = new JsonUserData(){
+        // Read existing data
+        JsonUserDatas jsonUserDatas = File.Exists(path)
+            ? JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText(path))
+            : new JsonUserDatas { jsonUserDatas = new JsonUserData[0] };
 
-                        id = userDatas[i].id.ToString(),
-                        username = userDatas[i].username.ToString(),
+        // Convert to Dictionary for fast lookup
+        Dictionary<string, JsonUserData> userDataMap = jsonUserDatas.jsonUserDatas.ToDictionary(u => u.username, u => u);
 
-                        Str = userDatas[i].Str,
-                        Dex = userDatas[i].Dex,
-                        Con = userDatas[i].Con,
-                        Int = userDatas[i].Int,
-                        Wis = userDatas[i].Wis,
-                        Cha = userDatas[i].Cha,
+        // Update or add users
+        foreach (var user in userDatas)
+        {
+            var newData = new JsonUserData
+            {
+                id = user.id.ToString(),
+                username = user.username.ToString(),
+                Str = user.Str,
+                Dex = user.Dex,
+                Con = user.Con,
+                Int = user.Int,
+                Wis = user.Wis,
+                Cha = user.Cha,
+                Lvl = user.Lvl,
+                HP_NECK = user.HP_NECK,
+                HP_HEAD = user.HP_HEAD,
+                HP_CHEST = user.HP_CHEST,
+                HP_ARM_LEFT = user.HP_ARM_LEFT,
+                HP_FOREARM_LEFT = user.HP_FOREARM_LEFT,
+                HP_HAND_LEFT = user.HP_HAND_LEFT,
+                HP_ARM_RIGHT = user.HP_ARM_RIGHT,
+                HP_FOREARM_RIGHT = user.HP_FOREARM_RIGHT,
+                HP_HAND_RIGHT = user.HP_HAND_RIGHT,
+                HP_TORSO = user.HP_TORSO,
+                HP_PELVIS = user.HP_PELVIS,
+                HP_THIGH_LEFT = user.HP_THIGH_LEFT,
+                HP_CRUS_LEFT = user.HP_CRUS_LEFT,
+                HP_FOOT_LEFT = user.HP_FOOT_LEFT,
+                HP_THIGH_RIGHT = user.HP_THIGH_RIGHT,
+                HP_CRUS_RIGHT = user.HP_CRUS_RIGHT,
+                HP_FOOT_RIGHT = user.HP_FOOT_RIGHT,
+                AC_NECK = user.AC_NECK,
+                AC_HEAD = user.AC_HEAD,
+                AC_CHEST = user.AC_CHEST,
+                AC_ARM_LEFT = user.AC_ARM_LEFT,
+                AC_FOREARM_LEFT = user.AC_FOREARM_LEFT,
+                AC_HAND_LEFT = user.AC_HAND_LEFT,
+                AC_ARM_RIGHT = user.AC_ARM_RIGHT,
+                AC_FOREARM_RIGHT = user.AC_FOREARM_RIGHT,
+                AC_HAND_RIGHT = user.AC_HAND_RIGHT,
+                AC_TORSO = user.AC_TORSO,
+                AC_PELVIS = user.AC_PELVIS,
+                AC_THIGH_LEFT = user.AC_THIGH_LEFT,
+                AC_CRUS_LEFT = user.AC_CRUS_LEFT,
+                AC_FOOT_LEFT = user.AC_FOOT_LEFT,
+                AC_THIGH_RIGHT = user.AC_THIGH_RIGHT,
+                AC_CRUS_RIGHT = user.AC_CRUS_RIGHT,
+                AC_FOOT_RIGHT = user.AC_FOOT_RIGHT,
+                CONDITION_NECK = user.CONDITION_NECK.ToString(),
+                CONDITION_HEAD = user.CONDITION_HEAD.ToString(),
+                CONDITION_CHEST = user.CONDITION_CHEST.ToString(),
+                CONDITION_ARM_LEFT = user.CONDITION_ARM_LEFT.ToString(),
+                CONDITION_FOREARM_LEFT = user.CONDITION_FOREARM_LEFT.ToString(),
+                CONDITION_HAND_LEFT = user.CONDITION_HAND_LEFT.ToString(),
+                CONDITION_ARM_RIGHT = user.CONDITION_ARM_RIGHT.ToString(),
+                CONDITION_FOREARM_RIGHT = user.CONDITION_FOREARM_RIGHT.ToString(),
+                CONDITION_HAND_RIGHT = user.CONDITION_HAND_RIGHT.ToString(),
+                CONDITION_TORSO = user.CONDITION_TORSO.ToString(),
+                CONDITION_PELVIS = user.CONDITION_PELVIS.ToString(),
+                CONDITION_THIGH_LEFT = user.CONDITION_THIGH_LEFT.ToString(),
+                CONDITION_CRUS_LEFT = user.CONDITION_CRUS_LEFT.ToString(),
+                CONDITION_FOOT_LEFT = user.CONDITION_FOOT_LEFT.ToString(),
+                CONDITION_THIGH_RIGHT = user.CONDITION_THIGH_RIGHT.ToString(),
+                CONDITION_CRUS_RIGHT = user.CONDITION_CRUS_RIGHT.ToString(),
+                CONDITION_FOOT_RIGHT = user.CONDITION_FOOT_RIGHT.ToString(),
+                barbarian = user.barbarian,
+                baseSpeed = user.baseSpeed,
+                initProf = user.initProf
+            };
 
-                        Lvl = userDatas[i].Lvl,
-                        
-                        HP_NECK = userDatas[i].HP_NECK,
-                        HP_HEAD = userDatas[i].HP_HEAD,
-                        HP_CHEST = userDatas[i].HP_CHEST,
-                        HP_ARM_LEFT = userDatas[i].HP_ARM_LEFT,
-                        HP_FOREARM_LEFT = userDatas[i].HP_FOREARM_LEFT,
-                        HP_HAND_LEFT = userDatas[i].HP_HAND_LEFT,
-                        HP_ARM_RIGHT = userDatas[i].HP_ARM_RIGHT,
-                        HP_FOREARM_RIGHT = userDatas[i].HP_FOREARM_RIGHT,
-                        HP_HAND_RIGHT = userDatas[i].HP_HAND_RIGHT,
-                        HP_TORSO = userDatas[i].HP_TORSO,
-                        HP_PELVIS = userDatas[i].HP_PELVIS,
-                        HP_THIGH_LEFT = userDatas[i].HP_THIGH_LEFT,
-                        HP_CRUS_LEFT = userDatas[i].HP_CRUS_LEFT,
-                        HP_FOOT_LEFT = userDatas[i].HP_FOOT_LEFT,
-                        HP_THIGH_RIGHT = userDatas[i].HP_THIGH_RIGHT,
-                        HP_CRUS_RIGHT = userDatas[i].HP_CRUS_RIGHT,
-                        HP_FOOT_RIGHT = userDatas[i].HP_FOOT_RIGHT,
-
-                        AC_NECK = userDatas[i].AC_NECK,
-                        AC_HEAD = userDatas[i].AC_HEAD,
-                        AC_CHEST = userDatas[i].AC_CHEST,
-                        AC_ARM_LEFT = userDatas[i].AC_ARM_LEFT,
-                        AC_FOREARM_LEFT = userDatas[i].AC_FOREARM_LEFT,
-                        AC_HAND_LEFT = userDatas[i].AC_HAND_LEFT,
-                        AC_ARM_RIGHT = userDatas[i].AC_ARM_RIGHT,
-                        AC_FOREARM_RIGHT = userDatas[i].AC_FOREARM_RIGHT,
-                        AC_HAND_RIGHT = userDatas[i].AC_HAND_RIGHT,
-                        AC_TORSO = userDatas[i].AC_TORSO,
-                        AC_PELVIS = userDatas[i].AC_PELVIS,
-                        AC_THIGH_LEFT = userDatas[i].AC_THIGH_LEFT,
-                        AC_CRUS_LEFT = userDatas[i].AC_CRUS_LEFT,
-                        AC_FOOT_LEFT = userDatas[i].AC_FOOT_LEFT,
-                        AC_THIGH_RIGHT = userDatas[i].AC_THIGH_RIGHT,
-                        AC_CRUS_RIGHT = userDatas[i].AC_CRUS_RIGHT,
-                        AC_FOOT_RIGHT = userDatas[i].AC_FOOT_RIGHT,
-
-                        CONDITION_NECK = userDatas[i].CONDITION_NECK.ToString(),
-                        CONDITION_HEAD = userDatas[i].CONDITION_HEAD.ToString(),
-                        CONDITION_CHEST = userDatas[i].CONDITION_CHEST.ToString(),
-                        CONDITION_ARM_LEFT = userDatas[i].CONDITION_ARM_LEFT.ToString(),
-                        CONDITION_FOREARM_LEFT = userDatas[i].CONDITION_FOREARM_LEFT.ToString(),
-                        CONDITION_HAND_LEFT = userDatas[i].CONDITION_HAND_LEFT.ToString(),
-                        CONDITION_ARM_RIGHT = userDatas[i].CONDITION_ARM_RIGHT.ToString(),
-                        CONDITION_FOREARM_RIGHT = userDatas[i].CONDITION_FOREARM_RIGHT.ToString(),
-                        CONDITION_HAND_RIGHT = userDatas[i].CONDITION_HAND_RIGHT.ToString(),
-                        CONDITION_TORSO = userDatas[i].CONDITION_TORSO.ToString(),
-                        CONDITION_PELVIS = userDatas[i].CONDITION_PELVIS.ToString(),
-                        CONDITION_THIGH_LEFT = userDatas[i].CONDITION_THIGH_LEFT.ToString(),
-                        CONDITION_CRUS_LEFT = userDatas[i].CONDITION_CRUS_LEFT.ToString(),
-                        CONDITION_FOOT_LEFT = userDatas[i].CONDITION_FOOT_LEFT.ToString(),
-                        CONDITION_THIGH_RIGHT = userDatas[i].CONDITION_THIGH_RIGHT.ToString(),
-                        CONDITION_CRUS_RIGHT = userDatas[i].CONDITION_CRUS_RIGHT.ToString(),
-                        CONDITION_FOOT_RIGHT = userDatas[i].CONDITION_FOOT_RIGHT.ToString(),
-
-                        
-
-                        barbarian = userDatas[i].barbarian,
-                        baseSpeed = userDatas[i].baseSpeed,
-                        initProf = userDatas[i].initProf
-
-                    };
-                }
-                else if (j == jsonUserDatas.jsonUserDatas.Length - 1){ // Reached the end, user doesn't exist
-                
-                    Array.Resize(ref jsonUserDatas.jsonUserDatas, jsonUserDatas.jsonUserDatas.Length + 1);
-
-                    jsonUserDatas.jsonUserDatas[^1] = new JsonUserData{
-
-                        id = userDatas[i].id.ToString(),
-                        username = userDatas[i].username.ToString(),
-
-                        Str = userDatas[i].Str,
-                        Dex = userDatas[i].Dex,
-                        Con = userDatas[i].Con,
-                        Int = userDatas[i].Int,
-                        Wis = userDatas[i].Wis,
-                        Cha = userDatas[i].Cha,
-
-                        Lvl = userDatas[i].Lvl,
-
-                        HP_NECK = userDatas[i].HP_NECK,
-                        HP_HEAD = userDatas[i].HP_HEAD,
-                        HP_CHEST = userDatas[i].HP_CHEST,
-                        HP_ARM_LEFT = userDatas[i].HP_ARM_LEFT,
-                        HP_FOREARM_LEFT = userDatas[i].HP_FOREARM_LEFT,
-                        HP_HAND_LEFT = userDatas[i].HP_HAND_LEFT,
-                        HP_ARM_RIGHT = userDatas[i].HP_ARM_RIGHT,
-                        HP_FOREARM_RIGHT = userDatas[i].HP_FOREARM_RIGHT,
-                        HP_HAND_RIGHT = userDatas[i].HP_HAND_RIGHT,
-                        HP_TORSO = userDatas[i].HP_TORSO,
-                        HP_PELVIS = userDatas[i].HP_PELVIS,
-                        HP_THIGH_LEFT = userDatas[i].HP_THIGH_LEFT,
-                        HP_CRUS_LEFT = userDatas[i].HP_CRUS_LEFT,
-                        HP_FOOT_LEFT = userDatas[i].HP_FOOT_LEFT,
-                        HP_THIGH_RIGHT = userDatas[i].HP_THIGH_RIGHT,
-                        HP_CRUS_RIGHT = userDatas[i].HP_CRUS_RIGHT,
-                        HP_FOOT_RIGHT = userDatas[i].HP_FOOT_RIGHT,
-
-                        AC_NECK = userDatas[i].AC_NECK,
-                        AC_HEAD = userDatas[i].AC_HEAD,
-                        AC_CHEST = userDatas[i].AC_CHEST,
-                        AC_ARM_LEFT = userDatas[i].AC_ARM_LEFT,
-                        AC_FOREARM_LEFT = userDatas[i].AC_FOREARM_LEFT,
-                        AC_HAND_LEFT = userDatas[i].AC_HAND_LEFT,
-                        AC_ARM_RIGHT = userDatas[i].AC_ARM_RIGHT,
-                        AC_FOREARM_RIGHT = userDatas[i].AC_FOREARM_RIGHT,
-                        AC_HAND_RIGHT = userDatas[i].AC_HAND_RIGHT,
-                        AC_TORSO = userDatas[i].AC_TORSO,
-                        AC_PELVIS = userDatas[i].AC_PELVIS,
-                        AC_THIGH_LEFT = userDatas[i].AC_THIGH_LEFT,
-                        AC_CRUS_LEFT = userDatas[i].AC_CRUS_LEFT,
-                        AC_FOOT_LEFT = userDatas[i].AC_FOOT_LEFT,
-                        AC_THIGH_RIGHT = userDatas[i].AC_THIGH_RIGHT,
-                        AC_CRUS_RIGHT = userDatas[i].AC_CRUS_RIGHT,
-                        AC_FOOT_RIGHT = userDatas[i].AC_FOOT_RIGHT,
-
-                        CONDITION_NECK = userDatas[i].CONDITION_NECK.ToString(),
-                        CONDITION_HEAD = userDatas[i].CONDITION_HEAD.ToString(),
-                        CONDITION_CHEST = userDatas[i].CONDITION_CHEST.ToString(),
-                        CONDITION_ARM_LEFT = userDatas[i].CONDITION_ARM_LEFT.ToString(),
-                        CONDITION_FOREARM_LEFT = userDatas[i].CONDITION_FOREARM_LEFT.ToString(),
-                        CONDITION_HAND_LEFT = userDatas[i].CONDITION_HAND_LEFT.ToString(),
-                        CONDITION_ARM_RIGHT = userDatas[i].CONDITION_ARM_RIGHT.ToString(),
-                        CONDITION_FOREARM_RIGHT = userDatas[i].CONDITION_FOREARM_RIGHT.ToString(),
-                        CONDITION_HAND_RIGHT = userDatas[i].CONDITION_HAND_RIGHT.ToString(),
-                        CONDITION_TORSO = userDatas[i].CONDITION_TORSO.ToString(),
-                        CONDITION_PELVIS = userDatas[i].CONDITION_PELVIS.ToString(),
-                        CONDITION_THIGH_LEFT = userDatas[i].CONDITION_THIGH_LEFT.ToString(),
-                        CONDITION_CRUS_LEFT = userDatas[i].CONDITION_CRUS_LEFT.ToString(),
-                        CONDITION_FOOT_LEFT = userDatas[i].CONDITION_FOOT_LEFT.ToString(),
-                        CONDITION_THIGH_RIGHT = userDatas[i].CONDITION_THIGH_RIGHT.ToString(),
-                        CONDITION_CRUS_RIGHT = userDatas[i].CONDITION_CRUS_RIGHT.ToString(),
-                        CONDITION_FOOT_RIGHT = userDatas[i].CONDITION_FOOT_RIGHT.ToString(),
-
-                        barbarian = userDatas[i].barbarian,
-                        baseSpeed = userDatas[i].baseSpeed,
-                        initProf = userDatas[i].initProf
-                    };
-                }
-            }
+            userDataMap[user.username.ToString()] = newData; // Ensures only one entry per user
         }
 
-        string output = JsonConvert.SerializeObject(jsonUserDatas);
+        // Convert back to array and save
+        jsonUserDatas.jsonUserDatas = userDataMap.Values.ToArray();
+        File.WriteAllText(path, JsonConvert.SerializeObject(jsonUserDatas, Formatting.Indented));
 
-        File.WriteAllText($"{Application.persistentDataPath}/userdatas.json", output);
 
-        output = JsonConvert.SerializeObject(new JsonConditions(){
+        string output = JsonConvert.SerializeObject(new JsonConditions(){
 
             conditionsKeyValue = this.conditionsKeyValue,
             conditionsValueKey = this.conditionsValueKey
         });
-        File.WriteAllText($"{Application.persistentDataPath}/conditions.json", output);
+        File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json", output);
 
         JsonItems jsonItems = new JsonItems();
         jsonItems.items = new JsonItem[items.Count];
@@ -524,182 +453,138 @@ public class GameManager : NetworkBehaviour
         }
 
         output = JsonConvert.SerializeObject(jsonItems);
-        File.WriteAllText($"{Application.persistentDataPath}/items.json", output);
+        File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/items.json", output);
 
-        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
+        path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json";
 
-        for(int i = 0; i < userDatas.Count; i++){
+        // Read existing data
+        JsonInventories jsonInventories = File.Exists(path)
+            ? JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText(path))
+            : new JsonInventories { inventories = new JsonInventory[0] };
 
-            for(int k = 0; k < jsonInventories.inventories.Length; k++){
+        // Convert to Dictionary for fast lookup
+        Dictionary<string, JsonInventory> inventoryMap = jsonInventories.inventories.ToDictionary(inv => inv.username, inv => inv);
 
-                if(userDatas[i].username.ToString() == jsonInventories.inventories[k].username){
+        // Update or add users
+        foreach (var user in userDatas)
+        {
+            User userObj = GameObject.Find(user.username.ToString())?.GetComponent<User>();
 
-                    jsonInventories.inventories[k] = new JsonInventory();
-                    User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
-                    jsonInventories.inventories[k].username = userDatas[i].username.ToString();
-                    jsonInventories.inventories[k].items = new JsonItem[userI.backpack.inventory.Count];
-                    for(int j = 0; j < userI.backpack.inventory.Count; j++){
+            if (userObj == null)
+                continue;
 
-                        jsonInventories.inventories[k].items[j] = new JsonItem(){
+            var inventoryList = userObj.backpack.inventory;
+            var itemsArray = new JsonItem[inventoryList.Count];
 
-                            name = userI.backpack.inventory[j].name.ToString(),
-                            cost = userI.backpack.inventory[j].cost,
-                            value = userI.backpack.inventory[j].value,
-                            type = userI.backpack.inventory[j].type,
-                            size = userI.backpack.inventory[j].size,
-                            amount = userI.backpack.inventory[j].amount,
-                            weight = userI.backpack.inventory[j].weight,
-                            itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
-                            id = userI.backpack.inventory[j].id,
-                            equippable = userI.backpack.inventory[j].equippable
-                        };
-                    }
-                    break;
-                }
-                else if (k == jsonInventories.inventories.Length - 1){ // Reached the end, inventory doesn't exist
+            for (int j = 0; j < inventoryList.Count; j++)
+            {
+                itemsArray[j] = new JsonItem
+                {
+                    name = inventoryList[j].name.ToString(),
+                    cost = inventoryList[j].cost,
+                    value = inventoryList[j].value,
+                    type = inventoryList[j].type,
+                    size = inventoryList[j].size,
+                    amount = inventoryList[j].amount,
+                    weight = inventoryList[j].weight,
+                    itemInventory = inventoryList[j].itemInventory.ToString(),
+                    id = inventoryList[j].id,
+                    equippable = inventoryList[j].equippable
+                };
+            }
 
-                    Array.Resize(ref jsonInventories.inventories, jsonInventories.inventories.Length + 1);
+            inventoryMap[user.username.ToString()] = new JsonInventory
+            {
+                username = user.username.ToString(),
+                items = itemsArray
+            };
+        }
 
-                    User userI = GameObject.Find(userDatas[i].username.ToString())?.GetComponent<User>();
+        // Convert back to array and save
+        jsonInventories.inventories = inventoryMap.Values.ToArray();
+        File.WriteAllText(path, JsonConvert.SerializeObject(jsonInventories, Formatting.Indented));
 
-                    if (userI != null){
 
-                        var inventoryList = userI.backpack.inventory; // NetworkList
-                        var itemsArray = new JsonItem[inventoryList.Count]; // Create an array for JsonItems
+        path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json";
+        Debug.Log("logging: " + path);
 
-                        for (int j = 0; j < inventoryList.Count; j++){ // Populate itemsArray
+        // Ensure directory exists
+        string directoryPath = Path.GetDirectoryName(path);
+        if (!Directory.Exists(directoryPath))
+            Directory.CreateDirectory(directoryPath);
 
-                            itemsArray[j] = new JsonItem{
+        // Read existing data or create a new object if empty/missing
+        JsonBodyArrays jsonBodyArrays = File.Exists(path)
+            ? JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText(path))
+            : new JsonBodyArrays { bodyArrays = new JsonBodyArray[0] };
 
-                                name = inventoryList[j].name.ToString(),
-                                cost = inventoryList[j].cost,
-                                value = inventoryList[j].value,
-                                type = inventoryList[j].type,
-                                size = inventoryList[j].size,
-                                amount = inventoryList[j].amount,
-                                weight = inventoryList[j].weight,
-                                itemInventory = inventoryList[j].itemInventory.ToString(),
-                                id = inventoryList[j].id,
-                                equippable = inventoryList[j].equippable
-                            };
-                        }
+        // Convert to Dictionary for quick lookup and updates
+        Dictionary<string, JsonBodyArray> bodyArrayMap = jsonBodyArrays.bodyArrays.ToDictionary(ba => ba.username, ba => ba);
 
-                        jsonInventories.inventories[^1] = new JsonInventory{
+        // Process each user
+        foreach (var user in userDatas)
+        {
+            User userI = GameObject.Find(user.username.ToString())?.GetComponent<User>();
 
-                            username = userDatas[i].username.ToString(),
-                            items = itemsArray
-                        };
-                    }
-                    else
+            if (userI == null)
+                continue; // Skip if user object isn't found
+
+            userI.UpdateNetworkedSlotsRpc(userI.name); // Ensure slots are up to date
+
+            // Collect item slots from user bodyparts
+            List<JsonItemSlot> itemSlotsList = new List<JsonItemSlot>();
+
+            foreach (var bodypart in userI.bodyparts)
+            {
+                for (int i = 0; i < bodypart.slot.Length; i++)
+                {
+                    var itemSlot = bodypart.slot[i];
+
+                    itemSlotsList.Add(new JsonItemSlot
                     {
-                        // Handle case where userI is null (e.g., User not found in the scene)
-                        jsonInventories.inventories[^1] = new JsonInventory
+                        item = new JsonItem
                         {
-                            username = userDatas[i].username.ToString(),
-                            items = Array.Empty<JsonItem>() // Empty inventory for this user
-                        };
-                    }
+                            name = itemSlot.item.name.ToString(),
+                            cost = itemSlot.item.cost,
+                            value = itemSlot.item.value,
+                            type = itemSlot.item.type,
+                            size = itemSlot.item.size,
+                            amount = itemSlot.item.amount,
+                            weight = itemSlot.item.weight,
+                            itemInventory = itemSlot.item.itemInventory.ToString(),
+                            id = itemSlot.item.id,
+                            equippable = itemSlot.item.equippable
+                        },
+                        slotModifierType = itemSlot.slotModifierType,
+                        bodypart = itemSlot.bodypart.ToString(),
+                        index = itemSlot.index
+                    });
                 }
             }
-        }
-        output = JsonConvert.SerializeObject(jsonInventories);
-        File.WriteAllText($"{Application.persistentDataPath}/inventories.json", output);
 
-        JsonBodyArrays jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
-
-        for(int i = 0; i < userDatas.Count; i++){
-
-            for(int j = 0; j < jsonBodyArrays.bodyArrays.Length; j++){
-
-                if(userDatas[i].username.ToString() == jsonBodyArrays.bodyArrays[j].username){
-
-                    jsonBodyArrays.bodyArrays[j] = new JsonBodyArray();
-                    User userI = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
-                    userI.UpdateNetworkedSlotsRpc(userI.name);
-                    jsonBodyArrays.bodyArrays[j].username = userDatas[i].username.ToString();
-                    jsonBodyArrays.bodyArrays[j].itemSlots = new JsonItemSlot[userI.itemSlots.Count];
-                    for(int k = 0; k < userI.itemSlots.Count; k++){
-
-                        jsonBodyArrays.bodyArrays[j].itemSlots[k] = new JsonItemSlot{
-
-                            item = new JsonItem{
-
-                                name = userI.itemSlots[k].item.name.ToString(),
-                                cost = userI.itemSlots[k].item.cost,
-                                value = userI.itemSlots[k].item.value,
-                                type = userI.itemSlots[k].item.type,
-                                size = userI.itemSlots[k].item.size,
-                                amount = userI.itemSlots[k].item.amount,
-                                weight = userI.itemSlots[k].item.weight,
-                                itemInventory = userI.itemSlots[k].item.itemInventory.ToString(),
-                                id = userI.itemSlots[k].item.id,
-                                equippable = userI.itemSlots[k].item.equippable
-                            },
-                            slotModifierType = userI.itemSlots[k].slotModifierType,
-                            bodypart = userI.itemSlots[k].bodypart.ToString(),
-                            index = userI.itemSlots[k].index
-                        };
-                    }
-                }
-                else if (j == jsonBodyArrays.bodyArrays.Length - 1){ // Reached the end, body array doesn't exist
-
-                    // Resize the array to add a new entry for this user
-                    Array.Resize(ref jsonBodyArrays.bodyArrays, jsonBodyArrays.bodyArrays.Length + 1);
-
-                    User userI = GameObject.Find(userDatas[i].username.ToString())?.GetComponent<User>();
-
-                    if (userI != null)
-                    {
-                        userI.UpdateNetworkedSlotsRpc(userI.name);
-
-                        var itemSlotsList = userI.itemSlots; // List of item slots
-                        var itemSlotsArray = new JsonItemSlot[itemSlotsList.Count]; // Create an array for JsonItemSlots
-
-                        for (int k = 0; k < itemSlotsList.Count; k++) // Populate itemSlotsArray
-                        {
-                            itemSlotsArray[k] = new JsonItemSlot
-                            {
-                                item = new JsonItem{
-
-                                name = userI.itemSlots[k].item.name.ToString(),
-                                cost = userI.itemSlots[k].item.cost,
-                                value = userI.itemSlots[k].item.value,
-                                type = userI.itemSlots[k].item.type,
-                                size = userI.itemSlots[k].item.size,
-                                amount = userI.itemSlots[k].item.amount,
-                                weight = userI.itemSlots[k].item.weight,
-                                itemInventory = userI.itemSlots[k].item.itemInventory.ToString(),
-                                id = userI.itemSlots[k].item.id,
-                                equippable = userI.itemSlots[k].item.equippable
-                            },
-                                slotModifierType = itemSlotsList[k].slotModifierType,
-                                bodypart = itemSlotsList[k].bodypart.ToString(),
-                                index = itemSlotsList[k].index
-                            };
-                        }
-
-                        // Add the new entry for the user
-                        jsonBodyArrays.bodyArrays[^1] = new JsonBodyArray
-                        {
-                            username = userDatas[i].username.ToString(),
-                            itemSlots = itemSlotsArray
-                        };
-                    }
-                    else
-                    {
-                        // Handle case where userI is null (e.g., User not found in the scene)
-                        jsonBodyArrays.bodyArrays[^1] = new JsonBodyArray
-                        {
-                            username = userDatas[i].username.ToString(),
-                            itemSlots = Array.Empty<JsonItemSlot>() // Empty item slots for this user
-                        };
-                    }
-                }
+            // Add or update user entry in bodyArrayMap
+            if (bodyArrayMap.ContainsKey(user.username.ToString()))
+            {
+                // If user already exists, update their slots
+                bodyArrayMap[user.username.ToString()].itemSlots = itemSlotsList.ToArray();
+            }
+            else
+            {
+                // Otherwise, create a new entry
+                bodyArrayMap[user.username.ToString()] = new JsonBodyArray
+                {
+                    username = user.username.ToString(),
+                    itemSlots = itemSlotsList.ToArray()
+                };
             }
         }
-        
-        output = JsonConvert.SerializeObject(jsonBodyArrays);
-        File.WriteAllText($"{Application.persistentDataPath}/bodyarrays.json", output);
+
+        // Convert back to array and save
+        jsonBodyArrays.bodyArrays = bodyArrayMap.Values.ToArray();
+        File.WriteAllText(path, JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
+
+
+
 
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
     }
@@ -712,8 +597,8 @@ public class GameManager : NetworkBehaviour
         LoadIdTallyRpc();
         // Debug.Log(itemIdTally.Value);
 
-        string output = File.ReadAllText($"{Application.persistentDataPath}/userdatas.json");
-        JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(File.ReadAllText($"{Application.persistentDataPath}/conditions.json"));
+        string output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json");
+        JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json"));
         JsonUserDatas jsonUserDatas;
 
         if(output == "{}"){
@@ -804,10 +689,10 @@ public class GameManager : NetworkBehaviour
 
             output = JsonConvert.SerializeObject(newJsonUserDatas);
 
-            File.WriteAllText($"{Application.persistentDataPath}/userdatas.json", output);
+            File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json", output);
         }
 
-        jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/userdatas.json"));
+        jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json"));
 
         conditionsKeyValue = jsonConditions.conditionsKeyValue;
         conditionsValueKey = jsonConditions.conditionsValueKey;
@@ -908,8 +793,8 @@ public class GameManager : NetworkBehaviour
 
             output = JsonConvert.SerializeObject(newJsonUserDatas);
 
-            File.WriteAllText($"{Application.persistentDataPath}/userdatas.json", output);
-            jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/userdatas.json"));
+            File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json", output);
+            jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json"));
         }
 
         for(int i = 0; i < userDatas.Count; i++){
@@ -999,7 +884,7 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        JsonItems jsonItems = JsonConvert.DeserializeObject<JsonItems>(File.ReadAllText($"{Application.persistentDataPath}/items.json"));
+        JsonItems jsonItems = JsonConvert.DeserializeObject<JsonItems>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/items.json"));
         items.Clear();
         foreach(JsonItem item in jsonItems.items){
 
@@ -1025,7 +910,7 @@ public class GameManager : NetworkBehaviour
             userI.backpack.ClearRpc(userI.name);
         }
 
-        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
+        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
         if(jsonInventories.inventories.Count() < userDatas.Count){
 
             JsonInventories newJsonInventories = new JsonInventories();
@@ -1050,8 +935,8 @@ public class GameManager : NetworkBehaviour
 
             output = JsonConvert.SerializeObject(newJsonInventories);
 
-            File.WriteAllText($"{Application.persistentDataPath}/inventories.json", output);
-            jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
+            File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json", output);
+            jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
         }
         for(int i = 0; i < userDatas.Count; i++){
 
@@ -1085,7 +970,7 @@ public class GameManager : NetworkBehaviour
 
         SendItemInventoriesRpc();
 
-        JsonBodyArrays jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
+        JsonBodyArrays jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json"));
         // Load all bodypart item slots
         // not implemented.
         if(jsonBodyArrays.bodyArrays.Count() < userDatas.Count){
@@ -1112,8 +997,8 @@ public class GameManager : NetworkBehaviour
 
             output = JsonConvert.SerializeObject(newJsonBodyArrays);
 
-            File.WriteAllText($"{Application.persistentDataPath}/bodyarrays.json", output);
-            jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/bodyarrays.json"));
+            File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json", output);
+            jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json"));
         }
         for(int i = 0; i < userDatas.Count; i++){
 
@@ -1163,22 +1048,59 @@ public class GameManager : NetworkBehaviour
         }
     }
 
-    [Rpc(SendTo.Everyone)]
-    public void LoadItemSlotRpc(string usernameI, itemSlot itemSlot){
+    [Rpc(SendTo.Server)]
+    public void LoadItemSlotRpc(string usernameI, itemSlot itemSlot)
+    {
+        if (!NetworkManager.Singleton.IsServer)
+            return; // Ensure only the server processes this request
 
-        if(usernameI != interpreter.GetUsername)
-            return;
-        
-        User userI = GameObject.Find(usernameI).GetComponent<User>();
-        foreach(Bodypart bodypart in userI.bodyparts){
+        // Find the player in the connected clients list
+        foreach (var client in NetworkManager.Singleton.ConnectedClientsList)
+        {
+            User userI = client.PlayerObject.GetComponent<User>();
 
-            if(bodypart.name == itemSlot.bodypart){
-
-                bodypart.slot[itemSlot.index] = itemSlot;
-                bodypart.RefreshSlotsRpc(usernameI);
+            if (userI != null && userI.name == usernameI)
+            {
+                // Server now requests the client to update its own NetworkVariables
+                LoadItemSlotClientRpc(usernameI, itemSlot);
+                return;
             }
         }
     }
+
+    // ClientRpc so that only the item slot owner modifies their NetworkVariables
+    [Rpc(SendTo.Owner)]
+    private void LoadItemSlotClientRpc(string usernameI, itemSlot itemSlot)
+    {
+        User userI = GameObject.Find(usernameI)?.GetComponent<User>();
+        if (userI == null || !userI.IsOwner)
+            return; // Ensure only the correct player updates their own NetworkVariable
+
+        foreach (Bodypart bodypart in userI.bodyparts)
+        {
+            if (bodypart.name == itemSlot.bodypart)
+            {
+                bodypart.slot[itemSlot.index] = itemSlot;
+                bodypart.RefreshSlotsRpc(usernameI);
+
+                item itemI = itemSlot.item;
+                if (itemI.id == -1)
+                    continue;
+
+                // Now the correct player (owner) updates their own NetworkVariables
+                switch (itemSlot.slotModifierType)
+                {
+                    case SlotModifierType.ac:
+                        bodypart.ac.Value += itemI.value; // Only the owner modifies this
+                        break;
+                    case SlotModifierType.hp:
+                        bodypart.maximumHP.Value += itemI.value; // Only the owner modifies this
+                        break;
+                }
+            }
+        }
+    }
+
 
     bool recieved, recieved0;
 
@@ -1313,7 +1235,7 @@ public class GameManager : NetworkBehaviour
 
         // Debug.Log("channel 0 request returned!");
 
-        JsonInventories inventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/inventories.json"));
+        JsonInventories inventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
 
         for(int i = 0; i < inventories.inventories.Length; i++){
 
@@ -1323,7 +1245,7 @@ public class GameManager : NetworkBehaviour
                 break;
             }
         }
-        // File.WriteAllText($"{Application.persistentDataPath}/inventories.json", JsonConvert.SerializeObject(inventories));
+        // File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json", JsonConvert.SerializeObject(inventories));
         // Debug.Log("Calling save json rpc on all users.");
         SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(inventories));
         // userI.backpack.RefreshItemDisplayBoxRpc(userI.name);
@@ -1352,7 +1274,7 @@ public class GameManager : NetworkBehaviour
 
         // Debug.Log(directory);
         // Debug.Log(output);
-        File.WriteAllText(Application.persistentDataPath + directory, output);
+        File.WriteAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + directory, output);
         SendItemInventoriesRpc();
     }
 
@@ -1368,13 +1290,13 @@ public class GameManager : NetworkBehaviour
         }
         if(requestedUser == interpreter.GetUsername){
 
-            SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
+            SendJsonRpc(File.ReadAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
         }
         if(requestedUser == "host"){
 
             if(IsHost){
 
-                SendJsonRpc(File.ReadAllText(Application.persistentDataPath + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
+                SendJsonRpc(File.ReadAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + requestedJsonDirectory), requestedJsonDirectory, requestingUser, channel);
             }
         }
 
@@ -1384,7 +1306,7 @@ public class GameManager : NetworkBehaviour
 
         if(interpreter.GetUsername == sendTo){
 
-            File.WriteAllText(Application.persistentDataPath + directory, input);
+            File.WriteAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + directory, input);
             if(channel == -1)
                 recieved = true;
             else if(channel == 0)
@@ -1399,12 +1321,12 @@ public class GameManager : NetworkBehaviour
         jsonItemIdTally.idTally = itemIdTally.Value;
 
         string output = JsonConvert.SerializeObject(jsonItemIdTally);
-        File.WriteAllText($"{Application.persistentDataPath}/idTally.json", output);
+        File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/idTally.json", output);
     }
     [Rpc(SendTo.Server)]
     void LoadIdTallyRpc(){
 
-        string input = File.ReadAllText($"{Application.persistentDataPath}/idTally.json");
+        string input = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/idTally.json");
         JsonItemIdTally jsonItemIdTally = JsonConvert.DeserializeObject<JsonItemIdTally>(input);
 
         itemIdTally.Value = jsonItemIdTally.idTally;

@@ -26,7 +26,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         if(type != Type.backpack || item.type == Type.backpack)
             return false;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + "/" + GameManager.Singleton.interpreter.GetUsername + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
@@ -81,7 +81,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         if(type != Type.backpack)
             return null;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + "/" + GameManager.Singleton.interpreter.GetUsername + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
         item[] items = new item[jsonItemInventory.items.Length];
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
@@ -159,7 +159,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
             // Debug.Log("false");
         }
-        GameManager.Singleton.SaveData();
+        GameManager.Singleton.SaveDataRpc();
         return true;
     }
     public void AddInventory(item item, int siblingIndex = -1){
@@ -167,7 +167,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         if(type != Type.backpack || item.type == Type.backpack)
             return;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + "/" + GameManager.Singleton.interpreter.GetUsername + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
@@ -252,7 +252,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
             Debug.Log("false");
         }
-        GameManager.Singleton.SaveData();
+        GameManager.Singleton.SaveDataRpc();
     }
     
     public void AddInventory(item[] items){
@@ -268,7 +268,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         if (type != Type.backpack || itemToRemove.type == Type.backpack)
             return;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
-        string output = File.ReadAllText(Application.persistentDataPath + itemInventory.ToString());
+        string output = File.ReadAllText(Application.persistentDataPath + "/" + GameManager.Singleton.interpreter.GetUsername + itemInventory.ToString());
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         // Find the first instance of the item to remove
@@ -311,7 +311,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         // Update the itemInventory field
         itemInventory = directory;
         GameManager.Singleton.SetItemStatsRpc(GameManager.Singleton.interpreter.GetUsername, name.ToString(), id, cost, value, amount, weight - weightToRemove);
-        GameManager.Singleton.SaveData();
+        GameManager.Singleton.SaveDataRpc();
     }
 
     public void RemoveInventory(item[] itemsToRemove){

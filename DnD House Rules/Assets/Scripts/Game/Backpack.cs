@@ -77,7 +77,7 @@ public class Backpack : NetworkBehaviour
                     }
                     GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                     // Debug.Log($"Reorder inventory rpc called.");
-                    // GameManager.Singleton.SaveData();
+                    // GameManager.Singleton.SaveDataRpc();
                     yield return new WaitForEndOfFrame();
                     switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
 
@@ -88,6 +88,7 @@ public class Backpack : NetworkBehaviour
                             armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
                             break;
                     }
+                    GameManager.Singleton.SaveDataRpc();
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // Destroy(gameObject);
                 }
@@ -101,7 +102,7 @@ public class Backpack : NetworkBehaviour
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     int siblingIndex = itemDisplay.transform.GetSiblingIndex();
                     itemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false, siblingIndex);
-                    // GameManager.Singleton.SaveData();
+                    // GameManager.Singleton.SaveDataRpc();
                     List<itemShort> itemShorts = new List<itemShort>();
                     foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
@@ -123,6 +124,7 @@ public class Backpack : NetworkBehaviour
                             armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
                             break;
                     }
+                    GameManager.Singleton.SaveDataRpc();
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     // Destroy(gameObject);
@@ -177,6 +179,8 @@ public class Backpack : NetworkBehaviour
                                 break;
                         }
                         armorSlot.description.bodypart.EmptySlot(armorSlot.index);
+                        yield return new WaitForEndOfFrame();
+                        armorSlot.transform.GetChild(0).gameObject.SetActive(true);
                     }
                     else{
 
@@ -266,7 +270,8 @@ public class Backpack : NetworkBehaviour
                                 armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
                                 break;
                         }
-                        
+                        yield return new WaitForEndOfFrame();
+                        armorSlot.transform.GetChild(0).gameObject.SetActive(true);
                     }
                 }
             }
@@ -276,7 +281,8 @@ public class Backpack : NetworkBehaviour
         }
         // Debug.Log("Destroying fake.");
         Destroy(fake.gameObject);
-        GameManager.Singleton.SaveData();
+        GameManager.Singleton.SaveDataRpc();
+        yield return new WaitForEndOfFrame();
         armorSlot.transform.GetChild(0).gameObject.SetActive(true);
     }
 
