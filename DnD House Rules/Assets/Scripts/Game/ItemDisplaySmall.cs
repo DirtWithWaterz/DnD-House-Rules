@@ -193,6 +193,15 @@ public class ItemDisplaySmall : MonoBehaviour
                                     armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
                                     break;
                             }
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value += thisItem.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
+                                    break;
+                            }
                             List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
                             for(int i = 0; i < thisItemInventory.Count; i++){
@@ -208,6 +217,15 @@ public class ItemDisplaySmall : MonoBehaviour
                         else if(thisItem.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
 
                             occupiedInventory.thisItemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, armorSlot.description.bodypart.slot[armorSlot.index].item, false);
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                                    break;
+                            }
                             armorSlot.description.bodypart.slot[armorSlot.index].item = new item{
 
                                 name = thisItem.name,
@@ -247,6 +265,15 @@ public class ItemDisplaySmall : MonoBehaviour
                                     break;
                                 default:
                                     armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
+                                    break;
+                            }
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value += thisItem.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
                             occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);

@@ -206,6 +206,15 @@ public class ItemDisplay : MonoBehaviour
                                     armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
                                     break;
                             }
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value += thisItem.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
+                                    break;
+                            }
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                         else if(occupiedInventory.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
@@ -213,6 +222,15 @@ public class ItemDisplay : MonoBehaviour
                             // swap the item in the armor slot with this item.
                             // throw new NotImplementedException();
                             occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, armorSlot.description.bodypart.slot[armorSlot.index].item, false);
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                                    break;
+                            }
                             armorSlot.description.bodypart.slot[armorSlot.index].item = new item{
 
                                 name = thisItem.name,
@@ -252,6 +270,15 @@ public class ItemDisplay : MonoBehaviour
                                     break;
                                 default:
                                     armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.none;
+                                    break;
+                            }
+                            switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                                case SlotModifierType.ac:
+                                    armorSlot.description.bodypart.ac.Value += thisItem.value;
+                                    break;
+                                case SlotModifierType.hp:
+                                    armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);

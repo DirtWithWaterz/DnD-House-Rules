@@ -79,6 +79,15 @@ public class Backpack : NetworkBehaviour
                     // Debug.Log($"Reorder inventory rpc called.");
                     // GameManager.Singleton.SaveData();
                     yield return new WaitForEndOfFrame();
+                    switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                        case SlotModifierType.ac:
+                            armorSlot.description.bodypart.ac.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                        case SlotModifierType.hp:
+                            armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                    }
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // Destroy(gameObject);
                 }
@@ -87,7 +96,7 @@ public class Backpack : NetworkBehaviour
 
                 ItemDisplay itemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
                 
-                if(itemDisplay.occupiedInventory.CapacityLogic(thisItem)){
+                if(itemDisplay.occupiedInventory.CapacityLogic(thisItem, $"{thisItem.value}:{thisItem.type}")){
 
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     int siblingIndex = itemDisplay.transform.GetSiblingIndex();
@@ -105,7 +114,15 @@ public class Backpack : NetworkBehaviour
                     GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                     // Debug.Log($"Reorder inventory rpc called.");
                     yield return new WaitForEndOfFrame();
+                    switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
 
+                        case SlotModifierType.ac:
+                            armorSlot.description.bodypart.ac.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                        case SlotModifierType.hp:
+                            armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                    }
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     // Destroy(gameObject);
@@ -339,10 +356,16 @@ public class Backpack : NetworkBehaviour
         }
     }
 
-    public bool CapacityLogic(item item){
+    public bool CapacityLogic(item item, string subtract = null){
 
         int capacityL = capacity.Value, capacityS = capacity.Value * 2, capacityT = capacity.Value * 4;
-        foreach(item inventoryItem in inventory){
+        
+        for(int i = 0; i < user.itemSlots.Count; i++){
+
+            item inventoryItem = user.itemSlots[i].item;
+
+            if(inventoryItem.id == -1)
+                continue;
 
             switch(inventoryItem.type){
 
@@ -359,6 +382,28 @@ public class Backpack : NetworkBehaviour
                     break;
                 case Type.capacityMultT:
                     capacityT += inventoryItem.value;
+                    break;
+            }
+        }
+        if(subtract != null){
+
+            string[] args = subtract.Split(":");
+
+            switch(args[1]){
+
+                case "capacityMult":
+                    capacityL -= int.Parse(args[0]);
+                    capacityS -= int.Parse(args[0])*2;
+                    capacityT -= int.Parse(args[0])*4;
+                    break;
+                case "capacityMultL":
+                    capacityL -= int.Parse(args[0]);
+                    break;
+                case "capacityMultS":
+                    capacityS -= int.Parse(args[0]);
+                    break;
+                case "capacityMultT":
+                    capacityT -= int.Parse(args[0]);
                     break;
             }
         }
