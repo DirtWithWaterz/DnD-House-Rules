@@ -13,7 +13,7 @@ public class User : NetworkBehaviour
 
     NetworkVariable<int> clientsReady = new NetworkVariable<int>(0);
 
-    public NetworkList<itemSlot> itemSlots = new NetworkList<itemSlot>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkList<itemSlot> itemSlots = new NetworkList<itemSlot>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public Health health;
     public Stats stats;
@@ -27,6 +27,15 @@ public class User : NetworkBehaviour
 
     [SerializeField] TMP_Text CurrentPlayerLabel1;
     [SerializeField] TMP_Text CurrentPlayerLabel2;
+
+    public override void OnNetworkSpawn()
+    {
+        // Initialize itemSlots on the server (ensuring proper setup)
+        if (IsServer)
+        {
+            itemSlots.Initialize(this);
+        }
+    }
 
     IEnumerator Start()
     {
@@ -46,8 +55,8 @@ public class User : NetworkBehaviour
         backpack = GetComponentInChildren<Backpack>();
 
         bodyparts = new List<Bodypart>();
-        itemSlots = new NetworkList<itemSlot>();
-        itemSlots.Initialize(this);
+
+        // itemSlots = new NetworkList<itemSlot>(); // this is initialized on server.
 
         if(IsOwner){
             interpreter.user = this;
@@ -74,20 +83,31 @@ public class User : NetworkBehaviour
         UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
     
-    [Rpc(SendTo.Server)]
-    public void UpdateNetworkedSlotsRpc(string usernameI){
-        
-        User userI = GameObject.Find(usernameI)?.GetComponent<User>();
-        Debug.Log($"server is attempting to edit {userI.name}");
-        userI.itemSlots.Clear();
-        for(int i = 0; i < bodyparts.Count; i++){
-            
-            foreach(itemSlot itemSlot in bodyparts[i].slot){
-                
-                userI.itemSlots.Add(itemSlot);
+    [Rpc(SendTo.Everyone)]
+    public void UpdateNetworkedSlotsRpc(string usernameI)
+    {
+        if (usernameI != interpreter.GetUsername)
+            return;
+        if (!IsOwner)
+            return;
+
+        for (int i = 0; i < bodyparts.Count; i++)
+        {
+            foreach (itemSlot itemSlot in bodyparts[i].slot)
+            {
+                string nameToUse = itemSlot.item.name.ToString();
+                if (itemSlot.item.id == -1)
+                    nameToUse = "empty slot";
+
+                // Debug.Log($"{name} is sending {nameToUse} on bodypart: {itemSlot.bodypart.ToString()} to server to be saved.");
+                GameManager.Singleton.UpdateNetworkedSlotRpc(name, itemSlot);
             }
         }
+        // Only the host calls SaveDataRpc (since only host has permission to write JSON)
+        if (IsHost)
+            GameManager.Singleton.SaveDataRpc();
     }
+
     
     [Rpc(SendTo.Server)]
     void ClientReadyRpc(){

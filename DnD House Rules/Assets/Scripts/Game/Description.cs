@@ -57,8 +57,8 @@ public class Description : NetworkBehaviour
     User user;
 
     IEnumerator Start(){
-        if(!IsOwner)
-            yield break;
+        if(!IsOwner && !IsHost)
+            Destroy(gameObject);
         user = transform.root.GetComponent<User>();
         yield return new WaitUntil(() => SceneManager.GetActiveScene().name == "Game");
         yield return new WaitUntil(() => user.isInitialized.Value);
@@ -66,7 +66,7 @@ public class Description : NetworkBehaviour
 
             armorSlots[i].description = this;
             armorSlots[i].index = i;
-
+            armorSlots[i].user = user;
             // slot.Spawn();
         }
 

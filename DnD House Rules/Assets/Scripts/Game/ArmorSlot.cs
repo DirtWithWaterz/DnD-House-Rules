@@ -13,18 +13,7 @@ public class ArmorSlot : MonoBehaviour
     public Description description;
     public int index;
 
-    Camera cam;
-
-    User user;
-
-    void Start(){
-
-
-        user = GameObject.Find(transform.root.name).GetComponent<User>();
-        if(!user.IsOwner)
-            return;
-        cam = user.transform.GetChild(0).GetComponent<Camera>();
-    }
+    public User user;
 
     void OnMouseOver(){
 
@@ -34,7 +23,10 @@ public class ArmorSlot : MonoBehaviour
 
         if(Input.GetMouseButtonDown(1) && Input.GetKey(KeyCode.LeftShift)){
 
+            GameManager.Singleton.SaveDataRpc();
             item thisItem = description.bodypart.slot[index].item;
+            if(thisItem.id == -1)
+                return;
             // instantiate a new gameobject that follows the mouse
             NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.parent.parent.parent.parent.parent.GetChild(3));
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
@@ -44,7 +36,7 @@ public class ArmorSlot : MonoBehaviour
             fake.transform.localScale *= 1.1f;
             transform.GetChild(0).gameObject.SetActive(false);
             fake.transform.GetChild(0).gameObject.SetActive(true);
-            user.backpack.RunArmorSlotLogic(cam, fake, thisItem, this);
+            user.backpack.RunArmorSlotLogic(fake, thisItem, this);
         }
     }
     void OnMouseExit(){

@@ -1828,7 +1828,8 @@ public class Interpreter : NetworkBehaviour
     [Rpc(SendTo.NotMe)]
     public void NoticeRpc(string message){
 
-        int lines = GameManager.Singleton.terminalManager.AddInterpreterLines(GameManager.Singleton.interpreter.Interpret(message));
+        GameManager.Singleton.LogRpc(message);
+        int lines = GameManager.Singleton.terminalManager.AddInterpreterLines(GameManager.Singleton.interpreter.Interpret("notify all " + message));
         // Scroll to the bottom of the scrollrect
         GameManager.Singleton.terminalManager.ScrollToBottom(lines);
 

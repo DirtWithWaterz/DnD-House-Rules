@@ -316,16 +316,19 @@ public class GameManager : NetworkBehaviour
     }
 
 
-    void OnApplicationQuit(){
+    // void OnApplicationQuit(){
 
-        SaveData();
-    }
+    //     SaveData();
+    // }
 
     [Rpc(SendTo.Everyone)]
     public void SaveDataRpc(){
 
-        if(!IsHost)
+        if(!IsHost){
+
+            GameObject.Find(interpreter.GetUsername).GetComponent<User>().UpdateNetworkedSlotsRpc(interpreter.GetUsername);
             return;
+        }
         
         SaveData();
     }
@@ -505,41 +508,33 @@ public class GameManager : NetworkBehaviour
         File.WriteAllText(path, JsonConvert.SerializeObject(jsonInventories, Formatting.Indented));
 
 
+        // --- Bodyarrays saving ---
         path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json";
         Debug.Log("logging: " + path);
-
-        // Ensure directory exists
         string directoryPath = Path.GetDirectoryName(path);
         if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
 
-        // Read existing data or create a new object if empty/missing
         JsonBodyArrays jsonBodyArrays = File.Exists(path)
             ? JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText(path))
             : new JsonBodyArrays { bodyArrays = new JsonBodyArray[0] };
 
-        // Convert to Dictionary for quick lookup and updates
         Dictionary<string, JsonBodyArray> bodyArrayMap = jsonBodyArrays.bodyArrays.ToDictionary(ba => ba.username, ba => ba);
 
-        // Process each user
         foreach (var user in userDatas)
         {
             User userI = GameObject.Find(user.username.ToString())?.GetComponent<User>();
-
             if (userI == null)
-                continue; // Skip if user object isn't found
+                continue;
 
-            userI.UpdateNetworkedSlotsRpc(userI.name); // Ensure slots are up to date
-
-            // Collect item slots from user bodyparts
             List<JsonItemSlot> itemSlotsList = new List<JsonItemSlot>();
 
-            foreach (var bodypart in userI.bodyparts)
+            // If the networked itemSlots is non-empty, use it.
+            if (userI.itemSlots.Count > 0)
             {
-                for (int i = 0; i < bodypart.slot.Length; i++)
+                for (int i = 0; i < userI.itemSlots.Count; i++)
                 {
-                    var itemSlot = bodypart.slot[i];
-
+                    var itemSlot = userI.itemSlots[i];
                     itemSlotsList.Add(new JsonItemSlot
                     {
                         item = new JsonItem
@@ -561,16 +556,43 @@ public class GameManager : NetworkBehaviour
                     });
                 }
             }
+            else
+            {
+                // Otherwise, populate from the user's bodyparts.
+                foreach (var bp in userI.bodyparts)
+                {
+                    for (int i = 0; i < bp.slot.Length; i++)
+                    {
+                        var itemSlot = bp.slot[i];
+                        itemSlotsList.Add(new JsonItemSlot
+                        {
+                            item = new JsonItem
+                            {
+                                name = itemSlot.item.name.ToString(),
+                                cost = itemSlot.item.cost,
+                                value = itemSlot.item.value,
+                                type = itemSlot.item.type,
+                                size = itemSlot.item.size,
+                                amount = itemSlot.item.amount,
+                                weight = itemSlot.item.weight,
+                                itemInventory = itemSlot.item.itemInventory.ToString(),
+                                id = itemSlot.item.id,
+                                equippable = itemSlot.item.equippable
+                            },
+                            slotModifierType = itemSlot.slotModifierType,
+                            bodypart = itemSlot.bodypart.ToString(),
+                            index = itemSlot.index
+                        });
+                    }
+                }
+            }
 
-            // Add or update user entry in bodyArrayMap
             if (bodyArrayMap.ContainsKey(user.username.ToString()))
             {
-                // If user already exists, update their slots
                 bodyArrayMap[user.username.ToString()].itemSlots = itemSlotsList.ToArray();
             }
             else
             {
-                // Otherwise, create a new entry
                 bodyArrayMap[user.username.ToString()] = new JsonBodyArray
                 {
                     username = user.username.ToString(),
@@ -579,12 +601,8 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        // Convert back to array and save
         jsonBodyArrays.bodyArrays = bodyArrayMap.Values.ToArray();
-        File.WriteAllText(path, JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
-
-
-
+        SaveJsonRpc("/bodyarrays.json", JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
 
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
     }
@@ -997,7 +1015,7 @@ public class GameManager : NetworkBehaviour
 
             output = JsonConvert.SerializeObject(newJsonBodyArrays);
 
-            File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json", output);
+            SaveJsonRpc("/bodyarrays.json", output);
             jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json"));
         }
         for(int i = 0; i < userDatas.Count; i++){
@@ -1049,6 +1067,63 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
+    void UpdateNetworkedSlotServRpc(string usernameI, itemSlot newItemSlot)
+    {
+        User userI = GameObject.Find(usernameI)?.GetComponent<User>();
+        if (userI == null)
+        {
+            // LogRpc("Error: Could not find user " + usernameI);
+            return;
+        }
+
+        // If the network list is empty, initialize it from the user's bodyparts.
+        if (userI.itemSlots.Count == 0)
+        {
+            foreach (var bp in userI.bodyparts)
+            {
+                // Assuming each bodypart has an array of itemSlot called 'slot'
+                for (int j = 0; j < bp.slot.Length; j++)
+                {
+                    userI.itemSlots.Add(bp.slot[j]);
+                }
+            }
+            // LogRpc($"{usernameI} itemSlots initialized from bodyparts. Count is now {userI.itemSlots.Count}.");
+        }
+
+        bool updated = false;
+        // LogRpc($"{userI.name}'s itemSlots.Count: {userI.itemSlots.Count}");
+        for (int i = 0; i < userI.itemSlots.Count; i++)
+        {
+            // LogRpc($"{userI.itemSlots[i].bodypart.ToString()} == {newItemSlot.bodypart.ToString()} ?");
+            if (userI.itemSlots[i].bodypart.ToString() == newItemSlot.bodypart.ToString() && userI.itemSlots[i].index == newItemSlot.index)
+            {
+                // LogRpc("True.");
+                // LogRpc($"Updating slot {i} for {usernameI} with item {newItemSlot.item.name}");
+                userI.itemSlots[i] = newItemSlot;
+                // LogRpc($"{userI.itemSlots[i].item.name.ToString()}");
+                updated = true;
+                break;
+            }
+            // LogRpc("False.");
+        }
+        if (!updated)
+            // LogRpc("No matching slot found for " + usernameI);
+
+        SaveDataRpc();
+    }
+
+
+    [Rpc(SendTo.Everyone)]
+    public void UpdateNetworkedSlotRpc(string usernameI, itemSlot newItemSlot)
+    {
+        // Debug.Log("Checking if host...");
+        if (!IsHost)
+            return;
+        // LogRpc($"Server received {newItemSlot.item.name.ToString()} to add to bodypart: {newItemSlot.bodypart.ToString()} on {usernameI}'s body array.");
+        UpdateNetworkedSlotServRpc(usernameI, newItemSlot);
+    }
+    
+    [Rpc(SendTo.Server)]
     public void LoadItemSlotRpc(string usernameI, itemSlot itemSlot)
     {
         if (!NetworkManager.Singleton.IsServer)
@@ -1069,7 +1144,7 @@ public class GameManager : NetworkBehaviour
     }
 
     // ClientRpc so that only the item slot owner modifies their NetworkVariables
-    [Rpc(SendTo.Owner)]
+    [Rpc(SendTo.Everyone)]
     private void LoadItemSlotClientRpc(string usernameI, itemSlot itemSlot)
     {
         User userI = GameObject.Find(usernameI)?.GetComponent<User>();
@@ -1099,6 +1174,12 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void LogRpc(string message){
+
+        Debug.Log(message);
     }
 
 
@@ -1275,7 +1356,8 @@ public class GameManager : NetworkBehaviour
         // Debug.Log(directory);
         // Debug.Log(output);
         File.WriteAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + directory, output);
-        SendItemInventoriesRpc();
+        if(directory == "/inventories.json")
+            SendItemInventoriesRpc();
     }
 
     [Rpc(SendTo.Everyone)]

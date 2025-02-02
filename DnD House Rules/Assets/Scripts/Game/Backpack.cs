@@ -14,6 +14,8 @@ public class Backpack : NetworkBehaviour
     User user;
     string username = "unknown";
 
+    Camera cam;
+
     public NetworkVariable<int> capacity = new NetworkVariable<int>(4, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public override void OnNetworkSpawn()
@@ -24,16 +26,19 @@ public class Backpack : NetworkBehaviour
     IEnumerator Start(){
 
         yield return new WaitUntil(() => user.isInitialized.Value);
+        if(!user.IsOwner && !IsHost)
+            Destroy(gameObject);
         username = user.name;
+        cam = user.transform.GetChild(0).GetComponent<Camera>();
     }
 
     // The armor slots are too fucking stupid to do it themselves.
-    public void RunArmorSlotLogic(Camera cam, NetworkObject fake, item thisItem, ArmorSlot armorSlot){
+    public void RunArmorSlotLogic(NetworkObject fake, item thisItem, ArmorSlot armorSlot){
 
-        StartCoroutine(ArmorSlotLogic(cam, fake, thisItem, armorSlot));
+        StartCoroutine(ArmorSlotLogic(fake, thisItem, armorSlot));
     }
 
-    IEnumerator ArmorSlotLogic(Camera cam, NetworkObject fake, item thisItem, ArmorSlot armorSlot){
+    IEnumerator ArmorSlotLogic(NetworkObject fake, item thisItem, ArmorSlot armorSlot){
 
         // Debug.Log("waiting for mouse button to be released...");
         yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
@@ -88,7 +93,7 @@ public class Backpack : NetworkBehaviour
                             armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
                             break;
                     }
-                    GameManager.Singleton.SaveDataRpc();
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // Destroy(gameObject);
                 }
@@ -124,7 +129,7 @@ public class Backpack : NetworkBehaviour
                             armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
                             break;
                     }
-                    GameManager.Singleton.SaveDataRpc();
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                     // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                     // Destroy(gameObject);
@@ -281,19 +286,20 @@ public class Backpack : NetworkBehaviour
         }
         // Debug.Log("Destroying fake.");
         Destroy(fake.gameObject);
-        GameManager.Singleton.SaveDataRpc();
+        transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
         yield return new WaitForEndOfFrame();
         armorSlot.transform.GetChild(0).gameObject.SetActive(true);
     }
 
     [Rpc(SendTo.Everyone)]
-    public void AddItemRpc(string usernameI, item item, bool updateTally = true, int siblingIndex = -1){
-
+    public void AddItemRpc(string usernameI, item item, bool updateTally = true, int siblingIndex = -1)
+    {
         if(usernameI != username)
             return;
         if(!IsOwner)
             return;
         
+        // First, try to merge with an existing matching item.
         // Debug.Log("owner client check passed.");
         // Debug.Log("entering for loop vvv");
 
@@ -332,18 +338,16 @@ public class Backpack : NetworkBehaviour
                 // Debug.Log("false");
             }
         }
-        // Debug.Log("exiting for loop ^^^");
-        // Debug.Log("entering capacity logic vvv");
-        if(CapacityLogic(item)){
-            // Debug.Log("true");
-            // Debug.Log("adding item to inventory...");
-            if(siblingIndex == -1)
+        
+        // No matching item found; insert at the given siblingIndex.
+        if (CapacityLogic(item))
+        {
+            if (siblingIndex == -1)
                 siblingIndex = inventory.Count;
-
-            // Debug.Log(siblingIndex);
-
-            inventory.Insert(siblingIndex, new item{
-
+            
+            // Insert the new item at the specified index.
+            inventory.Insert(siblingIndex, new item()
+            {
                 name = item.name,
                 cost = item.cost,
                 value = item.value,
@@ -356,8 +360,20 @@ public class Backpack : NetworkBehaviour
                 equippable = item.equippable,
                 isEquipped = false
             });
+            
+            // After insertion, check if the item immediately following the inserted one is a duplicate.
+            // That is, if the new item at index 'siblingIndex' has the same id as the one at 'siblingIndex+1'
+            // then remove the duplicate (the one that was shifted down).
+            if (siblingIndex < inventory.Count - 1)
+            {
+                if (inventory[siblingIndex].id == inventory[siblingIndex + 1].id)
+                {
+                    inventory.RemoveAt(siblingIndex + 1);
+                }
+            }
+            
             RefreshItemDisplayBoxRpc(username);
-            if(updateTally)
+            if (updateTally)
                 GameManager.Singleton.UpdateIdTallyRpc();
         }
     }

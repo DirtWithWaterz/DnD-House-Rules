@@ -78,6 +78,7 @@ public class ItemDisplay : MonoBehaviour
         if(Input.GetMouseButtonDown(1) && !(thisItem.type == Type.backpack && isOpen)){
 
             // instantiate a new gameobject that follows the mouse
+            GameManager.Singleton.SaveDataRpc();
             NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, !Input.GetKey(KeyCode.LeftShift) ? transform.parent.parent : transform.parent.parent.parent);
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
             fakeDisplay.nameText.text = nameText.text;
@@ -215,7 +216,7 @@ public class ItemDisplay : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
-                            GameManager.Singleton.SaveDataRpc();
+                            transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                         else if(occupiedInventory.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
@@ -282,7 +283,7 @@ public class ItemDisplay : MonoBehaviour
                                     armorSlot.description.bodypart.maximumHP.Value += thisItem.value;
                                     break;
                             }
-                            GameManager.Singleton.SaveDataRpc();
+                            transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
                         }
                     }
