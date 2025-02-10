@@ -627,9 +627,9 @@ public class Backpack : NetworkBehaviour
     //     // inventory.Dispose(); // Dispose to release unmanaged memory
     //     base.OnDestroy();
     // }
-    public override void OnNetworkDespawn()
-    {
-        inventory.Dispose(); // Ensure disposal when network despawns
-        base.OnNetworkDespawn();
-    }
+    // public override void OnNetworkDespawn()
+    // {
+    //     inventory.Dispose(); // Ensure disposal when network despawns
+    //     base.OnNetworkDespawn();
+    // }
 }

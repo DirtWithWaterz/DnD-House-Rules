@@ -251,9 +251,12 @@ public class Interpreter : NetworkBehaviour
             }
             else{
 
-                response.Add("please wait for the host to quit the application. Quitting before the host may cause a desynch");
-                response.Add("and possible loss/corruption of saved data. If you wish to leave early, call the \"save\" command");
-                response.Add("and then close the application using the \"X\" in the top right corner of this window.");
+                response.Add("please wait for the host to quit the application. Quitting before");
+                response.Add("the host may cause a desynch and possible loss/corruption of saved data.");
+                response.Add("If you wish to leave early, call the \"save\" command and then close");
+                response.Add("the application using the \"X\" in the top right corner of this window.");
+
+                return response;
             }
 
         }

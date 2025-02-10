@@ -623,8 +623,35 @@ public class GameManager : NetworkBehaviour
 
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
 
-        if(quit)
+        if(quit){
+
+            foreach(userData data in userDatas){
+
+                User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+
+                userI.itemSlots.Dispose();
+                userI.backpack.inventory.Dispose();
+
+            }
+
+            userDatas.Dispose();
+            items.Dispose();
+
+            AllQuitRpc();
+            #if UNITY_EDITOR
+            UnityEditor.EditorApplication.isPlaying = false;
+            #endif
             Application.Quit();
+        }
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void AllQuitRpc(){
+
+        #if UNITY_EDITOR
+        UnityEditor.EditorApplication.isPlaying = false;
+        #endif
+        Application.Quit();
     }
     bool InitialLoad = true;
     public IEnumerator LoadData(){
@@ -1467,10 +1494,10 @@ public class GameManager : NetworkBehaviour
         DontDestroyOnLoad(gameObject);
     }
 
-    public override void OnDestroy()
-    {
-        base.OnDestroy();
-        // items.Dispose();
-        // userDatas.Dispose();
-    }
+    // public override void OnDestroy()
+    // {
+    //     base.OnDestroy();
+    //     // items.Dispose();
+    //     // userDatas.Dispose();
+    // }
 }
