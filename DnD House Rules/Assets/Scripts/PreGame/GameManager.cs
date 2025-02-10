@@ -268,6 +268,19 @@ public class GameManager : NetworkBehaviour
         public string itemInventory;
         public int id;
         public bool equippable;
+        public List<string> bodyparts = new List<string>();
+
+        public FixedList4096Bytes<FixedString32Bytes> GetBodyparts(){
+
+            FixedList4096Bytes<FixedString32Bytes> parts = new FixedList4096Bytes<FixedString32Bytes>();
+            if(bodyparts.Count == 0)
+                return parts;
+            foreach(string stringName in bodyparts){
+
+                parts.Add(stringName);
+            }
+            return parts;
+        }
     }
 
     [Serializable]
@@ -322,7 +335,7 @@ public class GameManager : NetworkBehaviour
     // }
 
     [Rpc(SendTo.Everyone)]
-    public void SaveDataRpc(){
+    public void SaveDataRpc(bool quit = false){
 
         if(!IsHost){
 
@@ -330,10 +343,10 @@ public class GameManager : NetworkBehaviour
             return;
         }
         
-        SaveData();
+        SaveData(quit);
     }
 
-    void SaveData(){
+    void SaveData(bool quit){
 
         if (!IsHost)
             return;
@@ -432,7 +445,7 @@ public class GameManager : NetworkBehaviour
 
             conditionsKeyValue = this.conditionsKeyValue,
             conditionsValueKey = this.conditionsValueKey
-        });
+        }, Formatting.Indented);
         File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json", output);
 
         JsonItems jsonItems = new JsonItems();
@@ -451,11 +464,12 @@ public class GameManager : NetworkBehaviour
                 weight = items[i].weight,
                 itemInventory = items[i].itemInventory.ToString(),
                 id = items[i].id,
-                equippable = items[i].equippable
+                equippable = items[i].equippable,
+                bodyparts = items[i].GetBodyparts()
             };
         }
 
-        output = JsonConvert.SerializeObject(jsonItems);
+        output = JsonConvert.SerializeObject(jsonItems, Formatting.Indented);
         File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/items.json", output);
 
         path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json";
@@ -492,7 +506,8 @@ public class GameManager : NetworkBehaviour
                     weight = inventoryList[j].weight,
                     itemInventory = inventoryList[j].itemInventory.ToString(),
                     id = inventoryList[j].id,
-                    equippable = inventoryList[j].equippable
+                    equippable = inventoryList[j].equippable,
+                    bodyparts = inventoryList[j].GetBodyparts()
                 };
             }
 
@@ -510,7 +525,7 @@ public class GameManager : NetworkBehaviour
 
         // --- Bodyarrays saving ---
         path = $"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json";
-        Debug.Log("logging: " + path);
+        // Debug.Log("logging: " + path);
         string directoryPath = Path.GetDirectoryName(path);
         if (!Directory.Exists(directoryPath))
             Directory.CreateDirectory(directoryPath);
@@ -548,7 +563,8 @@ public class GameManager : NetworkBehaviour
                             weight = itemSlot.item.weight,
                             itemInventory = itemSlot.item.itemInventory.ToString(),
                             id = itemSlot.item.id,
-                            equippable = itemSlot.item.equippable
+                            equippable = itemSlot.item.equippable,
+                            bodyparts = itemSlot.item.GetBodyparts()
                         },
                         slotModifierType = itemSlot.slotModifierType,
                         bodypart = itemSlot.bodypart.ToString(),
@@ -577,7 +593,8 @@ public class GameManager : NetworkBehaviour
                                 weight = itemSlot.item.weight,
                                 itemInventory = itemSlot.item.itemInventory.ToString(),
                                 id = itemSlot.item.id,
-                                equippable = itemSlot.item.equippable
+                                equippable = itemSlot.item.equippable,
+                                bodyparts = itemSlot.item.GetBodyparts()
                             },
                             slotModifierType = itemSlot.slotModifierType,
                             bodypart = itemSlot.bodypart.ToString(),
@@ -605,6 +622,9 @@ public class GameManager : NetworkBehaviour
         SaveJsonRpc("/bodyarrays.json", JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
 
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
+
+        if(quit)
+            Application.Quit();
     }
     bool InitialLoad = true;
     public IEnumerator LoadData(){
@@ -705,7 +725,7 @@ public class GameManager : NetworkBehaviour
                 };
             }
 
-            output = JsonConvert.SerializeObject(newJsonUserDatas);
+            output = JsonConvert.SerializeObject(newJsonUserDatas, Formatting.Indented);
 
             File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json", output);
         }
@@ -809,7 +829,7 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
-            output = JsonConvert.SerializeObject(newJsonUserDatas);
+            output = JsonConvert.SerializeObject(newJsonUserDatas, Formatting.Indented);
 
             File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json", output);
             jsonUserDatas = JsonConvert.DeserializeObject<JsonUserDatas>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/userdatas.json"));
@@ -918,7 +938,8 @@ public class GameManager : NetworkBehaviour
                 itemInventory = item.itemInventory.ToString(),
                 id = item.id,
                 equippable = item.equippable,
-                isEquipped = false
+                isEquipped = false,
+                bodyparts = item.GetBodyparts()
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
@@ -951,7 +972,7 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
-            output = JsonConvert.SerializeObject(newJsonInventories);
+            output = JsonConvert.SerializeObject(newJsonInventories, Formatting.Indented);
 
             File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json", output);
             jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
@@ -978,7 +999,8 @@ public class GameManager : NetworkBehaviour
                                 itemInventory = item.itemInventory.ToString(),
                                 id = item.id,
                                 equippable = item.equippable,
-                                isEquipped = false
+                                isEquipped = false,
+                                bodyparts = item.GetBodyparts()
                             });
                         }
                     }
@@ -1013,7 +1035,7 @@ public class GameManager : NetworkBehaviour
                 }
             }
 
-            output = JsonConvert.SerializeObject(newJsonBodyArrays);
+            output = JsonConvert.SerializeObject(newJsonBodyArrays, Formatting.Indented);
 
             SaveJsonRpc("/bodyarrays.json", output);
             jsonBodyArrays = JsonConvert.DeserializeObject<JsonBodyArrays>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/bodyarrays.json"));
@@ -1043,7 +1065,8 @@ public class GameManager : NetworkBehaviour
                                     itemInventory = itemSlot.item.itemInventory.ToString(),
                                     id = itemSlot.item.id,
                                     equippable = itemSlot.item.equippable,
-                                    isEquipped = true
+                                    isEquipped = true,
+                                    bodyparts = itemSlot.item.GetBodyparts()
                                 },
                                 slotModifierType = itemSlot.slotModifierType,
                                 bodypart = itemSlot.bodypart,
@@ -1248,7 +1271,8 @@ public class GameManager : NetworkBehaviour
                     itemInventory = userI.backpack.inventory[itemIndex].itemInventory,
                     id = userI.backpack.inventory[itemIndex].id,
                     equippable = userI.backpack.inventory[itemIndex].equippable,
-                    isEquipped = false
+                    isEquipped = false,
+                    bodyparts = userI.backpack.inventory[itemIndex].bodyparts
                 };
                 foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
 
@@ -1297,7 +1321,8 @@ public class GameManager : NetworkBehaviour
                         weight = userI.backpack.inventory[j].weight,
                         itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
                         id = userI.backpack.inventory[j].id,
-                        equippable = userI.backpack.inventory[j].equippable
+                        equippable = userI.backpack.inventory[j].equippable,
+                        bodyparts = userI.backpack.inventory[j].GetBodyparts()
                     };
                     break;
                 }
@@ -1328,7 +1353,7 @@ public class GameManager : NetworkBehaviour
         }
         // File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json", JsonConvert.SerializeObject(inventories));
         // Debug.Log("Calling save json rpc on all users.");
-        SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(inventories));
+        SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(inventories, Formatting.Indented));
         // userI.backpack.RefreshItemDisplayBoxRpc(userI.name);
         recieved0 = false;
     }
@@ -1402,7 +1427,7 @@ public class GameManager : NetworkBehaviour
         JsonItemIdTally jsonItemIdTally = new JsonItemIdTally();
         jsonItemIdTally.idTally = itemIdTally.Value;
 
-        string output = JsonConvert.SerializeObject(jsonItemIdTally);
+        string output = JsonConvert.SerializeObject(jsonItemIdTally, Formatting.Indented);
         File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/idTally.json", output);
     }
     [Rpc(SendTo.Server)]

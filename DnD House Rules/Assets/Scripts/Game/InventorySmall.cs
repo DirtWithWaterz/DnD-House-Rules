@@ -79,7 +79,8 @@ public class InventorySmall : NetworkBehaviour
                     itemInventory = jsonItem.itemInventory,
                     id = jsonItem.id,
                     equippable = jsonItem.equippable,
-                    isEquipped = false
+                    isEquipped = false,
+                    bodyparts = jsonItem.GetBodyparts()
                 });
             }
         }

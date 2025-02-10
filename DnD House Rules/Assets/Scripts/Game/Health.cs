@@ -29,6 +29,26 @@ public enum State{
 public class Health : NetworkBehaviour
 {
 
+    public static Dictionary<int, string> bodypartDictionary = new Dictionary<int, string>() {
+        {0, "BODY_HEAD"},
+        {1, "BODY_NECK"},
+        {2, "BODY_CHEST"},
+        {3, "BODY_ARM_LEFT"},
+        {4, "BODY_FOREARM_LEFT"},
+        {5, "BODY_HAND_LEFT"},
+        {6, "BODY_ARM_RIGHT"},
+        {7, "BODY_FOREARM_RIGHT"},
+        {8, "BODY_HAND_RIGHT"},
+        {9, "BODY_TORSO"},
+        {10, "BODY_PELVIS"},
+        {11, "BODY_THIGH_LEFT"},
+        {12, "BODY_CRUS_LEFT"},
+        {13, "BODY_FOOT_LEFT"},
+        {14, "BODY_THIGH_RIGHT"},
+        {15, "BODY_CRUS_RIGHT"},
+        {16, "BODY_FOOT_RIGHT"}
+    };
+
     public List<GameObject> body = new List<GameObject>();
 
     public List<GameObject> vitals = new List<GameObject>();

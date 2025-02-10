@@ -242,11 +242,20 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "quit"){
 
-            GameManager.Singleton.SaveDataRpc();
-            response.Add("");
-            Application.Quit();
+            if(IsHost){
 
-            return response;
+                GameManager.Singleton.SaveDataRpc(true);
+                response.Add("saving and quitting...");
+
+                return response;
+            }
+            else{
+
+                response.Add("please wait for the host to quit the application. Quitting before the host may cause a desynch");
+                response.Add("and possible loss/corruption of saved data. If you wish to leave early, call the \"save\" command");
+                response.Add("and then close the application using the \"X\" in the top right corner of this window.");
+            }
+
         }
 
         if(args[0] == "exit" && SceneManager.GetActiveScene().name == "Game"){
@@ -808,7 +817,7 @@ public class Interpreter : NetworkBehaviour
                 string directory = $"/{usernameI} {backpackName}{backpackId} Inventory.json";
                 GameManager.Singleton.RequestJsonRpc(username, usernameI, directory);
                 JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(directory));
-                foreach(JsonItem item in jsonItemInventory.items){
+                foreach(GameManager.JsonItem item in jsonItemInventory.items){
 
                     response.Add(item.name);
                 }
@@ -1001,7 +1010,24 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
                     string nameI = "";
+                    List<int> lbpN = new List<int>();
+                    FixedList4096Bytes<FixedString32Bytes> lbpS = new FixedList4096Bytes<FixedString32Bytes>();
+
                     for(int i = 8; i < args.Length; i++){
+
+                        if (args[i] == ":") {
+                            for (int j = i + 1; j < args.Length; j++){
+                                
+                                if(args[j] == ":")
+                                    break;
+                                lbpN.Add(int.Parse(args[j]));
+                            }
+                            for(int j = 0; j < lbpN.Count; j++){
+
+                                lbpS.Add(Health.bodypartDictionary[lbpN[j]]);
+                            }
+                            break;
+                        }
 
                         nameI += $"{args[i]} ";
                     }
@@ -1013,6 +1039,7 @@ public class Interpreter : NetworkBehaviour
                             return response;
                         }
                     }
+
                     item newItem = new item(){
 
                         name = nameI,
@@ -1025,7 +1052,8 @@ public class Interpreter : NetworkBehaviour
                         itemInventory = "",
                         id = 0,
                         equippable = args[7] == "true" ? true : false,
-                        isEquipped = false
+                        isEquipped = false,
+                        bodyparts = lbpS
                     };
                     GameManager.Singleton.items.Add(newItem);
                 }
@@ -1447,7 +1475,8 @@ public class Interpreter : NetworkBehaviour
                                         itemInventory = sourceItem.itemInventory,
                                         id = sourceItem.id,
                                         equippable = sourceItem.equippable,
-                                        isEquipped = false
+                                        isEquipped = false,
+                                        bodyparts = sourceItem.bodyparts
                                     };
 
                                     userI.backpack.AddItemRpc(usernameI, newItem, false);
@@ -1479,7 +1508,8 @@ public class Interpreter : NetworkBehaviour
                                 itemInventory = $"/{usernameI} {item.name}{newId} {newId} Inventory.json",
                                 id = newId,
                                 equippable = item.equippable,
-                                isEquipped = false
+                                isEquipped = false,
+                                bodyparts = item.bodyparts
                             };
 
                             if (item.type == Type.backpack)

@@ -4,6 +4,8 @@ using Unity.Netcode;
 using UnityEngine;
 using Newtonsoft.Json;
 using System.IO;
+using System.Collections.Generic;
+using System.Linq;
 
 [Serializable]
 public struct item:IEquatable<item>,INetworkSerializable{
@@ -20,6 +22,20 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
     public bool equippable;
     public bool isEquipped;
+    
+    public FixedList4096Bytes<FixedString32Bytes> bodyparts;
+
+    public List<string> GetBodyparts(){
+
+        List<string> parts = new List<string>();
+        if(bodyparts.Length == 0)
+            return parts;
+        foreach(FixedString32Bytes byteName in bodyparts){
+
+            parts.Add(byteName.ToString());
+        }
+        return parts;
+    }
 
     public bool CapacityLogic(item item){
 
@@ -30,7 +46,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
-        newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length + 1];
+        newjsonItemInventory.items = new GameManager.JsonItem[jsonItemInventory.items.Length + 1];
         float sizeTally = 0;
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
 
@@ -98,7 +114,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id,
                 equippable = jsonItemInventory.items[i].equippable,
-                isEquipped = false
+                isEquipped = false,
+                bodyparts = jsonItemInventory.items[i].GetBodyparts()
             };
             // Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
@@ -110,14 +127,14 @@ public struct item:IEquatable<item>,INetworkSerializable{
             return true;
         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", itemInventory.ToString());
         JsonItemInventory jsonItemInventory = new JsonItemInventory();
-        jsonItemInventory.items = new JsonItem[items.Length];
+        jsonItemInventory.items = new GameManager.JsonItem[items.Length];
         float sizeTally = 0;
         int calculatedWeight = 0;
         for(int i = 0; i < items.Length; i++){
             
             if(items[i].type == Type.backpack)
                 return true;
-            jsonItemInventory.items[i] = new JsonItem(){
+            jsonItemInventory.items[i] = new GameManager.JsonItem(){
 
                 name = items[i].name.ToString(),
                 cost = items[i].cost,
@@ -128,7 +145,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 weight = items[i].weight,
                 itemInventory = items[i].itemInventory.ToString(),
                 id = items[i].id,
-                equippable = items[i].equippable
+                equippable = items[i].equippable,
+                bodyparts = items[i].GetBodyparts()
             };
             switch(items[i].size){
 
@@ -144,7 +162,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
             }
             calculatedWeight += jsonItemInventory.items[i].weight;
         }
-        string input = JsonConvert.SerializeObject(jsonItemInventory);
+        string input = JsonConvert.SerializeObject(jsonItemInventory, Formatting.Indented);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
         // Debug.Log($"{sizeTally} < {value} ?");
         if(sizeTally < value){
@@ -171,12 +189,12 @@ public struct item:IEquatable<item>,INetworkSerializable{
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(output);
 
         JsonItemInventory newjsonItemInventory = new JsonItemInventory();
-        newjsonItemInventory.items = new JsonItem[jsonItemInventory.items.Length];
+        newjsonItemInventory.items = new GameManager.JsonItem[jsonItemInventory.items.Length];
         float sizeTally = 0;
         int calculatedWeight = 0;
         for(int i = 0; i < jsonItemInventory.items.Length; i++){
 
-            newjsonItemInventory.items[i] = new JsonItem(){
+            newjsonItemInventory.items[i] = new GameManager.JsonItem(){
 
                 name = jsonItemInventory.items[i].name,
                 cost = jsonItemInventory.items[i].cost,
@@ -187,7 +205,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 weight = jsonItemInventory.items[i].weight,
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id,
-                equippable = jsonItemInventory.items[i].equippable
+                equippable = jsonItemInventory.items[i].equippable,
+                bodyparts = jsonItemInventory.items[i].bodyparts
             };
             switch(jsonItemInventory.items[i].size){
 
@@ -211,7 +230,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         }
         if(siblingIndex == -1)
             siblingIndex = newjsonItemInventory.items.Length;
-        newjsonItemInventory.items = InsertIntoArray(newjsonItemInventory.items,  new JsonItem(){
+        newjsonItemInventory.items = InsertIntoArray(newjsonItemInventory.items,  new GameManager.JsonItem(){
 
             name = item.name.ToString(),
             cost = item.cost,
@@ -222,7 +241,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
             weight = item.weight,
             itemInventory = item.itemInventory.ToString(),
             id = item.id,
-            equippable = item.equippable
+            equippable = item.equippable,
+            bodyparts = item.GetBodyparts()
         }, siblingIndex);
         switch(item.size){
 
@@ -238,7 +258,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         }
         calculatedWeight += item.weight;
         // Debug.Log($"after item to add, size tally equals: {sizeTally}");
-        string input = JsonConvert.SerializeObject(newjsonItemInventory);
+        string input = JsonConvert.SerializeObject(newjsonItemInventory, Formatting.Indented);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
         // Debug.Log($"{sizeTally} <= {value} ?");
         if(sizeTally <= value){
@@ -291,7 +311,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         }
 
         // Create a new array with one less item
-        JsonItem[] newItems = new JsonItem[jsonItemInventory.items.Length - 1];
+        GameManager.JsonItem[] newItems = new GameManager.JsonItem[jsonItemInventory.items.Length - 1];
         int newIndex = 0;
         for (int i = 0; i < jsonItemInventory.items.Length; i++)
         {
@@ -304,7 +324,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         // Update the inventory
         JsonItemInventory newJsonItemInventory = new JsonItemInventory { items = newItems };
-        string input = JsonConvert.SerializeObject(newJsonItemInventory);
+        string input = JsonConvert.SerializeObject(newJsonItemInventory, Formatting.Indented);
         string directory = $"/{GameManager.Singleton.interpreter.GetUsername} {name}{id} Inventory.json";
         GameManager.Singleton.SaveJsonRpc(directory, input);
 
@@ -367,28 +387,35 @@ public struct item:IEquatable<item>,INetworkSerializable{
         serializer.SerializeValue(ref id);
         serializer.SerializeValue(ref equippable);
         serializer.SerializeValue(ref isEquipped);
+        
+        int count = bodyparts.Length;
+        serializer.SerializeValue(ref count);
+
+        if (serializer.IsReader)
+        {
+            bodyparts.Clear();
+            for (int i = 0; i < count; i++)
+            {
+                FixedString32Bytes part = default;
+                serializer.SerializeValue(ref part);
+                bodyparts.Add(part);
+            }
+        }
+        else if (serializer.IsWriter)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                var part = bodyparts[i];
+                serializer.SerializeValue(ref part);
+            }
+        }
     }
-}
-
-[Serializable]
-public class JsonItem{
-
-    public string name;
-    public int cost;
-    public int value;
-    public Type type;
-    public Size size;
-    public int amount;
-    public int weight;
-    public string itemInventory;
-    public int id;
-    public bool equippable;
 }
 
 [Serializable]
 public class JsonItemInventory{
 
-    public JsonItem[] items;
+    public GameManager.JsonItem[] items;
 }
 
 public enum Type{
