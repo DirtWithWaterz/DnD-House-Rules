@@ -168,6 +168,17 @@ public class Health : NetworkBehaviour
         body[15].GetComponent<Bodypart>().maximumHP.Value = 3+Mathf.RoundToInt(CONM < 0 ? (CONM/2.5f) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
         body[16].GetComponent<Bodypart>().maximumHP.Value = 2+Mathf.RoundToInt(CONM < 0 ? (CONM/5) + (s.lvl.Value > 1 ? lvlBuff-2 : 0) : CONM > 0 ? CONM*lvlBuff : (s.lvl.Value > 1 ? lvlBuff-1.5f : 0));
 
+        foreach(Bodypart bodypart in user.bodyparts){
+
+            int addVal = 0;
+            for(int i = 0; i < bodypart.slot.Length; i++){
+
+                if(bodypart.slot[i].slotModifierType == SlotModifierType.hp)
+                addVal += bodypart.slot[i].item.value;
+            }
+            bodypart.maximumHP.Value += addVal;
+        }
+
         // foreach(GameObject g in body){
 
         //     Bodypart b = g.GetComponent<Bodypart>();
@@ -251,6 +262,17 @@ public class Health : NetworkBehaviour
         body[14].GetComponent<Bodypart>().ac.Value = 9 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
         body[15].GetComponent<Bodypart>().ac.Value = 11 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
         body[16].GetComponent<Bodypart>().ac.Value = 12 + s.DEX.Value + (s.barbarian.Value ? s.CON.Value : 0);
+
+        foreach(Bodypart bodypart in user.bodyparts){
+
+            int addVal = 0;
+            for(int i = 0; i < bodypart.slot.Length; i++){
+
+                if(bodypart.slot[i].slotModifierType == SlotModifierType.ac)
+                addVal += bodypart.slot[i].item.value;
+            }
+            bodypart.ac.Value += addVal;
+        }
     }
 
     public void CalculateValues(){
