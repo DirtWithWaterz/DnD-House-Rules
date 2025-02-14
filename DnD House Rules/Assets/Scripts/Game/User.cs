@@ -175,6 +175,11 @@ public class User : NetworkBehaviour
         interpreter.SetBarbarianRpc(this.name, GameManager.Singleton.userDatas[index].barbarian);
         interpreter.SetProf2InitRpc(this.name, GameManager.Singleton.userDatas[index].initProf);
 
+        // implement
+        interpreter.SetMoneyRpc(this.name, MoneyType.soljik, GameManager.Singleton.userDatas[index].soljik);
+        interpreter.SetMoneyRpc(this.name, MoneyType.brine, GameManager.Singleton.userDatas[index].brine);
+        interpreter.SetMoneyRpc(this.name, MoneyType.penc, GameManager.Singleton.userDatas[index].penc);
+
         StartCoroutine(AllocateEnum());
 
         IEnumerator AllocateEnum(){
@@ -337,8 +342,11 @@ public class User : NetworkBehaviour
 
                     barbarian = user.stats.barbarian.Value,
                     baseSpeed = user.stats.BASE_SPEED.Value,
-                    initProf = user.stats.addProf2Init.Value
+                    initProf = user.stats.addProf2Init.Value,
 
+                    soljik = user.backpack.soljik.Value,
+                    brine = user.backpack.brine.Value,
+                    penc = user.backpack.penc.Value
                 };
                 // Debug.LogWarning($"Username: {data.username} : ID: {id} : Chest Condition: {data.CONDITION_CHEST}");
                 GameManager.Singleton.userDatas[i] = data;

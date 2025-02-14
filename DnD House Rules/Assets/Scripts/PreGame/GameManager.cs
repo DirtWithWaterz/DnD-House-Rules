@@ -57,6 +57,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
     public int baseSpeed;
     public bool initProf;
 
+    public int soljik, brine, penc;
+
     public bool Equals(userData other)
     {
         return other.id == id;
@@ -134,6 +136,10 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
         serializer.SerializeValue(ref barbarian);
         serializer.SerializeValue(ref baseSpeed);
         serializer.SerializeValue(ref initProf);
+
+        serializer.SerializeValue(ref soljik);
+        serializer.SerializeValue(ref brine);
+        serializer.SerializeValue(ref penc);
 
     }
 }
@@ -240,6 +246,8 @@ public class GameManager : NetworkBehaviour
         public bool barbarian;
         public int baseSpeed;
         public bool initProf;
+
+        public int soljik, brine, penc;
     }
 
     [Serializable]
@@ -430,7 +438,10 @@ public class GameManager : NetworkBehaviour
                 CONDITION_FOOT_RIGHT = user.CONDITION_FOOT_RIGHT.ToString(),
                 barbarian = user.barbarian,
                 baseSpeed = user.baseSpeed,
-                initProf = user.initProf
+                initProf = user.initProf,
+                soljik = user.soljik,
+                brine = user.brine,
+                penc = user.penc
             };
 
             userDataMap[user.username.ToString()] = newData; // Ensures only one entry per user
@@ -747,7 +758,11 @@ public class GameManager : NetworkBehaviour
 
                     barbarian = false,
                     baseSpeed = 44,
-                    initProf = false
+                    initProf = false,
+
+                    soljik = 0,
+                    brine = 0,
+                    penc = 0
 
                 };
             }
@@ -850,8 +865,11 @@ public class GameManager : NetworkBehaviour
 
                         barbarian = false,
                         baseSpeed = 44,
-                        initProf = false
+                        initProf = false,
 
+                        soljik = 0,
+                        brine = 0,
+                        penc = 0
                     };
                 }
             }
@@ -940,7 +958,11 @@ public class GameManager : NetworkBehaviour
 
                         barbarian = jsonUserDatas.jsonUserDatas[i].barbarian,
                         baseSpeed = jsonUserDatas.jsonUserDatas[i].baseSpeed,
-                        initProf = jsonUserDatas.jsonUserDatas[i].initProf
+                        initProf = jsonUserDatas.jsonUserDatas[i].initProf,
+
+                        soljik = jsonUserDatas.jsonUserDatas[i].soljik,
+                        brine = jsonUserDatas.jsonUserDatas[i].brine,
+                        penc = jsonUserDatas.jsonUserDatas[i].penc
                     };
                     User user = GameObject.Find(data.username.ToString()).GetComponent<User>();
                     user.LoadUserDataRpc(i);
@@ -1003,6 +1025,7 @@ public class GameManager : NetworkBehaviour
 
             File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json", output);
             jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
+            jsonInventories = newJsonInventories;
         }
         for(int i = 0; i < userDatas.Count; i++){
 

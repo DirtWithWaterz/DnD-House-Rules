@@ -117,7 +117,7 @@ public class ItemDisplaySmall : MonoBehaviour
                         itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), thisItem);
                         // GameManager.Singleton.SaveDataRpc();
                         // List<itemShort> itemShorts = new List<itemShort>();
-                        // foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                        // foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                         //     itemShorts.Add(new itemShort{
 

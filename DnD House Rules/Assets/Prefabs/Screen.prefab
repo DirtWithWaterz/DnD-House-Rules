@@ -1023,8 +1023,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   itemDisplays: []
   Panel: {fileID: 8809521113652190381}
+  soljik:
+    m_InternalValue: 0
+  brine:
+    m_InternalValue: 0
+  penc:
+    m_InternalValue: 0
   capacity:
     m_InternalValue: 4
+  soljikText: {fileID: 6074528911578620859}
+  brineText: {fileID: 4500850632505264034}
+  pencText: {fileID: 6999460593683523136}
 --- !u!1 &259790787137327553
 GameObject:
   m_ObjectHideFlags: 0

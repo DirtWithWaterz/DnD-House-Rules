@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
@@ -11,12 +12,19 @@ public class Backpack : NetworkBehaviour
     public List<NetworkObject> itemDisplays = new List<NetworkObject>();
     [SerializeField] GameObject Panel;
 
+    public NetworkVariable<int> 
+        soljik = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner), 
+        brine = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner), 
+        penc = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
     User user;
     string username = "unknown";
 
     Camera cam;
 
     public NetworkVariable<int> capacity = new NetworkVariable<int>(4, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    public TMP_Text soljikText, brineText, pencText;
 
     public override void OnNetworkSpawn()
     {
@@ -73,7 +81,7 @@ public class Backpack : NetworkBehaviour
                         }, itemDisplay.transform.GetSiblingIndex());
                     }
                     List<itemShort> itemShorts = new List<itemShort>();
-                    foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                    foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                         itemShorts.Add(new itemShort{
 
@@ -110,7 +118,7 @@ public class Backpack : NetworkBehaviour
                     itemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false, siblingIndex);
                     // GameManager.Singleton.SaveDataRpc();
                     List<itemShort> itemShorts = new List<itemShort>();
-                    foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                    foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                         itemShorts.Add(new itemShort{
 
@@ -297,7 +305,7 @@ public class Backpack : NetworkBehaviour
 
                     AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false);
                     List<itemShort> itemShorts = new List<itemShort>();
-                    foreach(ItemDisplay itemDisplay1 in transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                    foreach(ItemDisplay itemDisplay1 in transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                         itemShorts.Add(new itemShort{
 
@@ -622,14 +630,58 @@ public class Backpack : NetworkBehaviour
         RefreshItemDisplayBoxRpc(usernameI);
     }
 
-    // public override void OnDestroy()
-    // {
-    //     // inventory.Dispose(); // Dispose to release unmanaged memory
-    //     base.OnDestroy();
-    // }
-    // public override void OnNetworkDespawn()
-    // {
-    //     inventory.Dispose(); // Ensure disposal when network despawns
-    //     base.OnNetworkDespawn();
-    // }
+    [Rpc(SendTo.Everyone)]
+    public void AddMoneyRpc(string usernameI, MoneyType moneyType, int amount){
+
+        if(usernameI != username)
+            return;
+        if(!IsOwner)
+            return;
+
+        switch(moneyType){
+
+            case MoneyType.soljik:
+                soljik.Value += amount;
+                soljikText.text = $"Soljik: {soljik.Value:0000000000000}";
+                break;
+            case MoneyType.brine:
+                brine.Value += amount;
+                brineText.text = $"Brine: {brine.Value:000}";
+                break;
+            case MoneyType.penc:
+                penc.Value += amount;
+                pencText.text = $"Penc: {penc.Value:000}";
+                break;
+        }
+    }
+    [Rpc(SendTo.Everyone)]
+    public void RemoveMoneyRpc(string usernameI, MoneyType moneyType, int amount){
+
+        if(usernameI != username)
+            return;
+        if(!IsOwner)
+            return;
+
+        switch(moneyType){
+
+            case MoneyType.soljik:
+                soljik.Value -= amount;
+                soljikText.text = $"Soljik: {soljik.Value:0000000000000}";
+                break;
+            case MoneyType.brine:
+                brine.Value -= amount;
+                brineText.text = $"Brine: {brine.Value:000}";
+                break;
+            case MoneyType.penc:
+                penc.Value -= amount;
+                pencText.text = $"Penc: {penc.Value:000}";
+                break;
+        }
+    }
+}
+public enum MoneyType{
+
+    soljik = 0,
+    brine = 1,
+    penc = 2
 }

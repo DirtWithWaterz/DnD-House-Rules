@@ -119,7 +119,7 @@ public class ItemDisplay : MonoBehaviour
                             }, itemDisplay.transform.GetSiblingIndex());
                         }
                         List<itemShort> itemShorts = new List<itemShort>();
-                        foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                        foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                             itemShorts.Add(new itemShort{
 
@@ -149,7 +149,7 @@ public class ItemDisplay : MonoBehaviour
                     // ItemDisplay otherItemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
 
                     List<itemShort> itemShorts = new List<itemShort>();
-                    foreach(ItemDisplay itemDisplay in occupiedInventory.transform.GetChild(1).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+                    foreach(ItemDisplay itemDisplay in occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
 
                         itemShorts.Add(new itemShort{
 

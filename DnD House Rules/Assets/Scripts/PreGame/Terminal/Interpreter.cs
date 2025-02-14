@@ -1418,16 +1418,37 @@ public class Interpreter : NetworkBehaviour
 
         if (args[0] == "give")
         {
-            if (IsHost)
+            
+            string usernameI = args[1];
+            User userI = GameObject.Find(usernameI)?.GetComponent<User>();
+            if (userI == null)
             {
-                string usernameI = args[1];
-                User userI = GameObject.Find(usernameI)?.GetComponent<User>();
-                if (userI == null)
-                {
-                    response.Add($"The user \"{usernameI}\" does not exist or could not be found.");
+                response.Add($"The user \"{usernameI}\" does not exist or could not be found.");
+                response.Add("");
+                return response;
+            }
+
+            switch(args[3]){
+
+                case "soljik":
+                    userI.backpack.AddMoneyRpc(usernameI, MoneyType.soljik, int.Parse(args[2]));
+                    response.Add($"giving {usernameI} {int.Parse(args[2])} soljik.");
                     response.Add("");
                     return response;
-                }
+                case "brine":
+                    userI.backpack.AddMoneyRpc(usernameI, MoneyType.brine, int.Parse(args[2]));
+                    response.Add($"giving {usernameI} {int.Parse(args[2])} brine.");
+                    response.Add("");
+                    return response;
+                case "penc":
+                    userI.backpack.AddMoneyRpc(usernameI, MoneyType.penc, int.Parse(args[2]));
+                    response.Add($"giving {usernameI} {int.Parse(args[2])} penc.");
+                    response.Add("");
+                    return response;
+            }
+
+            if (IsHost)
+            {
 
                 string nameI = "";
                 int selfI = -1; // Used to track if we are transferring a backpack
@@ -1530,17 +1551,36 @@ public class Interpreter : NetworkBehaviour
                 response.Add("");
                 return response;
             }
-
             response.Add("");
             return response;
         }
 
         if(args[0] == "take"){
 
+            string usernameI = args[1];
+            User userI = GameObject.Find(usernameI).GetComponent<User>();
+
+            switch(args[3]){
+
+                case "soljik":
+                    userI.backpack.RemoveMoneyRpc(usernameI, MoneyType.soljik, int.Parse(args[2]));
+                    response.Add($"taking {int.Parse(args[2])} soljik from {usernameI}.");
+                    response.Add("");
+                    return response;
+                case "brine":
+                    userI.backpack.RemoveMoneyRpc(usernameI, MoneyType.brine, int.Parse(args[2]));
+                    response.Add($"taking {int.Parse(args[2])} brine from {usernameI}.");
+                    response.Add("");
+                    return response;
+                case "penc":
+                    userI.backpack.RemoveMoneyRpc(usernameI, MoneyType.penc, int.Parse(args[2]));
+                    response.Add($"taking {int.Parse(args[2])} penc from {usernameI}.");
+                    response.Add("");
+                    return response;
+            }
+
             if(IsHost){
 
-                string usernameI = args[1];
-                User userI = GameObject.Find(usernameI).GetComponent<User>();
 
                 string nameI = "";
                 for(int i = 2; i < args.Length; i++){
@@ -1881,6 +1921,32 @@ public class Interpreter : NetworkBehaviour
         User user = GameObject.Find(usernameI).GetComponent<User>();
         user.bodyparts[index].black.Value = val;
     }
+    
+    [Rpc(SendTo.Everyone)]
+    public void SetMoneyRpc(string usernameI, MoneyType moneyType, int amount){
+
+        if(username != usernameI)
+            return;
+        
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+
+        switch(moneyType){
+
+            case MoneyType.soljik:
+                user.backpack.soljik.Value = amount;
+                user.backpack.soljikText.text = $"Soljik: {amount:0000000000000}";
+                break;
+            case MoneyType.brine:
+                user.backpack.brine.Value = amount;
+                user.backpack.brineText.text = $"Brine: {amount:000}";
+                break;
+            case MoneyType.penc:
+                user.backpack.penc.Value = amount;
+                user.backpack.pencText.text = $"Penc: {amount:000}";
+                break;
+        }
+    }
+    
     [Rpc(SendTo.Everyone)]
     public void SetConditionRpc(string usernameI, int index, string conditionVal){
 
