@@ -74,7 +74,7 @@ public class Bodypart : NetworkBehaviour
     public NetworkVariable<State> status = new NetworkVariable<State>(State.Unknown, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     Health h;
-    User user;
+    public User user;
 
     public itemSlot[] slot;
 

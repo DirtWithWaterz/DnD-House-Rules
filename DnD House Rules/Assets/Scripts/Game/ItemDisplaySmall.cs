@@ -193,7 +193,7 @@ public class ItemDisplaySmall : MonoBehaviour
                                         case Type.capacityMultT:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
                                             break;
-                                        case Type.medical:
+                                        case Type.healthMult:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
                                             break;
                                         default:
@@ -269,7 +269,7 @@ public class ItemDisplaySmall : MonoBehaviour
                                         case Type.capacityMultT:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
                                             break;
-                                        case Type.medical:
+                                        case Type.healthMult:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
                                             break;
                                         default:
@@ -291,6 +291,50 @@ public class ItemDisplaySmall : MonoBehaviour
                             }
                             break;
                         }
+                    }
+                }
+                else if(hit2D.transform.name.Contains("BODY")){
+
+                    Bodypart bodypart = hit2D.transform.GetComponent<Bodypart>();
+
+                    switch(thisItem.type){
+
+                        case Type.medical:
+                            bodypart.currentHP.Value += thisItem.value;
+                            yield return new WaitForEndOfFrame();
+
+                            List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                            for(int i = 0; i < thisItemInventory.Count; i++){
+
+                                if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                    // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                    thisItemInventory.RemoveAt(i);
+                                    i = -1;
+                                }
+                            }
+                            occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                            break;
+                        case Type.food:
+                            if(bodypart.name == Health.bodypartDictionary[0]){
+                                bodypart.user.AddHungiesRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.value);
+                                yield return new WaitForEndOfFrame();
+
+                                thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                                for(int i = 0; i < thisItemInventory.Count; i++){
+
+                                    if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                        // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                        thisItemInventory.RemoveAt(i);
+                                        i = -1;
+                                    }
+                                }
+                                occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                            }
+                            break;
                     }
                 }
             }

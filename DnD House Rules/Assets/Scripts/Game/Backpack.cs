@@ -190,7 +190,7 @@ public class Backpack : NetworkBehaviour
                                     case Type.capacityMultT:
                                         otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
                                         break;
-                                    case Type.medical:
+                                    case Type.healthMult:
                                         otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.hp;
                                         break;
                                     default:
@@ -241,7 +241,7 @@ public class Backpack : NetworkBehaviour
                                     case Type.capacityMultT:
                                         otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
                                         break;
-                                    case Type.medical:
+                                    case Type.healthMult:
                                         otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.hp;
                                         break;
                                     default:
@@ -284,7 +284,7 @@ public class Backpack : NetworkBehaviour
                                     case Type.capacityMultT:
                                         armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
                                         break;
-                                    case Type.medical:
+                                    case Type.healthMult:
                                         armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
                                         break;
                                     default:

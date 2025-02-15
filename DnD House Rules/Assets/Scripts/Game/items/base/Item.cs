@@ -422,7 +422,7 @@ public enum Type{
 
     other = -1,
     food = 0,
-    medical = 1,
+    healthMult = 1,
     weapon = 2,
     lightArmor = 3,
     heavyArmor = 4,
@@ -430,7 +430,8 @@ public enum Type{
     capacityMultL = 6,
     capacityMultS = 7,
     capacityMultT = 8,
-    backpack = 9
+    backpack = 9,
+    medical = 10
 }
 public enum Size{
 

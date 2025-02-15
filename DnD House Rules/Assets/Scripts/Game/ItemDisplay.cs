@@ -206,7 +206,7 @@ public class ItemDisplay : MonoBehaviour
                                         case Type.capacityMultT:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
                                             break;
-                                        case Type.medical:
+                                        case Type.healthMult:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
                                             break;
                                         default:
@@ -274,7 +274,7 @@ public class ItemDisplay : MonoBehaviour
                                         case Type.capacityMultT:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.storage;
                                             break;
-                                        case Type.medical:
+                                        case Type.healthMult:
                                             armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType = SlotModifierType.hp;
                                             break;
                                         default:
@@ -298,12 +298,29 @@ public class ItemDisplay : MonoBehaviour
                         }
                     }
                 }
+                else if(hit2D.transform.name.Contains("BODY")){
+
+                    Bodypart bodypart = hit2D.transform.GetComponent<Bodypart>();
+
+                    switch(thisItem.type){
+
+                        case Type.medical:
+                            bodypart.currentHP.Value += thisItem.value;
+                            occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+                            break;
+                        case Type.food: // implement hunger?
+                            bodypart.user.AddHungiesRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.value);
+                            if(bodypart.name == Health.bodypartDictionary[0]){
+
+                                occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+                            }
+                            break;
+                    }
+                }
             }
             Destroy(fake.gameObject);
             GameManager.Singleton.SaveDataRpc();
             transform.GetChild(0).gameObject.SetActive(true);
-
-
         }
     }
 

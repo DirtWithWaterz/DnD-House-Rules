@@ -28,6 +28,10 @@ public class User : NetworkBehaviour
     [SerializeField] TMP_Text CurrentPlayerLabel1;
     [SerializeField] TMP_Text CurrentPlayerLabel2;
 
+    public NetworkVariable<float> hungies = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+
+    public static float hungySpeed = 0.00019f;
+
     public override void OnNetworkSpawn()
     {
         // Initialize itemSlots on the server (ensuring proper setup)
@@ -148,11 +152,62 @@ public class User : NetworkBehaviour
         UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
 
+    float hungiesTimer = 0f;
+    void Update(){
+
+        if(!isInitialized.Value || !IsOwner)
+            return;
+        
+        hungiesTimer += Time.deltaTime;
+
+        if(hungiesTimer >= 1f){
+
+            hungies.Value -= hungySpeed;
+            hungies.Value = Mathf.Clamp(hungies.Value, 0f, 100f);
+            hungiesTimer = 0f;
+        }
+        switch(hungies.Value){
+
+            case 0:
+                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger4"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger4"]);
+                break;
+            case <= 25:
+                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger3"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger3"]);
+                break;
+            case <= 50:
+                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger2"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger2"]);
+                break;
+            case <= 75:
+                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger1"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger1"]);
+                break;
+            default:
+                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["normal"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["normal"]);
+                break;
+        }
+    }
+
     // [Rpc(SendTo.ClientsAndHost)]
     // public void DataLoadedRpc(string val){
 
     //     Debug.Log($"{val} userdata successfully loaded!");
     // }
+
+    [Rpc(SendTo.Everyone)]
+    public void AddHungiesRpc(string usernameI, float value){
+
+        if(usernameI != name)
+            return;
+        if(!IsOwner)
+            return;
+
+        hungies.Value += value;
+        hungies.Value = Mathf.Clamp(hungies.Value, 0f, 100f);
+    }
 
     public bool ready;
 
@@ -179,6 +234,8 @@ public class User : NetworkBehaviour
         interpreter.SetMoneyRpc(this.name, MoneyType.soljik, GameManager.Singleton.userDatas[index].soljik);
         interpreter.SetMoneyRpc(this.name, MoneyType.brine, GameManager.Singleton.userDatas[index].brine);
         interpreter.SetMoneyRpc(this.name, MoneyType.penc, GameManager.Singleton.userDatas[index].penc);
+
+        // interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies);
 
         StartCoroutine(AllocateEnum());
 
@@ -346,7 +403,9 @@ public class User : NetworkBehaviour
 
                     soljik = user.backpack.soljik.Value,
                     brine = user.backpack.brine.Value,
-                    penc = user.backpack.penc.Value
+                    penc = user.backpack.penc.Value,
+
+                    hungies = user.hungies.Value
                 };
                 // Debug.LogWarning($"Username: {data.username} : ID: {id} : Chest Condition: {data.CONDITION_CHEST}");
                 GameManager.Singleton.userDatas[i] = data;

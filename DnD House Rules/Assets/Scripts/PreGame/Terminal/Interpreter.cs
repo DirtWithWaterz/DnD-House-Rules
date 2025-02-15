@@ -1257,6 +1257,13 @@ public class Interpreter : NetworkBehaviour
                         // Set month first, then day
                         SetTimeRpc(1, targetMonth);
                         SetTimeRpc(2, targetDay);
+
+                        foreach(userData data in GameManager.Singleton.userDatas){
+
+                            User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+
+                            userI.AddHungiesRpc(data.username.ToString(), -(dayDifference*129600*User.hungySpeed));
+                        }
                         break;
                     case "hours":
                         int currentHour = calendar.currentHour.Value;
@@ -1307,6 +1314,12 @@ public class Interpreter : NetworkBehaviour
                         }
 
                         SetTimeRpc(3, targetHour); // Finally update the hours
+                        foreach(userData data in GameManager.Singleton.userDatas){
+
+                            User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+
+                            userI.AddHungiesRpc(data.username.ToString(), -(hourDifference*3600*User.hungySpeed));
+                        }
                         break;
                     case "minutes":
                         int currentMinute = calendar.currentMin.Value;
@@ -1377,6 +1390,12 @@ public class Interpreter : NetworkBehaviour
                         }
 
                         SetTimeRpc(4, targetMinute);
+                        foreach(userData data in GameManager.Singleton.userDatas){
+
+                            User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+
+                            userI.AddHungiesRpc(data.username.ToString(), -(minuteDifference*60*User.hungySpeed));
+                        }
                         break;
                 }
             }

@@ -59,6 +59,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
 
     public int soljik, brine, penc;
 
+    public float hungies;
+
     public bool Equals(userData other)
     {
         return other.id == id;
@@ -140,6 +142,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
         serializer.SerializeValue(ref soljik);
         serializer.SerializeValue(ref brine);
         serializer.SerializeValue(ref penc);
+
+        serializer.SerializeValue(ref hungies);
 
     }
 }
@@ -248,6 +252,8 @@ public class GameManager : NetworkBehaviour
         public bool initProf;
 
         public int soljik, brine, penc;
+
+        public float hungies;
     }
 
     [Serializable]
@@ -441,7 +447,8 @@ public class GameManager : NetworkBehaviour
                 initProf = user.initProf,
                 soljik = user.soljik,
                 brine = user.brine,
-                penc = user.penc
+                penc = user.penc,
+                hungies = user.hungies
             };
 
             userDataMap[user.username.ToString()] = newData; // Ensures only one entry per user
@@ -762,8 +769,9 @@ public class GameManager : NetworkBehaviour
 
                     soljik = 0,
                     brine = 0,
-                    penc = 0
+                    penc = 0,
 
+                    hungies = 100f
                 };
             }
 
@@ -869,7 +877,9 @@ public class GameManager : NetworkBehaviour
 
                         soljik = 0,
                         brine = 0,
-                        penc = 0
+                        penc = 0,
+
+                        hungies = 100f
                     };
                 }
             }
@@ -962,7 +972,9 @@ public class GameManager : NetworkBehaviour
 
                         soljik = jsonUserDatas.jsonUserDatas[i].soljik,
                         brine = jsonUserDatas.jsonUserDatas[i].brine,
-                        penc = jsonUserDatas.jsonUserDatas[i].penc
+                        penc = jsonUserDatas.jsonUserDatas[i].penc,
+
+                        hungies = jsonUserDatas.jsonUserDatas[i].hungies
                     };
                     User user = GameObject.Find(data.username.ToString()).GetComponent<User>();
                     user.LoadUserDataRpc(i);
