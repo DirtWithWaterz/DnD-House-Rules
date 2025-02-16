@@ -349,7 +349,7 @@ public class GameManager : NetworkBehaviour
     // }
 
     [Rpc(SendTo.Everyone)]
-    public void SaveDataRpc(bool quit = false){
+    public void SaveDataRpc(bool quit = false, bool log = false){
 
         if(!IsHost){
 
@@ -357,13 +357,36 @@ public class GameManager : NetworkBehaviour
             return;
         }
         
-        SaveData(quit);
+        SaveData(quit, log);
     }
 
-    void SaveData(bool quit){
+    [Rpc(SendTo.Everyone)]
+    public void LoadDataRpc(){
+
+        if(!IsHost)
+            return;
+        
+        StartCoroutine(LoadData());
+    }
+
+    void SaveData(bool quit, bool log){
 
         if (!IsHost)
             return;
+        
+        if(log){
+
+            int lines = terminalManager.AddInterpreterLines(interpreter.Interpret("saving()"));
+            // Scroll to the bottom of the scrollrect
+            terminalManager.ScrollToBottom(lines);
+
+            // Move the user input line to the end
+            terminalManager.userInputLine.transform.SetAsLastSibling();
+
+            // Refocus the input field
+            terminalManager.terminalInput.ActivateInputField();
+            terminalManager.terminalInput.Select();
+        }
 
         SaveIdTallyRpc();
 
@@ -640,6 +663,19 @@ public class GameManager : NetworkBehaviour
         SaveJsonRpc("/bodyarrays.json", JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
 
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
+        if(log){
+
+            int lines = terminalManager.AddInterpreterLines(interpreter.Interpret("saved()"));
+            // Scroll to the bottom of the scrollrect
+            terminalManager.ScrollToBottom(lines);
+
+            // Move the user input line to the end
+            terminalManager.userInputLine.transform.SetAsLastSibling();
+
+            // Refocus the input field
+            terminalManager.terminalInput.ActivateInputField();
+            terminalManager.terminalInput.Select();
+        }
 
         if(quit){
 
@@ -1048,26 +1084,28 @@ public class GameManager : NetworkBehaviour
                 if(data.username.ToString() == jsonInventories.inventories[i].username){
 
                     if(jsonInventories.inventories[i].items.Length != 0){
-                        User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
-                        foreach(JsonItem item in jsonInventories.inventories[i].items){
+                        // User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+                        SendInventoryToClientRpc(data.username.ToString(), data, i);
+                        // foreach(JsonItem item in jsonInventories.inventories[i].items){
 
-                            LoadInventoryRpc(userI.name, new item{
+                        //     LoadInventoryRpc(data.username.ToString(), new item{
 
-                                name = item.name,
-                                cost = item.cost,
-                                value = item.value,
-                                type = item.type,
-                                size = item.size,
-                                amount = item.amount,
-                                weight = item.weight,
-                                itemInventory = item.itemInventory.ToString(),
-                                id = item.id,
-                                equippable = item.equippable,
-                                isEquipped = false,
-                                bodyparts = item.GetBodyparts()
-                            });
-                        }
+                        //         name = item.name,
+                        //         cost = item.cost,
+                        //         value = item.value,
+                        //         type = item.type,
+                        //         size = item.size,
+                        //         amount = item.amount,
+                        //         weight = item.weight,
+                        //         itemInventory = item.itemInventory.ToString(),
+                        //         id = item.id,
+                        //         equippable = item.equippable,
+                        //         isEquipped = false,
+                        //         bodyparts = item.GetBodyparts()
+                        //     });
+                        // }
                     }
+                    // LogRpc($"{jsonInventories.inventories[i].items.Length}");
                 }
             }
         }
@@ -1141,11 +1179,16 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
-
+        yield return new WaitForEndOfFrame();
         if(InitialLoad){
 
             // yield return new WaitForSeconds(5f);
             InitialLoad = false;
+            // foreach(userData data in userDatas){
+
+            //     User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
+            //     userI.backpack.ClearRpc(userI.name);
+            // }
             LoadData();
         }
         else{
@@ -1196,9 +1239,42 @@ public class GameManager : NetworkBehaviour
         if (!updated)
             // LogRpc("No matching slot found for " + usernameI);
 
-        SaveDataRpc();
+        SaveDataRpc(false, false);
     }
 
+    [Rpc(SendTo.Everyone)]
+    public void SendInventoryToClientRpc(string usernameI, userData data, int index){
+
+        if(usernameI != interpreter.GetUsername)
+            return;
+
+        // if(IsHost)
+        //     return;
+
+        // User userI = GameObject.Find(usernameI).GetComponent<User>();
+        // userI.backpack.ClearRpc(usernameI);
+
+        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
+
+        foreach(JsonItem item in jsonInventories.inventories[index].items){
+
+            LoadInventoryRpc(data.username.ToString(), new item{
+
+                name = item.name,
+                cost = item.cost,
+                value = item.value,
+                type = item.type,
+                size = item.size,
+                amount = item.amount,
+                weight = item.weight,
+                itemInventory = item.itemInventory.ToString(),
+                id = item.id,
+                equippable = item.equippable,
+                isEquipped = false,
+                bodyparts = item.GetBodyparts()
+            });
+        }
+    }
 
     [Rpc(SendTo.Everyone)]
     public void UpdateNetworkedSlotRpc(string usernameI, itemSlot newItemSlot)

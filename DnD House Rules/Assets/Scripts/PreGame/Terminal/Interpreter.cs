@@ -261,8 +261,22 @@ public class Interpreter : NetworkBehaviour
 
         }
 
+        if(args[0] == "saving()"){
+
+            response.Add("saving, please wait...");
+            return response;
+        }
+        if(args[0] == "saved()"){
+
+            response.Add("done!");
+            response.Add("");
+            return response;
+        }
+
         if(args[0] == "exit" && SceneManager.GetActiveScene().name == "Game"){
 
+            if(!IsHost)
+                GameManager.Singleton.LoadDataRpc();
             transform.root.GetChild(0).gameObject.SetActive(false);
             user.screen.GetComponent<Canvas>().enabled = true;
             user.transform.position -= Vector3.up*100;
@@ -862,10 +876,13 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "save"){
 
-            GameManager.Singleton.SaveDataRpc();
-            response.Add("data saved.");
-            response.Add("");
-            return response;
+            if(IsHost){
+
+                GameManager.Singleton.SaveDataRpc(false, false);
+                response.Add("data saved.");
+                response.Add("");
+                return response;
+            }
         }
 
         if(args[0] == "load"){
@@ -2100,7 +2117,7 @@ public class Interpreter : NetworkBehaviour
             terminal.terminalInput.Select();
         }catch{
 
-            GameManager.Singleton.LoadData();
+            GameManager.Singleton.LoadDataRpc();
             terminal.userInputLine.transform.SetAsLastSibling();
             terminal.userInputLine.SetActive(true);
 

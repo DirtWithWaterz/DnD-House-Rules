@@ -109,7 +109,7 @@ public class User : NetworkBehaviour
         }
         // Only the host calls SaveDataRpc (since only host has permission to write JSON)
         if (IsHost)
-            GameManager.Singleton.SaveDataRpc();
+            GameManager.Singleton.SaveDataRpc(false, false);
     }
 
     
