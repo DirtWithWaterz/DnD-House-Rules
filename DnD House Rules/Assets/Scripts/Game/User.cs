@@ -169,24 +169,24 @@ public class User : NetworkBehaviour
         switch(hungies.Value){
 
             case 0:
-                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger4"])
-                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger4"]);
+                if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger4"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger4"], false);
                 break;
             case <= 25:
-                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger3"])
-                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger3"]);
+                if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger3"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger3"], false);
                 break;
             case <= 50:
-                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger2"])
-                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger2"]);
+                if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger2"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger2"], false);
                 break;
             case <= 75:
-                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["hunger1"])
-                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger1"]);
+                if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger1"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger1"], false);
                 break;
             default:
-                if(bodyparts[9].condition.Value.ToString() != GameManager.Singleton.conditionsValueKey["normal"])
-                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["normal"]);
+                if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["normal"])
+                    interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["normal"], false);
                 break;
         }
     }
@@ -379,23 +379,23 @@ public class User : NetworkBehaviour
                     AC_CRUS_RIGHT = user.bodyparts[15].ac.Value,
                     AC_FOOT_RIGHT = user.bodyparts[16].ac.Value,
                     
-                    CONDITION_HEAD = GameManager.Singleton.conditionsKeyValue[user.bodyparts[0].condition.Value.ToString()],
-                    CONDITION_NECK = GameManager.Singleton.conditionsKeyValue[user.bodyparts[1].condition.Value.ToString()],
-                    CONDITION_CHEST = GameManager.Singleton.conditionsKeyValue[user.bodyparts[2].condition.Value.ToString()],
-                    CONDITION_ARM_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[3].condition.Value.ToString()],
-                    CONDITION_FOREARM_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[4].condition.Value.ToString()],
-                    CONDITION_HAND_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[5].condition.Value.ToString()],
-                    CONDITION_ARM_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[6].condition.Value.ToString()],
-                    CONDITION_FOREARM_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[7].condition.Value.ToString()],
-                    CONDITION_HAND_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[8].condition.Value.ToString()],
-                    CONDITION_TORSO = GameManager.Singleton.conditionsKeyValue[user.bodyparts[9].condition.Value.ToString()],
-                    CONDITION_PELVIS = GameManager.Singleton.conditionsKeyValue[user.bodyparts[10].condition.Value.ToString()],
-                    CONDITION_THIGH_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[11].condition.Value.ToString()],
-                    CONDITION_CRUS_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[12].condition.Value.ToString()],
-                    CONDITION_FOOT_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[13].condition.Value.ToString()],
-                    CONDITION_THIGH_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[14].condition.Value.ToString()],
-                    CONDITION_CRUS_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[15].condition.Value.ToString()],
-                    CONDITION_FOOT_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[16].condition.Value.ToString()],
+                    CONDITION_HEAD = GameManager.Singleton.conditionsKeyValue[user.bodyparts[0].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_NECK = GameManager.Singleton.conditionsKeyValue[user.bodyparts[1].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_CHEST = GameManager.Singleton.conditionsKeyValue[user.bodyparts[2].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_ARM_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[3].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_FOREARM_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[4].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_HAND_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[5].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_ARM_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[6].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_FOREARM_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[7].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_HAND_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[8].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_TORSO = GameManager.Singleton.conditionsKeyValue[user.bodyparts[9].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_PELVIS = GameManager.Singleton.conditionsKeyValue[user.bodyparts[10].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_THIGH_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[11].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_CRUS_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[12].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_FOOT_LEFT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[13].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_THIGH_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[14].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_CRUS_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[15].condition.Value.ToString().Replace("\n", "\\n")],
+                    CONDITION_FOOT_RIGHT = GameManager.Singleton.conditionsKeyValue[user.bodyparts[16].condition.Value.ToString().Replace("\n", "\\n")],
 
                     barbarian = user.stats.barbarian.Value,
                     baseSpeed = user.stats.BASE_SPEED.Value,

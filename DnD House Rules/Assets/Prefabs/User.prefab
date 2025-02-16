@@ -77,6 +77,8 @@ MonoBehaviour:
   backpack: {fileID: 0}
   CurrentPlayerLabel1: {fileID: 3526970100860327713}
   CurrentPlayerLabel2: {fileID: 4739780332820800037}
+  hungies:
+    m_InternalValue: 100
   ready: 0
 --- !u!1 &7177519071055529687
 GameObject:

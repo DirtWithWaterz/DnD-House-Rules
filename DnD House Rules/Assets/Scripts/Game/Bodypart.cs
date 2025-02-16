@@ -94,6 +94,9 @@ public class Bodypart : NetworkBehaviour
 
     public NetworkVariable<FixedString4096Bytes> condition = new NetworkVariable<FixedString4096Bytes>("", NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
+    public bool forceCondition = false;
+    public string unenforcedCondition = "";
+
     void Awake(){
 
         sr = GetComponent<SpriteRenderer>();
@@ -121,6 +124,7 @@ public class Bodypart : NetworkBehaviour
                 index = i
             };
         }
+        // unenforcedCondition = condition.Value.ToString();
     }
 
     public void EmptySlot(int index){
@@ -256,7 +260,15 @@ public class Bodypart : NetworkBehaviour
                 currentHP.Value >= -1 ? State.Paralyzed : 
                 gameObject.name == "BODY_CHEST" ? State.Concaved : 
                 State.Dismembered;
-            
+        if(user.isInitialized.Value && !deselect){
+
+            if(GameManager.Singleton.conditionsKeyValue[condition.Value.ToString().Replace("\n", "\\n")] == GameManager.Singleton.conditionsKeyValue[unenforcedCondition.Replace("\n", "\\n")])
+                GameManager.Singleton.interpreter.EnforceConditionRpc(user.name, Health.bodypartDictionary0[name], true);
+            else if(GameManager.Singleton.conditionsKeyValue[condition.Value.ToString().Replace("\n", "\\n")] == "normal")
+                GameManager.Singleton.interpreter.EnforceConditionRpc(user.name, Health.bodypartDictionary0[name], false);
+            else if(unenforcedCondition.Replace("\n", "\\n") == GameManager.Singleton.conditionsValueKey["normal"])
+                GameManager.Singleton.interpreter.EnforceConditionRpc(user.name, Health.bodypartDictionary0[name], true);
+        }
         if(h.VitalsNormal()){
 
             if(status.Value == State.Bleeding){
@@ -309,7 +321,12 @@ public class Bodypart : NetworkBehaviour
             description.status = status.Value.ToString();
             description.health = currentHP.Value;
             description.ac = ac.Value;
-            description.condition = condition.Value.ToString();
+            string conditionValue = condition.Value.ToString().Replace("\\n", "\n");
+            string unenforcedValue = unenforcedCondition.Replace("\\n", "\n");
+            if(forceCondition)
+                description.condition = conditionValue;
+            else
+                description.condition = unenforcedValue;
             for(int i = 0; i < Description.slotNum[name]; i++){
                 
                 if(!slot[i].Empty()){
@@ -424,7 +441,12 @@ public class Bodypart : NetworkBehaviour
         description.status = status.Value.ToString();
         description.health = currentHP.Value;
         description.ac = ac.Value;
-        description.condition = condition.Value.ToString();
+        string conditionValue = condition.Value.ToString().Replace("\\n", "\n");
+        string unenforcedValue = unenforcedCondition.Replace("\\n", "\n");
+        if(forceCondition)
+            description.condition = conditionValue;
+        else
+            description.condition = unenforcedValue;
         for(int i = 0; i < Description.slotNum[name]; i++){
                 
             if(!slot[i].Empty()){

@@ -48,6 +48,25 @@ public class Health : NetworkBehaviour
         {15, "BODY_CRUS_RIGHT"},
         {16, "BODY_FOOT_RIGHT"}
     };
+    public static Dictionary<string, int> bodypartDictionary0 = new Dictionary<string, int>() {
+        {"BODY_HEAD", 0},
+        {"BODY_NECK", 1},
+        {"BODY_CHEST", 2},
+        {"BODY_ARM_LEFT", 3},
+        {"BODY_FOREARM_LEFT", 4},
+        {"BODY_HAND_LEFT", 5},
+        {"BODY_ARM_RIGHT", 6},
+        {"BODY_FOREARM_RIGHT", 7},
+        {"BODY_HAND_RIGHT", 8},
+        {"BODY_TORSO", 9},
+        {"BODY_PELVIS", 10},
+        {"BODY_THIGH_LEFT", 11},
+        {"BODY_CRUS_LEFT", 12},
+        {"BODY_FOOT_LEFT", 13},
+        {"BODY_THIGH_RIGHT", 14},
+        {"BODY_CRUS_RIGHT", 15},
+        {"BODY_FOOT_RIGHT", 16}
+    };
 
     public List<GameObject> body = new List<GameObject>();
 

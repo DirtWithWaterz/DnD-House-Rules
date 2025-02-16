@@ -1081,7 +1081,7 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    SetConditionRpc(args.Length == 5 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), GameManager.Singleton.conditionsValueKey[args.Length == 5 ? args[4] : args[3]]);
+                    SetConditionRpc(args.Length == 6 ? args[3] : username, bodypartDict.GetValueOrDefault(args[2]), GameManager.Singleton.conditionsValueKey[args.Length == 6 ? args[4] : args[3]], args[args.Length == 6 ? 5 : 4] == "true" ? true : false);
                 }
                 response.Add("");
 
@@ -1967,13 +1967,33 @@ public class Interpreter : NetworkBehaviour
     }
     
     [Rpc(SendTo.Everyone)]
-    public void SetConditionRpc(string usernameI, int index, string conditionVal){
+    public void SetConditionRpc(string usernameI, int index, string conditionVal, bool isEnforced = true){
 
         if(username != usernameI)
             return;
         User user = GameObject.Find(usernameI).GetComponent<User>();
 
-        user.bodyparts[index].condition.Value = conditionVal;
+        switch(isEnforced){
+
+            case true:
+                // user.bodyparts[index].forceCondition = true;
+                EnforceConditionRpc(usernameI, index, true);
+                user.bodyparts[index].condition.Value = conditionVal;
+                break;
+            case false:
+                // user.bodyparts[index].forceCondition = false;
+                user.bodyparts[index].unenforcedCondition = conditionVal;
+                break;
+        }
+    }
+    [Rpc(SendTo.Everyone)]
+    public void EnforceConditionRpc(string usernameI, int index, bool enforce){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+
+        user.bodyparts[index].forceCondition = enforce;
     }
     [Rpc(SendTo.Everyone)]
     public void SetProf2InitRpc(string usernameI, bool val){

@@ -785,6 +785,8 @@ public class GameManager : NetworkBehaviour
         conditionsKeyValue = jsonConditions.conditionsKeyValue;
         conditionsValueKey = jsonConditions.conditionsValueKey;
 
+        SaveLoadConditionsRpc(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json"));
+
         if(jsonUserDatas.jsonUserDatas.Length < userDatas.Count){
 
             JsonUserDatas newJsonUserDatas = new JsonUserDatas();
@@ -1445,6 +1447,17 @@ public class GameManager : NetworkBehaviour
         File.WriteAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + directory, output);
         if(directory == "/inventories.json")
             SendItemInventoriesRpc();
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void SaveLoadConditionsRpc(string input){
+
+        File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json", input);
+
+        JsonConditions jsonConditions = JsonConvert.DeserializeObject<JsonConditions>(input);
+
+        conditionsKeyValue = jsonConditions.conditionsKeyValue;
+        conditionsValueKey = jsonConditions.conditionsValueKey;
     }
 
     [Rpc(SendTo.Everyone)]
