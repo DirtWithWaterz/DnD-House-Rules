@@ -12,12 +12,12 @@ public class ItemDisplaySmall : MonoBehaviour
     public item thisItem;
     public InventorySmall occupiedInventory;
 
-    bool hovering;
+    public bool hovering, selected;
     public TMP_Text nameText;
     public TMP_Text sizeText;
     public TMP_Text weightText;
 
-    [SerializeField] RawImage background;
+    public RawImage background;
 
     Camera cam;
 
@@ -43,6 +43,24 @@ public class ItemDisplaySmall : MonoBehaviour
             // if key released vvv
             // stop coroutine and safely reset vars
         }
+        if(Input.GetMouseButtonUp(0) && selected){
+            
+            RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if(hit2D.collider != null){
+
+                if(hit2D.transform.name.Contains("Scroll")){
+
+                    occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemName.text = "";
+                    occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = "Left-Click an item in the inventory to see information regarding it's application. Said information will show up here.";
+
+                    background.color = Color.black;
+                    nameText.color = Color.white;
+                    sizeText.color = Color.white;
+                    weightText.color = Color.white;
+                    selected = false;
+                }
+            }
+        }
     }
 
     IEnumerator OnMouseOver(){
@@ -58,27 +76,99 @@ public class ItemDisplaySmall : MonoBehaviour
             yield return new WaitUntil(()=> Input.GetMouseButtonUp(0));
             if(hovering){
 
-                // if(type == Type.backpack){
+                selected = true;
+                foreach(NetworkObject netObj in occupiedInventory.itemDisplays){
 
-                //     if(isOpen){
+                    if(netObj == null)
+                        continue;
 
-                //         transformRect.sizeDelta -= Vector2.up * 100;
-                //         inventoryDisplayObject.SetActive(false);
-                //         visuals.localPosition -= Vector3.up * 50;
-                //         isOpen = false;
-                //         LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
-                //         GetComponent<BoxCollider2D>().offset -= Vector2.up * 50;
-                //     }
-                //     else{
+                    ItemDisplaySmall itemDisplay = netObj.GetComponent<ItemDisplaySmall>();
+                    if(itemDisplay.Equals(this))
+                        continue;
+                    
+                    itemDisplay.selected = false;
+                    itemDisplay.background.color = Color.black;
+                    itemDisplay.nameText.color = Color.white;
+                    itemDisplay.sizeText.color = Color.white;
+                    itemDisplay.weightText.color = Color.white;
+                }
+                foreach(NetworkObject netObj in occupiedInventory.thisItemDisplay.occupiedInventory.itemDisplays){
 
-                //         transformRect.sizeDelta += Vector2.up * 100;
-                //         inventoryDisplayObject.SetActive(true);
-                //         visuals.localPosition += Vector3.up * 50;
-                //         isOpen = true;
-                //         LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
-                //         GetComponent<BoxCollider2D>().offset += Vector2.up * 50;
-                //     }
-                // }
+                    if(netObj == null)
+                        continue;
+
+                    ItemDisplay itemDisplay = netObj.GetComponent<ItemDisplay>();
+                    
+                    itemDisplay.selected = false;
+                    itemDisplay.background.color = Color.black;
+                    itemDisplay.nameText.color = Color.white;
+                    itemDisplay.sizeText.color = Color.white;
+                    itemDisplay.weightText.color = Color.white;
+                }
+                foreach(ArmorSlot slot in occupiedInventory.thisItemDisplay.occupiedInventory.description.armorSlots){
+
+                    // if(!slot.gameObject.activeInHierarchy)
+                    //     continue;
+                    
+                    slot.selected = false;
+                    slot.background.color = Color.black;
+                    slot.itemName.color = Color.white;
+                    slot.bonus.color = Color.white;
+                }
+                occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemName.text = thisItem.name.ToString();
+                switch(type){
+
+                    case Type.other:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"This items information is unable to be processed do to the complications of it's nature. Please query the DM for additional information.";
+                        break;
+                    case Type.food:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = "A food item, it will nourish you.";
+                        break;
+                    case Type.heavyArmor:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Heavy armor, +{thisItem.value} ac to applied body part. ";
+                        break;
+                    case Type.lightArmor:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Light armor, +{thisItem.value} ac to applied body part. ";
+                        break;
+                    case Type.medical:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Heals {thisItem.value} hp when applied to a body part.";
+                        break;
+                    case Type.weapon:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = "No relevant information to display.";
+                        break;
+                    case Type.healthMult:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Increases the maximum hp of the relevant body part by {thisItem.value}";
+                        break;
+                    case Type.capacityMult:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space, {thisItem.value*2} small items worth of space, or {thisItem.value*4} tiny items worth of space, to your main inventory.";
+                        break;
+                    case Type.capacityMultL:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space to your main inventory.";
+                        break;
+                    case Type.capacityMultS:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} small items worth of space to your main inventory.";
+                        break;
+                    case Type.capacityMultT:
+
+                        occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} tiny items worth of space to your main inventory.";
+                        break;
+                }
+                if(thisItem.name.ToString().Contains("bullet proof")){
+
+                    occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text += "Prevents lethal piercing damage to the protected body part, up to its specified protection level ";
+                    occupiedInventory.thisItemDisplay.occupiedInventory.iPanel_itemInfo.text += $"({thisItem.metadata.ToString()}).";
+                }
+
             }
         }
     
@@ -127,6 +217,7 @@ public class ItemDisplaySmall : MonoBehaviour
                         // }
                         // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                         // Debug.Log($"Reorder inventory rpc called.");
+                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
                         yield return new WaitForEndOfFrame();
                         itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
@@ -142,6 +233,7 @@ public class ItemDisplaySmall : MonoBehaviour
                             }
                         }
                         occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                        occupiedInventory.LoadInventory();
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                         // Destroy(gameObject);
                     }
@@ -171,7 +263,8 @@ public class ItemDisplaySmall : MonoBehaviour
                                         id = thisItem.id,
                                         equippable = thisItem.equippable,
                                         isEquipped = true,
-                                        bodyparts = thisItem.bodyparts
+                                        bodyparts = thisItem.bodyparts,
+                                        metadata = thisItem.metadata
                                     };
                                     switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -210,6 +303,9 @@ public class ItemDisplaySmall : MonoBehaviour
                                             break;
                                     }
                                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
+                                    yield return new WaitForEndOfFrame();
+                                    
                                     List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
                                     for(int i = 0; i < thisItemInventory.Count; i++){
@@ -221,6 +317,7 @@ public class ItemDisplaySmall : MonoBehaviour
                                         }
                                     }
                                     occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                                    occupiedInventory.LoadInventory();
                                 }
                                 else if(thisItem.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
 
@@ -247,7 +344,8 @@ public class ItemDisplaySmall : MonoBehaviour
                                         id = thisItem.id,
                                         equippable = thisItem.equippable,
                                         isEquipped = true,
-                                        bodyparts = thisItem.bodyparts
+                                        bodyparts = thisItem.bodyparts,
+                                        metadata = thisItem.metadata
                                     };
                                     switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -286,7 +384,22 @@ public class ItemDisplaySmall : MonoBehaviour
                                             break;
                                     }
                                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
-                                    occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+                                    // occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
+                                    yield return new WaitForEndOfFrame();
+                                    
+                                    List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                                    for(int i = 0; i < thisItemInventory.Count; i++){
+
+                                        if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                            // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                            thisItemInventory.RemoveAt(i);
+                                        }
+                                    }
+                                    occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                                    occupiedInventory.LoadInventory();
                                 }
                             }
                             break;
@@ -347,10 +460,13 @@ public class ItemDisplaySmall : MonoBehaviour
 
     void OnMouseExit(){
 
-        hovering = false;
-        background.color = Color.black;
-        nameText.color = Color.white;
-        sizeText.color = Color.white;
-        weightText.color = Color.white;
+        if(!selected){
+
+            hovering = false;
+            background.color = Color.black;
+            nameText.color = Color.white;
+            sizeText.color = Color.white;
+            weightText.color = Color.white;
+        }
     }
 }

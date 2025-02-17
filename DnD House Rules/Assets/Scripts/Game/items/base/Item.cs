@@ -25,6 +25,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
     
     public FixedList4096Bytes<FixedString32Bytes> bodyparts;
 
+    public FixedString512Bytes metadata;
+
     public List<string> GetBodyparts(){
 
         List<string> parts = new List<string>();
@@ -115,7 +117,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 id = jsonItemInventory.items[i].id,
                 equippable = jsonItemInventory.items[i].equippable,
                 isEquipped = false,
-                bodyparts = jsonItemInventory.items[i].GetBodyparts()
+                bodyparts = jsonItemInventory.items[i].GetBodyparts(),
+                metadata = jsonItemInventory.items[i].metadata
             };
             // Debug.Log(items[i].name.ToString() + " : " + jsonItemInventory.items[i].name);
         }
@@ -146,7 +149,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 itemInventory = items[i].itemInventory.ToString(),
                 id = items[i].id,
                 equippable = items[i].equippable,
-                bodyparts = items[i].GetBodyparts()
+                bodyparts = items[i].GetBodyparts(),
+                metadata = items[i].metadata.ToString()
             };
             switch(items[i].size){
 
@@ -206,7 +210,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 itemInventory = jsonItemInventory.items[i].itemInventory,
                 id = jsonItemInventory.items[i].id,
                 equippable = jsonItemInventory.items[i].equippable,
-                bodyparts = jsonItemInventory.items[i].bodyparts
+                bodyparts = jsonItemInventory.items[i].bodyparts,
+                metadata = jsonItemInventory.items[i].metadata
             };
             switch(jsonItemInventory.items[i].size){
 
@@ -242,7 +247,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
             itemInventory = item.itemInventory.ToString(),
             id = item.id,
             equippable = item.equippable,
-            bodyparts = item.GetBodyparts()
+            bodyparts = item.GetBodyparts(),
+            metadata = item.metadata.ToString()
         }, siblingIndex);
         switch(item.size){
 
@@ -409,6 +415,8 @@ public struct item:IEquatable<item>,INetworkSerializable{
                 serializer.SerializeValue(ref part);
             }
         }
+    
+        serializer.SerializeValue(ref metadata);
     }
 }
 

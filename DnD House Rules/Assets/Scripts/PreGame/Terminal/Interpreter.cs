@@ -1033,13 +1033,24 @@ public class Interpreter : NetworkBehaviour
                     List<int> lbpN = new List<int>();
                     FixedList4096Bytes<FixedString32Bytes> lbpS = new FixedList4096Bytes<FixedString32Bytes>();
 
+                    string metadata = "";
+
                     for(int i = 8; i < args.Length; i++){
 
-                        if (args[i] == ":") {
-                            for (int j = i + 1; j < args.Length; j++){
+                        if(args[i] == ":") {
+                            for(int j = i + 1; j < args.Length; j++){
                                 
-                                if(args[j] == ":")
+                                if(args[j] == ":"){
+
+                                    for(int k = j + 1; k < args.Length; k++){
+
+                                        if(args[k] == ":")
+                                            break;
+                                        
+                                        metadata += $"{args[k]} ";
+                                    }
                                     break;
+                                }
                                 lbpN.Add(int.Parse(args[j]));
                             }
                             for(int j = 0; j < lbpN.Count; j++){
@@ -1059,6 +1070,7 @@ public class Interpreter : NetworkBehaviour
                             return response;
                         }
                     }
+                    metadata.TrimEnd();
 
                     item newItem = new item(){
 
@@ -1073,7 +1085,8 @@ public class Interpreter : NetworkBehaviour
                         id = 0,
                         equippable = args[7] == "true" ? true : false,
                         isEquipped = false,
-                        bodyparts = lbpS
+                        bodyparts = lbpS,
+                        metadata = metadata
                     };
                     GameManager.Singleton.items.Add(newItem);
                 }
@@ -1536,7 +1549,8 @@ public class Interpreter : NetworkBehaviour
                                         id = sourceItem.id,
                                         equippable = sourceItem.equippable,
                                         isEquipped = false,
-                                        bodyparts = sourceItem.bodyparts
+                                        bodyparts = sourceItem.bodyparts,
+                                        metadata = sourceItem.metadata.ToString()
                                     };
 
                                     userI.backpack.AddItemRpc(usernameI, newItem, false);
@@ -1569,7 +1583,8 @@ public class Interpreter : NetworkBehaviour
                                 id = newId,
                                 equippable = item.equippable,
                                 isEquipped = false,
-                                bodyparts = item.bodyparts
+                                bodyparts = item.bodyparts,
+                                metadata = item.metadata.ToString()
                             };
 
                             if (item.type == Type.backpack)

@@ -12,12 +12,12 @@ public class ItemDisplay : MonoBehaviour
     public item thisItem;
     public Backpack occupiedInventory;
 
-    bool hovering;
+    public bool hovering, selected;
     public TMP_Text nameText;
     public TMP_Text sizeText;
     public TMP_Text weightText;
 
-    [SerializeField] RawImage background;
+    public RawImage background;
     RectTransform transformRect;
 
     public GameObject inventoryDisplayObject;
@@ -37,6 +37,53 @@ public class ItemDisplay : MonoBehaviour
         // Debug.Log("Item display was instantiated");
     }
 
+    void Update(){
+
+        if(Input.GetKeyUp(KeyCode.Delete) && selected){
+
+            occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+        }
+        if(Input.GetMouseButtonUp(0) && selected){
+            
+            RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+            if(hit2D.collider != null){
+
+                if(hit2D.transform.name.Contains("Scroll")){
+
+                    occupiedInventory.iPanel_itemName.text = "";
+                    occupiedInventory.iPanel_itemInfo.text = "Left-Click an item in the inventory to see information regarding it's application. Said information will show up here.";
+
+                    background.color = Color.black;
+                    nameText.color = Color.white;
+                    sizeText.color = Color.white;
+                    weightText.color = Color.white;
+                    selected = false;
+                }
+            }
+        }
+    }
+
+    public static bool BackpackOpen(Backpack occupiedInventory, out List<InventorySmall> inventorySmall){
+
+        inventorySmall = new List<InventorySmall>();
+        foreach(NetworkObject netObj in occupiedInventory.itemDisplays){
+
+            if(netObj == null)
+                continue;
+
+            ItemDisplay itemDisplay = netObj.GetComponent<ItemDisplay>();
+            if(itemDisplay.thisItem.type != Type.backpack)
+                continue;
+            if(itemDisplay.isOpen){
+
+                inventorySmall.Add(itemDisplay.inventoryDisplayObject.GetComponent<InventorySmall>());
+            }
+        }
+        if(inventorySmall.Count > 0)
+            return true;
+        else
+            return false;
+    }
 
     IEnumerator OnMouseOver(){
 
@@ -49,29 +96,128 @@ public class ItemDisplay : MonoBehaviour
         if(Input.GetMouseButtonDown(0)){
             
             yield return new WaitUntil(()=> Input.GetMouseButtonUp(0));
+
             if(hovering){
+                selected = true;
+                foreach(NetworkObject netObj in occupiedInventory.itemDisplays){
 
-                if(type == Type.backpack){
+                    if(netObj == null)
+                        continue;
 
-                    if(isOpen){
+                    ItemDisplay itemDisplay = netObj.GetComponent<ItemDisplay>();
+                    if(itemDisplay.Equals(this))
+                        continue;
+                    
+                    itemDisplay.selected = false;
+                    itemDisplay.background.color = Color.black;
+                    itemDisplay.nameText.color = Color.white;
+                    itemDisplay.sizeText.color = Color.white;
+                    itemDisplay.weightText.color = Color.white;
+                }
+                if(BackpackOpen(occupiedInventory, out List<InventorySmall> inventorySmalls)){
 
-                        transformRect.sizeDelta -= Vector2.up * 100;
-                        inventoryDisplayObject.SetActive(false);
-                        visuals.localPosition -= Vector3.up * 50;
-                        isOpen = false;
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
-                        GetComponent<BoxCollider2D>().offset -= Vector2.up * 50;
-                    }
-                    else{
+                    for(int i = 0; i < inventorySmalls.Count; i++){
 
-                        transformRect.sizeDelta += Vector2.up * 100;
-                        inventoryDisplayObject.SetActive(true);
-                        visuals.localPosition += Vector3.up * 50;
-                        isOpen = true;
-                        LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
-                        GetComponent<BoxCollider2D>().offset += Vector2.up * 50;
+                        foreach(NetworkObject netObj in inventorySmalls[i].itemDisplays){
+
+                            if(netObj == null)
+                                continue;
+
+                            ItemDisplaySmall itemDisplay = netObj.GetComponent<ItemDisplaySmall>();
+                            
+                            itemDisplay.selected = false;
+                            itemDisplay.background.color = Color.black;
+                            itemDisplay.nameText.color = Color.white;
+                            itemDisplay.sizeText.color = Color.white;
+                            itemDisplay.weightText.color = Color.white;
+                        }
                     }
                 }
+                foreach(ArmorSlot slot in occupiedInventory.description.armorSlots){
+
+                    // if(!slot.gameObject.activeInHierarchy)
+                    //     continue;
+                    
+                    slot.selected = false;
+                    slot.background.color = Color.black;
+                    slot.itemName.color = Color.white;
+                    slot.bonus.color = Color.white;
+                }
+                occupiedInventory.iPanel_itemName.text = thisItem.name.ToString();
+                switch(type){
+
+                    case Type.backpack:
+                        if(isOpen){
+
+                            transformRect.sizeDelta -= Vector2.up * 100;
+                            inventoryDisplayObject.SetActive(false);
+                            visuals.localPosition -= Vector3.up * 50;
+                            isOpen = false;
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
+                            GetComponent<BoxCollider2D>().offset -= Vector2.up * 50;
+                        }
+                        else{
+
+                            transformRect.sizeDelta += Vector2.up * 100;
+                            inventoryDisplayObject.SetActive(true);
+                            visuals.localPosition += Vector3.up * 50;
+                            isOpen = true;
+                            LayoutRebuilder.ForceRebuildLayoutImmediate(transform.parent.GetComponent<RectTransform>());
+                            GetComponent<BoxCollider2D>().offset += Vector2.up * 50;
+                        }
+                        occupiedInventory.iPanel_itemInfo.text = $"Holds {thisItem.value} large items worth of space, {thisItem.value*2} small items worth of space, or {thisItem.value*4} tiny items worth of space.";
+                        break;
+                    case Type.other:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"This items information is unable to be processed do to the complications of it's nature. Please query the DM for additional information.";
+                        break;
+                    case Type.food:
+
+                        occupiedInventory.iPanel_itemInfo.text = "A food item, it will nourish you.";
+                        break;
+                    case Type.heavyArmor:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Heavy armor, +{thisItem.value} ac to applied body part. ";
+                        break;
+                    case Type.lightArmor:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Light armor, +{thisItem.value} ac to applied body part. ";
+                        break;
+                    case Type.medical:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Heals {thisItem.value} hp when applied to a body part.";
+                        break;
+                    case Type.weapon:
+
+                        occupiedInventory.iPanel_itemInfo.text = "No relevant information to display.";
+                        break;
+                    case Type.healthMult:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Increases the maximum hp of the relevant body part by {thisItem.value}";
+                        break;
+                    case Type.capacityMult:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space, {thisItem.value*2} small items worth of space, or {thisItem.value*4} tiny items worth of space, to your main inventory.";
+                        break;
+                    case Type.capacityMultL:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space to your main inventory.";
+                        break;
+                    case Type.capacityMultS:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} small items worth of space to your main inventory.";
+                        break;
+                    case Type.capacityMultT:
+
+                        occupiedInventory.iPanel_itemInfo.text = $"Adds {thisItem.value} tiny items worth of space to your main inventory.";
+                        break;
+                }
+                if(thisItem.name.ToString().Contains("bullet proof")){
+
+                    occupiedInventory.iPanel_itemInfo.text += "Prevents lethal piercing damage to the protected body part, up to its specified protection level ";
+                    occupiedInventory.iPanel_itemInfo.text += $"({thisItem.metadata.ToString()}).";
+                }
+
             }
         }
 
@@ -115,8 +261,22 @@ public class ItemDisplay : MonoBehaviour
                                 id = thisItem.id,
                                 equippable = thisItem.equippable,
                                 isEquipped = false,
-                                bodyparts = thisItem.bodyparts
+                                bodyparts = thisItem.bodyparts,
+                                metadata = thisItem.metadata
                             }, itemDisplay.transform.GetSiblingIndex());
+                        }
+                        // Debug.Log($"Reorder inventory rpc called.");
+                        // GameManager.Singleton.SaveDataRpc();
+                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
+                        yield return new WaitForEndOfFrame();
+                        for(int i = 0; i < occupiedInventory.inventory.Count; i++){
+
+                            if(occupiedInventory.inventory[i].name.ToString() == thisItem.name.ToString() && occupiedInventory.inventory[i].id == thisItem.id){
+
+                                // Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
+                                occupiedInventory.inventory.RemoveAt(i);
+                                // GameManager.Singleton.SaveDataRpc();
+                            }
                         }
                         List<itemShort> itemShorts = new List<itemShort>();
                         foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
@@ -128,18 +288,7 @@ public class ItemDisplay : MonoBehaviour
                             });
                         }
                         GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
-                        // Debug.Log($"Reorder inventory rpc called.");
-                        // GameManager.Singleton.SaveDataRpc();
-                        yield return new WaitForEndOfFrame();
-                        for(int i = 0; i < occupiedInventory.inventory.Count; i++){
-
-                            if(occupiedInventory.inventory[i].name.ToString() == thisItem.name.ToString() && occupiedInventory.inventory[i].id == thisItem.id){
-
-                                // Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
-                                occupiedInventory.inventory.RemoveAt(i);
-                                // GameManager.Singleton.SaveDataRpc();
-                            }
-                        }
+                        itemDisplay.occupiedInventory.LoadInventory();
                         Destroy(gameObject);
                     }
                 }
@@ -184,7 +333,8 @@ public class ItemDisplay : MonoBehaviour
                                         id = thisItem.id,
                                         equippable = thisItem.equippable,
                                         isEquipped = true,
-                                        bodyparts = thisItem.bodyparts
+                                        bodyparts = thisItem.bodyparts,
+                                        metadata = thisItem.metadata
                                     };
                                     switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -252,7 +402,8 @@ public class ItemDisplay : MonoBehaviour
                                         id = thisItem.id,
                                         equippable = thisItem.equippable,
                                         isEquipped = true,
-                                        bodyparts = thisItem.bodyparts
+                                        bodyparts = thisItem.bodyparts,
+                                        metadata = thisItem.metadata
                                     };
                                     switch(armorSlot.description.bodypart.slot[armorSlot.index].item.type){
 
@@ -326,10 +477,13 @@ public class ItemDisplay : MonoBehaviour
 
     void OnMouseExit(){
 
-        hovering = false;
-        background.color = Color.black;
-        nameText.color = Color.white;
-        sizeText.color = Color.white;
-        weightText.color = Color.white;
+        if(!selected){
+
+            hovering = false;
+            background.color = Color.black;
+            nameText.color = Color.white;
+            sizeText.color = Color.white;
+            weightText.color = Color.white;
+        }
     }
 }

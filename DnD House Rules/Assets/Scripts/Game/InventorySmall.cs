@@ -8,7 +8,7 @@ public class InventorySmall : NetworkBehaviour
 {
     public ItemDisplay thisItemDisplay;
     item[] inventory;
-    List<NetworkObject> itemDisplays = new List<NetworkObject>();
+    public List<NetworkObject> itemDisplays = new List<NetworkObject>();
     [SerializeField] GameObject Panel;
 
     void Start()
@@ -80,7 +80,8 @@ public class InventorySmall : NetworkBehaviour
                     id = jsonItem.id,
                     equippable = jsonItem.equippable,
                     isEquipped = false,
-                    bodyparts = jsonItem.GetBodyparts()
+                    bodyparts = jsonItem.GetBodyparts(),
+                    metadata = jsonItem.metadata
                 });
             }
         }

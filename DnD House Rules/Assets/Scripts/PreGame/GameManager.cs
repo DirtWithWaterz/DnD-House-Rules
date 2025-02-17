@@ -283,6 +283,7 @@ public class GameManager : NetworkBehaviour
         public int id;
         public bool equippable;
         public List<string> bodyparts = new List<string>();
+        public string metadata;
 
         public FixedList4096Bytes<FixedString32Bytes> GetBodyparts(){
 
@@ -506,7 +507,8 @@ public class GameManager : NetworkBehaviour
                 itemInventory = items[i].itemInventory.ToString(),
                 id = items[i].id,
                 equippable = items[i].equippable,
-                bodyparts = items[i].GetBodyparts()
+                bodyparts = items[i].GetBodyparts(),
+                metadata = items[i].metadata.ToString()
             };
         }
 
@@ -548,7 +550,8 @@ public class GameManager : NetworkBehaviour
                     itemInventory = inventoryList[j].itemInventory.ToString(),
                     id = inventoryList[j].id,
                     equippable = inventoryList[j].equippable,
-                    bodyparts = inventoryList[j].GetBodyparts()
+                    bodyparts = inventoryList[j].GetBodyparts(),
+                    metadata = inventoryList[j].metadata.ToString()
                 };
             }
 
@@ -605,7 +608,8 @@ public class GameManager : NetworkBehaviour
                             itemInventory = itemSlot.item.itemInventory.ToString(),
                             id = itemSlot.item.id,
                             equippable = itemSlot.item.equippable,
-                            bodyparts = itemSlot.item.GetBodyparts()
+                            bodyparts = itemSlot.item.GetBodyparts(),
+                            metadata = itemSlot.item.metadata.ToString()
                         },
                         slotModifierType = itemSlot.slotModifierType,
                         bodypart = itemSlot.bodypart.ToString(),
@@ -635,7 +639,8 @@ public class GameManager : NetworkBehaviour
                                 itemInventory = itemSlot.item.itemInventory.ToString(),
                                 id = itemSlot.item.id,
                                 equippable = itemSlot.item.equippable,
-                                bodyparts = itemSlot.item.GetBodyparts()
+                                bodyparts = itemSlot.item.GetBodyparts(),
+                                metadata = itemSlot.item.metadata.ToString()
                             },
                             slotModifierType = itemSlot.slotModifierType,
                             bodypart = itemSlot.bodypart.ToString(),
@@ -1038,7 +1043,8 @@ public class GameManager : NetworkBehaviour
                 id = item.id,
                 equippable = item.equippable,
                 isEquipped = false,
-                bodyparts = item.GetBodyparts()
+                bodyparts = item.GetBodyparts(),
+                metadata = item.metadata
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
@@ -1085,7 +1091,7 @@ public class GameManager : NetworkBehaviour
 
                     if(jsonInventories.inventories[i].items.Length != 0){
                         // User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
-                        SendInventoryToClientRpc(data.username.ToString(), data, i);
+                        SendInventoryToClientRpc(data.username.ToString(), data, i, File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
                         // foreach(JsonItem item in jsonInventories.inventories[i].items){
 
                         //     LoadInventoryRpc(data.username.ToString(), new item{
@@ -1101,7 +1107,8 @@ public class GameManager : NetworkBehaviour
                         //         id = item.id,
                         //         equippable = item.equippable,
                         //         isEquipped = false,
-                        //         bodyparts = item.GetBodyparts()
+                        //         bodyparts = item.GetBodyparts(),
+                        //         metadata = item.metadata
                         //     });
                         // }
                     }
@@ -1168,7 +1175,8 @@ public class GameManager : NetworkBehaviour
                                     id = itemSlot.item.id,
                                     equippable = itemSlot.item.equippable,
                                     isEquipped = true,
-                                    bodyparts = itemSlot.item.GetBodyparts()
+                                    bodyparts = itemSlot.item.GetBodyparts(),
+                                    metadata = itemSlot.item.metadata
                                 },
                                 slotModifierType = itemSlot.slotModifierType,
                                 bodypart = itemSlot.bodypart,
@@ -1243,7 +1251,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void SendInventoryToClientRpc(string usernameI, userData data, int index){
+    public void SendInventoryToClientRpc(string usernameI, userData data, int index, string inventoryFile){
 
         if(usernameI != interpreter.GetUsername)
             return;
@@ -1253,8 +1261,8 @@ public class GameManager : NetworkBehaviour
 
         // User userI = GameObject.Find(usernameI).GetComponent<User>();
         // userI.backpack.ClearRpc(usernameI);
-
-        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
+        RequestJsonRpc(usernameI, "host", "/inventories.json", 0);
+        JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(inventoryFile);
 
         foreach(JsonItem item in jsonInventories.inventories[index].items){
 
@@ -1271,7 +1279,8 @@ public class GameManager : NetworkBehaviour
                 id = item.id,
                 equippable = item.equippable,
                 isEquipped = false,
-                bodyparts = item.GetBodyparts()
+                bodyparts = item.GetBodyparts(),
+                metadata = item.metadata
             });
         }
     }
@@ -1412,7 +1421,8 @@ public class GameManager : NetworkBehaviour
                     id = userI.backpack.inventory[itemIndex].id,
                     equippable = userI.backpack.inventory[itemIndex].equippable,
                     isEquipped = false,
-                    bodyparts = userI.backpack.inventory[itemIndex].bodyparts
+                    bodyparts = userI.backpack.inventory[itemIndex].bodyparts,
+                    metadata = userI.backpack.inventory[itemIndex].metadata.ToString()
                 };
                 foreach(NetworkObject networkObject in userI.backpack.itemDisplays){
 
@@ -1428,6 +1438,28 @@ public class GameManager : NetworkBehaviour
             }
         }
     }
+
+    // [Rpc(SendTo.Everyone)]
+    // public void ClearInventoryNullsRpc(){
+
+    //     if(!IsHost)
+    //         return;
+
+    //     JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
+    //     JsonInventory newJsonInventory = new JsonInventory();
+    //     for(int i = 0; i < jsonInventories.inventories.Length; i++){
+
+    //         List<JsonItem> jsonItems = new List<JsonItem>();
+    //         for(int j = 0; j < jsonInventories.inventories[i].items.Length; j++){
+
+    //             if(jsonInventories.inventories[i].items[j] != null)
+    //                 jsonItems.Add(jsonInventories.inventories[i].items[j]);
+    //         }
+    //         newJsonInventory.items = jsonItems.ToArray();
+    //         newJsonInventory.username = jsonInventories.inventories[i].username;
+    //     }
+    //     SaveJsonRpc("/inventories.json", JsonConvert.SerializeObject(newJsonInventory, Formatting.Indented));
+    // }
 
     [Rpc(SendTo.Everyone)]
     public void ReorderInventoryRpc(string usernameI, itemShort[] itemsOrdered){
@@ -1462,7 +1494,8 @@ public class GameManager : NetworkBehaviour
                         itemInventory = userI.backpack.inventory[j].itemInventory.ToString(),
                         id = userI.backpack.inventory[j].id,
                         equippable = userI.backpack.inventory[j].equippable,
-                        bodyparts = userI.backpack.inventory[j].GetBodyparts()
+                        bodyparts = userI.backpack.inventory[j].GetBodyparts(),
+                        metadata = userI.backpack.inventory[j].metadata.ToString()
                     };
                     break;
                 }

@@ -8,7 +8,9 @@ using UnityEngine.UI;
 public class ArmorSlot : MonoBehaviour
 {
     public TMP_Text itemName, bonus;
-    [SerializeField] RawImage background;
+    public RawImage background;
+
+    public bool hovering, selected;
 
     public Description description;
     public int index;
@@ -17,9 +19,19 @@ public class ArmorSlot : MonoBehaviour
 
     void OnMouseOver(){
 
+        hovering = true;
         background.color = Color.white;
         itemName.color = Color.black;
         bonus.color = Color.black;
+
+        if(Input.GetMouseButtonDown(0)){
+
+            GameManager.Singleton.SaveDataRpc();
+            item thisItem = description.bodypart.slot[index].item;
+            if(thisItem.id == -1)
+                return;
+            user.backpack.RunArmorSlotLogic(thisItem, 1, this);
+        }
 
         if(Input.GetMouseButtonDown(1) && Input.GetKey(KeyCode.LeftShift)){
 
@@ -36,13 +48,17 @@ public class ArmorSlot : MonoBehaviour
             fake.transform.localScale *= 1.1f;
             transform.GetChild(0).gameObject.SetActive(false);
             fake.transform.GetChild(0).gameObject.SetActive(true);
-            user.backpack.RunArmorSlotLogic(fake, thisItem, this);
+            user.backpack.RunArmorSlotLogic(thisItem, 0, this, fake);
         }
     }
     void OnMouseExit(){
 
-        background.color = Color.black;
-        itemName.color = Color.white;
-        bonus.color = Color.white;
+        if(!selected){
+
+            hovering = false;
+            background.color = Color.black;
+            itemName.color = Color.white;
+            bonus.color = Color.white;
+        }
     }
 }
