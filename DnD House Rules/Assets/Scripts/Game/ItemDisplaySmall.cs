@@ -203,7 +203,23 @@ public class ItemDisplaySmall : MonoBehaviour
                     if(itemDisplay.occupiedInventory.CapacityLogic(thisItem)){
 
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
-                        // don't use AddInventoryRpc here, it's only used for single item transfers.
+                        // don't use AddItemRpc here, it's only used for single item transfers, and it's too slow.
+                        // itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), new item{
+
+                        //     name = thisItem.name,
+                        //     cost = thisItem.cost,
+                        //     value = thisItem.value,
+                        //     type = thisItem.type,
+                        //     size = thisItem.size,
+                        //     amount = thisItem.amount,
+                        //     weight = thisItem.weight,
+                        //     itemInventory = thisItem.itemInventory,
+                        //     id = thisItem.id,
+                        //     equippable = thisItem.equippable,
+                        //     isEquipped = false,
+                        //     bodyparts = thisItem.bodyparts,
+                        //     metadata = thisItem.metadata
+                        // });
                         itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), thisItem);
                         // GameManager.Singleton.SaveDataRpc();
                         // List<itemShort> itemShorts = new List<itemShort>();
@@ -219,21 +235,26 @@ public class ItemDisplaySmall : MonoBehaviour
                         // Debug.Log($"Reorder inventory rpc called.");
                         GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
                         yield return new WaitForEndOfFrame();
-                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
 
                         List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
 
+                        int amountRemoved = 0;
                         for(int i = 0; i < thisItemInventory.Count; i++){
 
                             if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
 
                                 // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
                                 thisItemInventory.RemoveAt(i);
-                                i = -1;
+                                amountRemoved++;
+                                if(amountRemoved != thisItem.amount)
+                                    i = -1;
+                                else
+                                    break;
                             }
                         }
                         occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
                         occupiedInventory.LoadInventory();
+                        itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                         // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
                         // Destroy(gameObject);
                     }
@@ -303,7 +324,6 @@ public class ItemDisplaySmall : MonoBehaviour
                                             break;
                                     }
                                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
-                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
                                     yield return new WaitForEndOfFrame();
                                     
                                     List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
@@ -317,6 +337,9 @@ public class ItemDisplaySmall : MonoBehaviour
                                         }
                                     }
                                     occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                                    yield return new WaitForEndOfFrame();
+                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
+                                    yield return new WaitForEndOfFrame();
                                     occupiedInventory.LoadInventory();
                                 }
                                 else if(thisItem.CapacityLogic(armorSlot.description.bodypart.slot[armorSlot.index].item)){
@@ -385,7 +408,6 @@ public class ItemDisplaySmall : MonoBehaviour
                                     }
                                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                                     // occupiedInventory.thisItemDisplay.occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
-                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
                                     yield return new WaitForEndOfFrame();
                                     
                                     List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
@@ -399,6 +421,9 @@ public class ItemDisplaySmall : MonoBehaviour
                                         }
                                     }
                                     occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                                    yield return new WaitForEndOfFrame();
+                                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
+                                    yield return new WaitForEndOfFrame();
                                     occupiedInventory.LoadInventory();
                                 }
                             }
@@ -449,6 +474,71 @@ public class ItemDisplaySmall : MonoBehaviour
                             }
                             break;
                     }
+                }
+                else if(hit2D.transform.name.Contains("Scroll")){
+
+                    if(occupiedInventory.thisItemDisplay.occupiedInventory.CapacityLogic(thisItem)){
+
+                        // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        // don't use AddItemRpc here, it's only used for single item transfers, and it's too slow.
+                        // itemDisplay.occupiedInventory.inventory.Insert(itemDisplay.transform.GetSiblingIndex(), new item{
+
+                        //     name = thisItem.name,
+                        //     cost = thisItem.cost,
+                        //     value = thisItem.value,
+                        //     type = thisItem.type,
+                        //     size = thisItem.size,
+                        //     amount = thisItem.amount,
+                        //     weight = thisItem.weight,
+                        //     itemInventory = thisItem.itemInventory,
+                        //     id = thisItem.id,
+                        //     equippable = thisItem.equippable,
+                        //     isEquipped = false,
+                        //     bodyparts = thisItem.bodyparts,
+                        //     metadata = thisItem.metadata
+                        // });
+                        occupiedInventory.thisItemDisplay.occupiedInventory.inventory.Add(thisItem);
+                        // GameManager.Singleton.SaveDataRpc();
+                        // List<itemShort> itemShorts = new List<itemShort>();
+                        // foreach(ItemDisplay itemDisplay1 in occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                        //     itemShorts.Add(new itemShort{
+
+                        //         name = itemDisplay1.nameText.text,
+                        //         id = itemDisplay1.id
+                        //     });
+                        // }
+                        // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                        // Debug.Log($"Reorder inventory rpc called.");
+                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {occupiedInventory.thisItemDisplay.nameText.text}{occupiedInventory.thisItemDisplay.id} Inventory.json");
+                        yield return new WaitForEndOfFrame();
+
+                        List<item> thisItemInventory = occupiedInventory.thisItemDisplay.thisItem.GetInventory().ToList();
+
+                        int amountRemoved = 0;
+                        for(int i = 0; i < thisItemInventory.Count; i++){
+
+                            if(thisItemInventory[i].name.ToString() == thisItem.name.ToString() && thisItemInventory[i].id == thisItem.id){
+
+                                // Debug.Log($"removing {thisItemInventory[i].name.ToString()} with id: {thisItemInventory[i].id} from the index: {i}");
+                                thisItemInventory.RemoveAt(i);
+                                amountRemoved++;
+                                if(amountRemoved != thisItem.amount)
+                                    i = -1;
+                                else
+                                    break;
+                            }
+                        }
+                        occupiedInventory.thisItemDisplay.thisItem.SetInventory(thisItemInventory.ToArray());
+                        occupiedInventory.LoadInventory();
+                        occupiedInventory.thisItemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        // itemDisplay.occupiedInventory.RefreshItemDisplayBoxRpc(transform.root.name);
+                        // Destroy(gameObject);
+                    }
+                }
+                else if(hit2D.transform.name.Contains("Inventory")){
+
+                    transform.SetAsLastSibling();
                 }
             }
             Destroy(fake.gameObject);

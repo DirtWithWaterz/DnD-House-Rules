@@ -107,8 +107,8 @@ public class Backpack : NetworkBehaviour
                     // Debug.Log($"Reorder inventory rpc called.");
                     // GameManager.Singleton.SaveDataRpc();
                     
-                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
                     yield return new WaitForEndOfFrame();
+                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
                     switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
 
                         case SlotModifierType.ac:
@@ -120,6 +120,7 @@ public class Backpack : NetworkBehaviour
                     }
                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
+                    yield return new WaitForEndOfFrame();
                     itemDisplay.occupiedInventory.LoadInventory();
                     // Destroy(gameObject);
                 }
@@ -347,6 +348,61 @@ public class Backpack : NetworkBehaviour
                     }
                     transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
+                }
+            }
+            else if(hit2D.transform.name.Contains("Inventory") && thisItem.type != Type.backpack){
+
+                InventorySmall inventorySmall = hit2D.transform.GetComponent<InventorySmall>();
+                if(inventorySmall.thisItemDisplay.thisItem.CapacityLogic(thisItem)){
+
+                    for(int i = 0; i < thisItem.amount; i++){
+
+                        inventorySmall.thisItemDisplay.thisItem.AddInventory(new item{
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id,
+                            equippable = thisItem.equippable,
+                            isEquipped = false,
+                            bodyparts = thisItem.bodyparts,
+                            metadata = thisItem.metadata
+                        });
+                    }
+                    // List<itemShort> itemShorts = new List<itemShort>();
+                    // foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                    //     itemShorts.Add(new itemShort{
+
+                    //         name = itemDisplay1.nameText.text,
+                    //         id = itemDisplay1.id
+                    //     });
+                    // }
+                    // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
+                    // GameManager.Singleton.SaveDataRpc();
+                    
+                    yield return new WaitForEndOfFrame();
+                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {inventorySmall.thisItemDisplay.nameText.text}{inventorySmall.thisItemDisplay.id} Inventory.json");
+                    switch(armorSlot.description.bodypart.slot[armorSlot.index].slotModifierType){
+
+                        case SlotModifierType.ac:
+                            armorSlot.description.bodypart.ac.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                        case SlotModifierType.hp:
+                            armorSlot.description.bodypart.maximumHP.Value -= armorSlot.description.bodypart.slot[armorSlot.index].item.value;
+                            break;
+                    }
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+                    armorSlot.description.bodypart.EmptySlot(armorSlot.index);
+                    yield return new WaitForEndOfFrame();
+                    inventorySmall.LoadInventory();
+                    // Destroy(gameObject);
                 }
             }
         }

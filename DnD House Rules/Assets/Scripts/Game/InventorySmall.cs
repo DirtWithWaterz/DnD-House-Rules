@@ -33,7 +33,18 @@ public class InventorySmall : NetworkBehaviour
         LoadInventory();
     }
 
-    public void LoadInventory()
+    void OnDisable()
+    {
+        thisItemDisplay = transform.parent.parent.GetComponent<ItemDisplay>();
+
+        if (thisItemDisplay.type != Type.backpack)
+            return;
+
+        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json");
+        LoadInventory(false);
+    }
+
+    public void LoadInventory(bool createDisplays = true)
     {
         string filePath = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername}/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json";
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(filePath));
@@ -99,6 +110,9 @@ public class InventorySmall : NetworkBehaviour
         }
 
         // Create item displays for the updated inventory
+        if(!createDisplays)
+            return;
+        
         foreach (item item in inventory)
         {
             NetworkObject itemDisplayBox = Instantiate(GameManager.Singleton.itemDisplayObjectSmall, Panel.transform);

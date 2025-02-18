@@ -267,7 +267,6 @@ public class ItemDisplay : MonoBehaviour
                         }
                         // Debug.Log($"Reorder inventory rpc called.");
                         // GameManager.Singleton.SaveDataRpc();
-                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
                         yield return new WaitForEndOfFrame();
                         for(int i = 0; i < occupiedInventory.inventory.Count; i++){
 
@@ -288,6 +287,9 @@ public class ItemDisplay : MonoBehaviour
                             });
                         }
                         GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                        yield return new WaitForEndOfFrame();
+                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
+                        yield return new WaitForEndOfFrame();
                         itemDisplay.occupiedInventory.LoadInventory();
                         Destroy(gameObject);
                     }
@@ -467,6 +469,75 @@ public class ItemDisplay : MonoBehaviour
                             }
                             break;
                     }
+                }
+                else if(hit2D.transform.name.Contains("Inventory")){
+
+                    InventorySmall inventorySmall = hit2D.transform.GetComponent<InventorySmall>();
+                    if(inventorySmall.thisItemDisplay.thisItem.CapacityLogic(thisItem)){
+
+                        for(int i = 0; i < thisItem.amount; i++){
+
+                            inventorySmall.thisItemDisplay.thisItem.AddInventory(new item{
+
+                                name = thisItem.name,
+                                cost = thisItem.cost,
+                                value = thisItem.value,
+                                type = thisItem.type,
+                                size = thisItem.size,
+                                amount = 1,
+                                weight = thisItem.weight / thisItem.amount,
+                                itemInventory = thisItem.itemInventory,
+                                id = thisItem.id,
+                                equippable = thisItem.equippable,
+                                isEquipped = false,
+                                bodyparts = thisItem.bodyparts,
+                                metadata = thisItem.metadata
+                            });
+                        }
+                        // Debug.Log($"Reorder inventory rpc called.");
+                        // GameManager.Singleton.SaveDataRpc();
+                        yield return new WaitForEndOfFrame();
+                        for(int i = 0; i < occupiedInventory.inventory.Count; i++){
+
+                            if(occupiedInventory.inventory[i].name.ToString() == thisItem.name.ToString() && occupiedInventory.inventory[i].id == thisItem.id){
+
+                                // Debug.Log($"removing {occupiedInventory.inventory[i].name.ToString()} with id: {occupiedInventory.inventory[i].id}");
+                                occupiedInventory.inventory.RemoveAt(i);
+                                // GameManager.Singleton.SaveDataRpc();
+                            }
+                        }
+                        List<itemShort> itemShorts = new List<itemShort>();
+                        foreach(ItemDisplay itemDisplay1 in occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                            itemShorts.Add(new itemShort{
+
+                                name = itemDisplay1.nameText.text,
+                                id = itemDisplay1.id
+                            });
+                        }
+                        GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                        yield return new WaitForEndOfFrame();
+                        GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {inventorySmall.thisItemDisplay.nameText.text}{inventorySmall.thisItemDisplay.id} Inventory.json");
+                        yield return new WaitForEndOfFrame();
+                        inventorySmall.LoadInventory();
+                        Destroy(gameObject);
+                    }
+                }
+                else if(hit2D.transform.name.Contains("Scroll")){
+
+                    transform.SetAsLastSibling();
+
+                    List<itemShort> itemShorts = new List<itemShort>();
+                    foreach(ItemDisplay itemDisplay in occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                        itemShorts.Add(new itemShort{
+
+                            name = itemDisplay.nameText.text,
+                            id = itemDisplay.id
+                        });
+                    }
+                    GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
                 }
             }
             Destroy(fake.gameObject);
