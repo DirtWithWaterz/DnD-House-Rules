@@ -12,6 +12,8 @@ public class ItemDisplay : MonoBehaviour
     public item thisItem;
     public Backpack occupiedInventory;
 
+    bool mouseDownCoOn = false;
+
     public bool hovering, selected;
     public TMP_Text nameText;
     public TMP_Text sizeText;
@@ -42,6 +44,16 @@ public class ItemDisplay : MonoBehaviour
         if(Input.GetKeyUp(KeyCode.Delete) && selected){
 
             occupiedInventory.RemoveItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem.name.ToString(), true, thisItem.id);
+        }
+        if(Input.GetKeyUp(KeyCode.LeftShift) && mouseDownCoOn){
+
+            // if key released vvv
+            // stop coroutine and safely reset vars
+            StopCoroutine(OnMouseOver());
+            Destroy(GameObject.Find("fake"));
+            GameManager.Singleton.SaveDataRpc();
+            transform.GetChild(0).gameObject.SetActive(true);
+            mouseDownCoOn = false;
         }
         if(Input.GetMouseButtonUp(0) && selected){
             
@@ -231,10 +243,13 @@ public class ItemDisplay : MonoBehaviour
             fakeDisplay.sizeText.text = sizeText.text;
             fakeDisplay.weightText.text = weightText.text;
             fake.transform.localScale *= 1.1f;
+            fake.name = "fake";
             transform.GetChild(0).gameObject.SetActive(false);
             yield return new WaitForEndOfFrame();
             fake.transform.GetChild(0).gameObject.SetActive(true);
+            mouseDownCoOn = true;
             yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
+            mouseDownCoOn = false;
             // raycast from mouse y coordinate and this items x coordinate
             RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
             if(hit2D.collider != null){
@@ -311,7 +326,7 @@ public class ItemDisplay : MonoBehaviour
                     GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
                     // Debug.Log($"Reorder inventory rpc called.");
                 }
-                else if(hit2D.transform.name.Contains("Slot")){
+                else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Slot")){
 
                     ArmorSlot armorSlot = hit2D.transform.GetComponent<ArmorSlot>();
                     foreach(string bodypartName in thisItem.GetBodyparts()){
@@ -451,7 +466,7 @@ public class ItemDisplay : MonoBehaviour
                         }
                     }
                 }
-                else if(hit2D.transform.name.Contains("BODY")){
+                else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("BODY")){
 
                     Bodypart bodypart = hit2D.transform.GetComponent<Bodypart>();
 
@@ -540,6 +555,8 @@ public class ItemDisplay : MonoBehaviour
                     // Debug.Log($"Reorder inventory rpc called.");
                 }
             }
+            if(fake == null)
+                yield break;
             Destroy(fake.gameObject);
             GameManager.Singleton.SaveDataRpc();
             transform.GetChild(0).gameObject.SetActive(true);

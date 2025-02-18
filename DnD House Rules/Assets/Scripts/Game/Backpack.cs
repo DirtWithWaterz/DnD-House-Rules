@@ -30,6 +30,11 @@ public class Backpack : NetworkBehaviour
 
     public Description description;
 
+    bool mouseDownCoOn = false;
+
+    IEnumerator Inst = null;
+    ArmorSlot slotPriv = null;
+
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
@@ -47,10 +52,13 @@ public class Backpack : NetworkBehaviour
     // The armor slots are too fucking stupid to do it themselves.
     public void RunArmorSlotLogic(item thisItem, int type, ArmorSlot armorSlot, NetworkObject fake = null){
 
+
         switch(type){
 
             case 0:
-                StartCoroutine(ArmorSlotLogic(fake, thisItem, armorSlot));
+                slotPriv = armorSlot;
+                Inst = ArmorSlotLogic(fake, thisItem, armorSlot);
+                StartCoroutine(Inst);
                 break;
             case 1:
                 StartCoroutine(ArmorSlotLogic(thisItem, armorSlot));
@@ -62,7 +70,9 @@ public class Backpack : NetworkBehaviour
     IEnumerator ArmorSlotLogic(NetworkObject fake, item thisItem, ArmorSlot armorSlot){
 
         // Debug.Log("waiting for mouse button to be released...");
+        mouseDownCoOn = true;
         yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
+        mouseDownCoOn = false;
         // Debug.Log("mouse button released. Raycasting...");
         // raycast from mouse y coordinate and this items x coordinate
         RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
@@ -70,7 +80,7 @@ public class Backpack : NetworkBehaviour
 
             // if we hit a different item in the inventory, switch that items place in the hierarchy with this one.
             // Debug.Log(hit2D.transform.name);
-            if(hit2D.transform.name.Contains("Item Display Box Small") && thisItem.type != Type.backpack){
+            if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Item Display Box Small") && thisItem.type != Type.backpack){
                 
                 ItemDisplaySmall itemDisplay = hit2D.transform.GetComponent<ItemDisplaySmall>();
                 if(itemDisplay.occupiedInventory.thisItemDisplay.thisItem.CapacityLogic(thisItem)){
@@ -125,7 +135,7 @@ public class Backpack : NetworkBehaviour
                     // Destroy(gameObject);
                 }
             }
-            else if(hit2D.transform.name.Contains("Item Display Box")){
+            else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Item Display Box")){
 
                 ItemDisplay itemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
                 
@@ -162,7 +172,7 @@ public class Backpack : NetworkBehaviour
                     // Destroy(gameObject);
                 }
             }
-            else if(hit2D.transform.name.Contains("Slot")){
+            else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Slot")){
 
                 foreach(string bodypartName in thisItem.GetBodyparts()){
 
@@ -320,7 +330,7 @@ public class Backpack : NetworkBehaviour
                     }
                 }
             }
-            else if(hit2D.transform.name.Contains("Scroll")){
+            else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Scroll")){
 
                 if(CapacityLogic(thisItem, $"{thisItem.value}:{thisItem.type}")){
 
@@ -350,7 +360,7 @@ public class Backpack : NetworkBehaviour
                     armorSlot.description.bodypart.EmptySlot(armorSlot.index);
                 }
             }
-            else if(hit2D.transform.name.Contains("Inventory") && thisItem.type != Type.backpack){
+            else if(Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Inventory") && thisItem.type != Type.backpack){
 
                 InventorySmall inventorySmall = hit2D.transform.GetComponent<InventorySmall>();
                 if(inventorySmall.thisItemDisplay.thisItem.CapacityLogic(thisItem)){
@@ -410,6 +420,8 @@ public class Backpack : NetworkBehaviour
             // Debug.Log("Raycast did not hit any colliders.");
         }
         // Debug.Log("Destroying fake.");
+        if(fake == null)
+            yield break;
         Destroy(fake.gameObject);
         transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
         yield return new WaitForEndOfFrame();
@@ -418,6 +430,17 @@ public class Backpack : NetworkBehaviour
 
     void Update(){
 
+        if(Input.GetKeyUp(KeyCode.LeftShift) && mouseDownCoOn){
+
+            // if key released vvv
+            // stop coroutine and safely reset vars
+            StopCoroutine(Inst);
+            Destroy(GameObject.Find("fake"));
+            transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+            if(slotPriv != null)
+                slotPriv.transform.GetChild(0).gameObject.SetActive(true);
+            mouseDownCoOn = false;
+        }
         if(Input.GetMouseButtonUp(0)){
             
             foreach(ArmorSlot armorSlot in description.armorSlots){
