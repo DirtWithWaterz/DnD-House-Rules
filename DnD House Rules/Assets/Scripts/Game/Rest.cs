@@ -7,7 +7,7 @@ using UnityEngine;
 public class Rest : NetworkBehaviour
 {
 
-    Dictionary<string, int> bodypartDict0 = new Dictionary<string, int>(){
+    public static Dictionary<string, int> bodypartDict0 = new Dictionary<string, int>(){
 
         {"head", 0},
         {"neck", 1},
@@ -27,7 +27,7 @@ public class Rest : NetworkBehaviour
         {"right crus", 15},
         {"right foot", 16}
     };
-    public Dictionary<int, string> bodypartDict1 = new Dictionary<int, string>(){
+    public static Dictionary<int, string> bodypartDict1 = new Dictionary<int, string>(){
 
         {0, "head"},
         {1, "neck"},

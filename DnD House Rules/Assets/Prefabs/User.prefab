@@ -75,6 +75,7 @@ MonoBehaviour:
   stats: {fileID: 0}
   bodyparts: []
   backpack: {fileID: 0}
+  conditionsUI: {fileID: 0}
   CurrentPlayerLabel1: {fileID: 3526970100860327713}
   CurrentPlayerLabel2: {fileID: 4739780332820800037}
   hungies:

@@ -24,6 +24,7 @@ public class User : NetworkBehaviour
     Interpreter interpreter;
 
     public Backpack backpack;
+    public ConditionsUI conditionsUI;
 
     [SerializeField] TMP_Text CurrentPlayerLabel1;
     [SerializeField] TMP_Text CurrentPlayerLabel2;
@@ -57,6 +58,7 @@ public class User : NetworkBehaviour
 
         interpreter = FindObjectOfType<Interpreter>();
         backpack = GetComponentInChildren<Backpack>();
+        conditionsUI = GetComponentInChildren<ConditionsUI>();
 
         bodyparts = new List<Bodypart>();
 

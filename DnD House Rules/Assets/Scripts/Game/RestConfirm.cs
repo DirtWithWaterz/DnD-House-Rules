@@ -43,7 +43,7 @@ public class RestConfirm : MonoBehaviour
                 switch(index){
 
                     case 0:
-                        GameManager.Singleton.interpreter.NoticeRpc($"{transform.root.name} took a long rest, healing 1 hp on their {rest.bodypartDict1[rest.selectedBodypartIndex]}");
+                        GameManager.Singleton.interpreter.NoticeRpc($"{transform.root.name} took a long rest, healing 1 hp on their {Rest.bodypartDict1[rest.selectedBodypartIndex]}");
                         break;
                     case 1:
                         GameManager.Singleton.interpreter.NoticeRpc($"{transform.root.name} took a short rest.");

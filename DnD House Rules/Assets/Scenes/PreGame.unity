@@ -393,7 +393,7 @@ MonoBehaviour:
   itemDisplayObject: {fileID: 6437086073024150627, guid: a8fb1f799a6c2ab449dc72defd85921f, type: 3}
   itemDisplayObjectSmall: {fileID: 6437086073024150627, guid: e5c44667f0ffed94d822f9ed799403c4, type: 3}
   itemDisplayBoxMouse: {fileID: 4489792486955451911, guid: bb52df92e8fc7ba409f745a96267c8d7, type: 3}
-  armorSlotDisplayObject: {fileID: 605472007764464777, guid: 89701d76d777ac74895a0b2d00861933, type: 3}
+  conditionDisplayBox: {fileID: 6392386740122727068, guid: 335725e62a305604fae2dbc00e54952e, type: 3}
   itemIdTally:
     m_InternalValue: 0
 --- !u!4 &1775000833

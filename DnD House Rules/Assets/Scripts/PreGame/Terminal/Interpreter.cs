@@ -2,14 +2,10 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
 using Newtonsoft.Json;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -1017,13 +1013,24 @@ public class Interpreter : NetworkBehaviour
 
                 if(IsHost){
 
-                    string val = "";
+                    string conditionData = "";
+                    string conditionHuman = "";
                     for(int i = 3; i < args.Length; i++){
+                        
+                        if(args[i] == "|hN|:"){
 
-                        val += $"{args[i]} ";
+                            for(int j = i+1; j < args.Length; j++){
+
+                                conditionHuman += $"{args[j]} ";
+                            }
+                            break;
+                        }
+                        conditionData += $"{args[i]} ";
                     }
-                    GameManager.Singleton.conditionsValueKey.Add(args[2], val);
-                    GameManager.Singleton.conditionsKeyValue.Add(val, args[2]);
+                    GameManager.Singleton.conditionsValueKey.Add(args[2], conditionData);
+                    GameManager.Singleton.conditionsKeyValue.Add(conditionData, args[2]);
+                    GameManager.Singleton.conditionNamesHumanKey.Add(args[2], conditionHuman.TrimEnd());
+                    GameManager.Singleton.conditionNamesKeyHuman.Add(conditionHuman.TrimEnd(), args[2]);
                 }
             }
             if(args[1] == "item"){
@@ -1438,8 +1445,43 @@ public class Interpreter : NetworkBehaviour
                     SetHealthRpc(usernameI, bodypartDict[args[2]], Mathf.Clamp(userI.bodyparts[bodypartDict[args[2]]].currentHP.Value + int.Parse(args.Length == 5 ? args[4] : args[3]), -99, userI.bodyparts[bodypartDict[args[2]]].maximumHP.Value));
                 }
             }
+            
             response.Add("");
             return response;
+        }
+
+        if(args[0] == "remove" && IsHost){
+
+            if(args[1] == "condition"){
+
+                int argsLength = 0;
+                for(int i = 0; i < args.Length; i++){
+
+                    if(args[i] == "|hN|:"){
+                        argsLength = i;
+                        break;
+                    }
+                }
+                if(argsLength == 0){
+
+                    response.Add("invalid syntax.");
+                    response.Add("");
+                    return response;
+                }
+                // remove condition torso user1 |hN|: starvation
+                string usernameI = argsLength == 5 ? args[3] : username;
+                string conditionHuman = "";
+
+                for(int i = argsLength+1; i < args.Length; i++){
+
+                    conditionHuman += $"{args[i]} ";
+                }
+                RemoveConditionRpc(usernameI, bodypartDict[args[2]], conditionHuman.TrimEnd());
+                response.Add("removed.");
+                response.Add("");
+                return response;
+
+            }
         }
 
         if(args[0] == "longrest"){
@@ -1999,11 +2041,44 @@ public class Interpreter : NetworkBehaviour
     }
     
     [Rpc(SendTo.Everyone)]
+    public void RemoveConditionRpc(string usernameI, int index, string conditionHuman){
+
+        if(username != usernameI)
+            return;
+        User user = GameObject.Find(usernameI).GetComponent<User>();
+
+        string conditionVal = GameManager.Singleton.conditionsValueKey[GameManager.Singleton.conditionNamesKeyHuman[conditionHuman]];
+        // Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {conditionHuman}");
+
+        if(user.bodyparts[index].unenforcedCondition == conditionVal){
+            
+            SetConditionRpc(usernameI, index, GameManager.Singleton.conditionsValueKey["normal"], false);
+            return;
+        }
+        // Debug.Log($"\"{user.bodyparts[index].condition.Value}\" == \"{conditionVal}\" ?");
+        if(user.bodyparts[index].condition.Value.ToString() == conditionVal){
+
+            // Debug.Log("true");
+            SetConditionRpc(usernameI, index, GameManager.Singleton.conditionsValueKey["normal"], true);
+            return;
+        }
+        
+        condition newCondition = new condition{
+
+            name = GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]],
+            data = conditionVal,
+            bodypart = Rest.bodypartDict1[index]
+        };
+        // Debug.Log($"new condition || name: {newCondition.name.ToString()} || data: {newCondition.data.ToString()} || bodypart: {newCondition.bodypart.ToString()}");
+        user.conditionsUI.UnlistConditionRpc(newCondition, usernameI);
+    }
+    [Rpc(SendTo.Everyone)]
     public void SetConditionRpc(string usernameI, int index, string conditionVal, bool isEnforced = true){
 
         if(username != usernameI)
             return;
         User user = GameObject.Find(usernameI).GetComponent<User>();
+        // Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]]}");
 
         switch(isEnforced){
 
@@ -2017,6 +2092,13 @@ public class Interpreter : NetworkBehaviour
                 user.bodyparts[index].unenforcedCondition = conditionVal;
                 break;
         }
+        condition newCondition = new condition{
+
+            name = GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]],
+            data = conditionVal,
+            bodypart = Rest.bodypartDict1[index]
+        };
+        user.conditionsUI.ListConditionRpc(newCondition, usernameI);
     }
     [Rpc(SendTo.Everyone)]
     public void EnforceConditionRpc(string usernameI, int index, bool enforce){

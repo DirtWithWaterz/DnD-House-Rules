@@ -168,10 +168,14 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse, conditionDisplayBox;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
+
+    public Dictionary<string, string> conditionNamesKeyHuman = new Dictionary<string, string>();
+    public Dictionary<string, string> conditionNamesHumanKey = new Dictionary<string, string>();
+
     public NetworkVariable<int> itemIdTally = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
 
@@ -267,6 +271,8 @@ public class GameManager : NetworkBehaviour
 
         public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
         public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
+        public Dictionary<string, string> conditionNamesKeyHuman = new Dictionary<string, string>();
+        public Dictionary<string, string> conditionNamesHumanKey = new Dictionary<string, string>();
     }
     
     [Serializable]
@@ -486,9 +492,19 @@ public class GameManager : NetworkBehaviour
         string output = JsonConvert.SerializeObject(new JsonConditions(){
 
             conditionsKeyValue = this.conditionsKeyValue,
-            conditionsValueKey = this.conditionsValueKey
+            conditionsValueKey = this.conditionsValueKey,
+            conditionNamesKeyHuman = this.conditionNamesKeyHuman,
+            conditionNamesHumanKey = this.conditionNamesHumanKey
         }, Formatting.Indented);
         File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json", output);
+        foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
+
+            Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
+        }
+        foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
+
+            Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
+        }
 
         JsonItems jsonItems = new JsonItems();
         jsonItems.items = new JsonItem[items.Count];
@@ -825,8 +841,19 @@ public class GameManager : NetworkBehaviour
 
         conditionsKeyValue = jsonConditions.conditionsKeyValue;
         conditionsValueKey = jsonConditions.conditionsValueKey;
+        conditionNamesKeyHuman = jsonConditions.conditionNamesKeyHuman;
+        conditionNamesHumanKey = jsonConditions.conditionNamesHumanKey;
 
         SaveLoadConditionsRpc(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json"));
+
+        foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
+
+            Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
+        }
+        foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
+
+            Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
+        }
 
         if(jsonUserDatas.jsonUserDatas.Length < userDatas.Count){
 
@@ -1567,6 +1594,8 @@ public class GameManager : NetworkBehaviour
 
         conditionsKeyValue = jsonConditions.conditionsKeyValue;
         conditionsValueKey = jsonConditions.conditionsValueKey;
+        conditionNamesKeyHuman = jsonConditions.conditionNamesKeyHuman;
+        conditionNamesHumanKey = jsonConditions.conditionNamesHumanKey;
     }
 
     [Rpc(SendTo.Everyone)]
