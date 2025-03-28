@@ -20034,7 +20034,7 @@ MonoBehaviour:
         byte4092: 0
         byte4093: 0
   forceCondition: 0
-  unenforcedCondition: 
+  unenforcedCondition: 'Normal -\n no notable issues or sustained injuries. '
 --- !u!212 &3772446478653437070
 SpriteRenderer:
   m_ObjectHideFlags: 0

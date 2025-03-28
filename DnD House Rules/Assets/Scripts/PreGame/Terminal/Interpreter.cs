@@ -1469,13 +1469,15 @@ public class Interpreter : NetworkBehaviour
                     return response;
                 }
                 // remove condition torso user1 |hN|: starvation
-                string usernameI = argsLength == 5 ? args[3] : username;
+                string usernameI = argsLength == 4 ? args[3] : username;
                 string conditionHuman = "";
 
                 for(int i = argsLength+1; i < args.Length; i++){
 
                     conditionHuman += $"{args[i]} ";
                 }
+                // not fully working in multiplayer (needs more testing, set up debugs)
+                // Debug.Log($"username: {usernameI}, bodypart: {args[2]} ({bodypartDict[args[2]]}), human readable condition name: {conditionHuman.TrimEnd()}");
                 RemoveConditionRpc(usernameI, bodypartDict[args[2]], conditionHuman.TrimEnd());
                 response.Add("removed.");
                 response.Add("");
@@ -2043,10 +2045,16 @@ public class Interpreter : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void RemoveConditionRpc(string usernameI, int index, string conditionHuman){
 
+        // Debug.Log($"{username} == {usernameI} ?");
         if(username != usernameI)
             return;
+        // Debug.Log("True, Continuing...");
+        // Debug.Log($"username: {usernameI}, bodypart index: {index}, human readable condition name: {conditionHuman}");
         User user = GameObject.Find(usernameI).GetComponent<User>();
-
+        // Debug.Log($"is {user.name} local player?");
+        if(!user.IsLocalPlayer)
+            return;
+        // Debug.Log("yes.");
         string conditionVal = GameManager.Singleton.conditionsValueKey[GameManager.Singleton.conditionNamesKeyHuman[conditionHuman]];
         // Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {conditionHuman}");
 
@@ -2070,6 +2078,7 @@ public class Interpreter : NetworkBehaviour
             bodypart = Rest.bodypartDict1[index]
         };
         // Debug.Log($"new condition || name: {newCondition.name.ToString()} || data: {newCondition.data.ToString()} || bodypart: {newCondition.bodypart.ToString()}");
+        // Debug.Log("calling unlist condition rpc...");
         user.conditionsUI.UnlistConditionRpc(newCondition, usernameI);
     }
     [Rpc(SendTo.Everyone)]

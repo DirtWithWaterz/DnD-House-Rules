@@ -63,7 +63,7 @@ public class ConditionDisplay : MonoBehaviour
                 if(hit2D.transform.name.Contains("Scroll")){
 
                     conditionsUI.iPanel_conditionInfo.text = "Information regarding specific conditions will be listed here. Any conditions currently afflicting the body will show up on the right. Left-clicik one of the items and its information will show up here.";
-
+                    // Debug.Log("hit scroll.");
                     background.color = Color.black;
                     bodypartNameText.color = Color.white;
                     conditionNameText.color = Color.white;
@@ -86,6 +86,7 @@ public class ConditionDisplay : MonoBehaviour
 
             if(hovering){
                 selected = true;
+                conditionsUI.iPanel_conditionInfo.text = thisCondition.data.ToString().Replace("\\n", "\n");
                 foreach(NetworkObject netObj in conditionsUI.conditionDisplays){
 
                     if(netObj == null)
@@ -94,6 +95,7 @@ public class ConditionDisplay : MonoBehaviour
                     ConditionDisplay ConditionDisplay = netObj.GetComponent<ConditionDisplay>();
                     if(ConditionDisplay.Equals(this))
                         continue;
+                    
                     
                     ConditionDisplay.selected = false;
                     ConditionDisplay.background.color = Color.black;

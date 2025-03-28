@@ -497,14 +497,14 @@ public class GameManager : NetworkBehaviour
             conditionNamesHumanKey = this.conditionNamesHumanKey
         }, Formatting.Indented);
         File.WriteAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json", output);
-        foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
+        // foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
 
-            Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
-        }
-        foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
+        //     Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
+        // }
+        // foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
 
-            Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
-        }
+        //     Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
+        // }
 
         JsonItems jsonItems = new JsonItems();
         jsonItems.items = new JsonItem[items.Count];
@@ -846,14 +846,14 @@ public class GameManager : NetworkBehaviour
 
         SaveLoadConditionsRpc(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/conditions.json"));
 
-        foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
+        // foreach(KeyValuePair<string, string> pair in conditionNamesHumanKey){
 
-            Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
-        }
-        foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
+        //     Debug.Log($"Human -> Key :: |{pair.Key}:{pair.Value}|");
+        // }
+        // foreach(KeyValuePair<string, string> pair in conditionNamesKeyHuman){
 
-            Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
-        }
+        //     Debug.Log($"Key -> Human :: |{pair.Key}:{pair.Value}|");
+        // }
 
         if(jsonUserDatas.jsonUserDatas.Length < userDatas.Count){
 
