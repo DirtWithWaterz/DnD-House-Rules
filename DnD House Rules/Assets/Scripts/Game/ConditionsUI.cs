@@ -10,6 +10,8 @@ public class ConditionsUI : MonoBehaviour
 
     public List<condition> conditionsList = new List<condition>();
 
+    public ConditionDisplay exhaustionDisplay;
+
     public TMP_Text iPanel_conditionInfo;
     [SerializeField] GameObject Panel;
 

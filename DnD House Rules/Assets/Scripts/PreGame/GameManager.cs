@@ -61,6 +61,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
 
     public float hungies;
 
+    public int eLvl;
+
     public bool Equals(userData other)
     {
         return other.id == id;
@@ -144,6 +146,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
         serializer.SerializeValue(ref penc);
 
         serializer.SerializeValue(ref hungies);
+
+        serializer.SerializeValue(ref eLvl);
 
     }
 }
@@ -258,6 +262,8 @@ public class GameManager : NetworkBehaviour
         public int soljik, brine, penc;
 
         public float hungies;
+
+        public int eLvl;
     }
 
     [Serializable]
@@ -478,7 +484,8 @@ public class GameManager : NetworkBehaviour
                 soljik = user.soljik,
                 brine = user.brine,
                 penc = user.penc,
-                hungies = user.hungies
+                hungies = user.hungies,
+                eLvl = user.eLvl
             };
 
             userDataMap[user.username.ToString()] = newData; // Ensures only one entry per user
@@ -828,7 +835,9 @@ public class GameManager : NetworkBehaviour
                     brine = 0,
                     penc = 0,
 
-                    hungies = 100f
+                    hungies = 100f,
+
+                    eLvl = 0
                 };
             }
 
@@ -949,7 +958,9 @@ public class GameManager : NetworkBehaviour
                         brine = 0,
                         penc = 0,
 
-                        hungies = 100f
+                        hungies = 100f,
+
+                        eLvl = 0
                     };
                 }
             }
@@ -1044,10 +1055,13 @@ public class GameManager : NetworkBehaviour
                         brine = jsonUserDatas.jsonUserDatas[i].brine,
                         penc = jsonUserDatas.jsonUserDatas[i].penc,
 
-                        hungies = jsonUserDatas.jsonUserDatas[i].hungies
+                        hungies = jsonUserDatas.jsonUserDatas[i].hungies,
+
+                        eLvl = jsonUserDatas.jsonUserDatas[i].eLvl
                     };
                     User user = GameObject.Find(data.username.ToString()).GetComponent<User>();
                     user.LoadUserDataRpc(i);
+                    user.SetELvlRpc(userDatas[i].eLvl, userDatas[i].username.ToString());
                     // Debug.Log($"{data.username} loading...");
                 }
             }

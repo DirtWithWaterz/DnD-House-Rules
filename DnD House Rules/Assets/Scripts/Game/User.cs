@@ -31,6 +31,9 @@ public class User : NetworkBehaviour
 
     public NetworkVariable<float> hungies = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
+    public NetworkVariable<int> eLvl = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    int eLvlOld = -1;
+
     public static float hungySpeed = 0.00019f;
 
     public override void OnNetworkSpawn()
@@ -154,6 +157,19 @@ public class User : NetworkBehaviour
         UpdateUserDataRpc(NetworkManager.LocalClientId);
     }
 
+    [Rpc(SendTo.Everyone)]
+    public void SetELvlRpc(int set, string usernameI){
+
+        // Debug.Log($"SetELvlRpc: {set} || {usernameI}");
+        // Debug.Log($"{name} || {IsOwner}");
+        if(usernameI != name || !IsOwner)
+            return;
+        // Debug.Log("name is correct || is owner == true");
+        // Debug.Log($"{eLvl.Value} -> {set}");
+        eLvl.Value = set;
+        // Debug.Log($"eLvl == {eLvl.Value} || set == {set}");
+    }
+
     float hungiesTimer = 0f;
     void Update(){
 
@@ -190,6 +206,23 @@ public class User : NetworkBehaviour
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["normal"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["normal"], false);
                 break;
+        }
+        if(eLvlOld != eLvl.Value){
+
+            // Debug.Log("eLvlOld != eLvl.Value");
+            // Debug.Log($"{eLvlOld} != {eLvl.Value}");
+
+            conditionsUI.exhaustionDisplay.thisCondition = new condition(){
+
+                name = conditionsUI.exhaustionDisplay.thisCondition.name,
+                data = conditionsUI.exhaustionDisplay.thisCondition.data,
+                bodypart = conditionsUI.exhaustionDisplay.thisCondition.bodypart,
+                eLvl = eLvl.Value,
+                eLvlOld = eLvl.Value - 1
+            };
+            // Debug.Log($"{eLvlOld} -> {eLvl.Value}");
+            eLvlOld = eLvl.Value;
+            // Debug.Log($"{eLvlOld} == {eLvl.Value}");
         }
     }
 
@@ -407,7 +440,9 @@ public class User : NetworkBehaviour
                     brine = user.backpack.brine.Value,
                     penc = user.backpack.penc.Value,
 
-                    hungies = user.hungies.Value
+                    hungies = user.hungies.Value,
+
+                    eLvl = user.eLvl.Value
                 };
                 // Debug.LogWarning($"Username: {data.username} : ID: {id} : Chest Condition: {data.CONDITION_CHEST}");
                 GameManager.Singleton.userDatas[i] = data;

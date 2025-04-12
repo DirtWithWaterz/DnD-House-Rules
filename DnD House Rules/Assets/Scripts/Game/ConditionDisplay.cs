@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
@@ -11,6 +12,7 @@ public struct condition:IEquatable<condition>,INetworkSerializable{
     public FixedString32Bytes name;
     public FixedString4096Bytes data;
     public FixedString32Bytes bodypart;
+    public int eLvl, eLvlOld;
 
     public bool Equals(condition other)
     {
@@ -22,11 +24,24 @@ public struct condition:IEquatable<condition>,INetworkSerializable{
         serializer.SerializeValue(ref name);
         serializer.SerializeValue(ref data);
         serializer.SerializeValue(ref bodypart);
+        serializer.SerializeValue(ref eLvl);
+        serializer.SerializeValue(ref eLvlOld);
     }
 }
 
 public class ConditionDisplay : MonoBehaviour
 {
+
+    Dictionary<int, string> exhaustionValues = new Dictionary<int, string>(){
+
+        {0, "You are not Exhausted."},
+        {1, "Disadvantage on Ability Checks."},
+        {2, "Speed halved.\nDisadvantage on Ability Checks."},
+        {3, "Disadvantage on Attack rolls and Saving Throws.\nSpeed halved.\nDisadvantage on Ability Checks."},
+        {4, "Hit point maximum halved.\nDisadvantage on Attack rolls and Saving Throws.\nSpeed halved.\nDisadvantage on Ability Checks."},
+        {5, "Speed reduced to 0\nHit point maximum halved.\nDisadvantage on Attack rolls and Saving Throws.\nSpeed halved.\nDisadvantage on Ability Checks."},
+        {6, "Death."}
+    };
 
     public condition thisCondition;
     public ConditionsUI conditionsUI;
@@ -43,6 +58,8 @@ public class ConditionDisplay : MonoBehaviour
 
     public bool isOpen = false;
 
+    public bool isExhaustion;
+
     public Camera cam;
 
     void Start(){
@@ -51,6 +68,19 @@ public class ConditionDisplay : MonoBehaviour
         User user = GameObject.Find(GameManager.Singleton.interpreter.GetUsername).GetComponent<User>();
         cam = user.transform.GetChild(0).GetComponent<Camera>();
         // Debug.Log("Item display was instantiated");
+        if(isExhaustion){
+
+            thisCondition = new condition{
+
+                name = "Exhaustion",
+                data = exhaustionValues[0],
+                bodypart = $"{0} Levels",
+                eLvl = 0,
+                eLvlOld = 0
+            };
+            bodypartNameText.text = $"{thisCondition.bodypart}";
+            conditionsUI.exhaustionDisplay = this;
+        }
     }
 
     void Update(){
@@ -70,6 +100,20 @@ public class ConditionDisplay : MonoBehaviour
                     selected = false;
                 }
             }
+        }
+        if(isExhaustion && thisCondition.eLvl != thisCondition.eLvlOld){
+
+            // Debug.Log($"isExhaustion: {isExhaustion} && {thisCondition.eLvl} != {thisCondition.eLvlOld}");
+
+            thisCondition = new condition{
+
+                name = thisCondition.name,
+                data = exhaustionValues[thisCondition.eLvl],
+                bodypart = $"{thisCondition.eLvl} Levels",
+                eLvl = thisCondition.eLvl,
+                eLvlOld = thisCondition.eLvl
+            };
+            bodypartNameText.text = $"{thisCondition.bodypart}";
         }
     }
 
