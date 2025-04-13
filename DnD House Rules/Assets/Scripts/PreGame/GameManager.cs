@@ -1471,7 +1471,7 @@ public class GameManager : NetworkBehaviour
     [Rpc(SendTo.Everyone)]
     public void LogRpc(string message){
 
-        Debug.Log(message);
+        // Debug.Log(message);
     }
 
 

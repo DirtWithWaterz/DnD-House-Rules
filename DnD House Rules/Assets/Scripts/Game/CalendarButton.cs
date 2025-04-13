@@ -58,7 +58,7 @@ public class CalendarButton : MonoBehaviour
             }
             else if(hovering && index==-1){
 
-                GameManager.Singleton.terminal.transform.GetChild(0).gameObject.SetActive(true);
+                GameManager.Singleton.terminal.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
                 user.screen.GetComponent<Canvas>().enabled = false;
                 user.transform.position += Vector3.up*100;
             }

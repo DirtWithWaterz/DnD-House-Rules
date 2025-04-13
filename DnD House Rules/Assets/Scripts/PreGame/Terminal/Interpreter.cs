@@ -272,11 +272,17 @@ public class Interpreter : NetworkBehaviour
 
         if(args[0] == "exit" && SceneManager.GetActiveScene().name == "Game"){
 
-            if(!IsHost)
+            // if(!IsHost)
                 GameManager.Singleton.LoadDataRpc();
-            transform.root.GetChild(0).gameObject.SetActive(false);
-            user.screen.GetComponent<Canvas>().enabled = true;
-            user.transform.position -= Vector3.up*100;
+            StartCoroutine(WaitRet());
+            response.Add("Loading userdata...");
+            IEnumerator WaitRet(){
+
+                yield return new WaitForSeconds(1f);
+                transform.root.GetChild(0).GetChild(0).gameObject.SetActive(false);
+                user.screen.GetComponent<Canvas>().enabled = true;
+                user.transform.position -= Vector3.up*100;
+            }
             response.Add("");
             return response;
         }
@@ -1296,11 +1302,16 @@ public class Interpreter : NetworkBehaviour
                         SetTimeRpc(1, targetMonth);
                         SetTimeRpc(2, targetDay);
 
+                        if(args[4] == "hf") //hunger:false
+                            break;
+
                         foreach(userData data in GameManager.Singleton.userDatas){
 
                             User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
 
                             userI.AddHungiesRpc(data.username.ToString(), -(dayDifference*129600*User.hungySpeed));
+                            if(userI.hungies.Value <= 0)
+                                userI.AddTs0HRpc(data.username.ToString(), dayDifference*129600);
                         }
                         break;
                     case "hours":
@@ -1357,6 +1368,8 @@ public class Interpreter : NetworkBehaviour
                             User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
 
                             userI.AddHungiesRpc(data.username.ToString(), -(hourDifference*3600*User.hungySpeed));
+                            if(userI.hungies.Value <= 0)
+                                userI.AddTs0HRpc(data.username.ToString(), hourDifference*3600);
                         }
                         break;
                     case "minutes":
@@ -1433,6 +1446,8 @@ public class Interpreter : NetworkBehaviour
                             User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
 
                             userI.AddHungiesRpc(data.username.ToString(), -(minuteDifference*60*User.hungySpeed));
+                            if(userI.hungies.Value <= 0)
+                                userI.AddTs0HRpc(data.username.ToString(), minuteDifference*60);
                         }
                         break;
                 }
@@ -2201,45 +2216,45 @@ public class Interpreter : NetworkBehaviour
         if(username != usernameI)
             return;
         User userI = GameObject.Find(usernameI).GetComponent<User>();
-        Debug.Log($"hunger == {userI.hungies.Value} || setting to -> {val}");
-        Debug.Log($"{userI.hungies.Value} -> {val}");
+        // Debug.Log($"hunger == {userI.hungies.Value} || setting to -> {val}");
+        // Debug.Log($"{userI.hungies.Value} -> {val}");
         userI.hungies.Value = val;
         if(ts0H != -1)
             userI.ts0H.Value = ts0H;
-        Debug.Log($"{userI.hungies.Value} == {val}");
+        // Debug.Log($"{userI.hungies.Value} == {val}");
         StartCoroutine(HungerConditionsByFrame(userI, usernameI));
         
     }
     IEnumerator HungerConditionsByFrame(User userI, string usernameI){
         
-        Debug.Log($"Coroutine Started with vars -> [{userI}],[{usernameI}]");
-        Debug.Log($"{userI.hungies.Value} <= 0 ?");
+        // Debug.Log($"Coroutine Started with vars -> [{userI}],[{usernameI}]");
+        // Debug.Log($"{userI.hungies.Value} <= 0 ?");
         if(userI.hungies.Value <= 0)
             SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger4"], false);
-        Debug.Log("next frame >>>");
+        // Debug.Log("next frame >>>");
         yield return new WaitForNextFrameUnit();
-        Debug.Log($"{userI.hungies.Value} <= 25 ?");
+        // Debug.Log($"{userI.hungies.Value} <= 25 ?");
         if(userI.hungies.Value <= 25)
             SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger3"], false);
-        Debug.Log("next frame >>>");
+        // Debug.Log("next frame >>>");
         yield return new WaitForNextFrameUnit();
-        Debug.Log($"{userI.hungies.Value} <= 50 ?");
+        // Debug.Log($"{userI.hungies.Value} <= 50 ?");
         if(userI.hungies.Value <= 50)
             SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger2"], false);
-        Debug.Log("next frame >>>");
+        // Debug.Log("next frame >>>");
         yield return new WaitForNextFrameUnit();
-        Debug.Log($"{userI.hungies.Value} <= 75 ?");
+        // Debug.Log($"{userI.hungies.Value} <= 75 ?");
         if(userI.hungies.Value <= 75)
             SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger1"], false);
-        Debug.Log("next frame >>>");
+        // Debug.Log("next frame >>>");
         yield return new WaitForNextFrameUnit();
-        Debug.Log($"{userI.hungies.Value} > 75 ?");
+        // Debug.Log($"{userI.hungies.Value} > 75 ?");
         if(userI.hungies.Value > 75)
             SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["normal"], false);
     }
     void SetCondition(User user, string usernameI, int index, string conditionVal, bool isEnforced = true){
 
-        Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]]}");
+        // Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]]}");
 
         switch(isEnforced){
 

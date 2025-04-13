@@ -7,7 +7,7 @@ using Unity.Services.Relay;
 using Unity.Netcode;
 using Unity.Netcode.Transports.UTP;
 using Unity.Networking.Transport.Relay;
-
+#pragma warning disable 0168
 public class RelayManager : MonoBehaviour
 {
     [SerializeField] Interpreter interpreter;
@@ -22,20 +22,20 @@ public class RelayManager : MonoBehaviour
         try
         {
             await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(username, password);
-            Debug.Log("SignUp is successful.");
+            // Debug.Log("SignUp is successful.");
             interpreter.loggedIn = true;
         }
         catch (AuthenticationException ex)
         {
             // Compare error code to AuthenticationErrorCodes
             // Notify the player with the proper error message
-            Debug.LogException(ex);
+            // Debug.LogException(ex);
         }
         catch (RequestFailedException ex)
         {
             // Compare error code to CommonErrorCodes
             // Notify the player with the proper error message
-            Debug.LogException(ex);
+            // Debug.LogException(ex);
         }
     }
 
@@ -44,20 +44,20 @@ public class RelayManager : MonoBehaviour
         try
         {
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(username, password);
-            Debug.Log("SignIn is successful.");
+            // Debug.Log("SignIn is successful.");
             interpreter.loggedIn = true;
         }
         catch (AuthenticationException ex)
         {
             // Compare error code to AuthenticationErrorCodes
             // Notify the player with the proper error message
-            Debug.LogException(ex);
+            // Debug.LogException(ex);
         }
         catch (RequestFailedException ex)
         {
             // Compare error code to CommonErrorCodes
             // Notify the player with the proper error message
-            Debug.LogException(ex);
+            // Debug.LogException(ex);
         }
     }
 
@@ -81,25 +81,25 @@ public class RelayManager : MonoBehaviour
         AuthenticationService.Instance.SignedIn += () => {
 
             // Shows how to get a playerID
-            Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
+            // Debug.Log($"PlayerID: {AuthenticationService.Instance.PlayerId}");
 
             // Shows how to get an access token
-            Debug.Log($"Access Token: {AuthenticationService.Instance.AccessToken}");
+            // Debug.Log($"Access Token: {AuthenticationService.Instance.AccessToken}");
         };
 
         AuthenticationService.Instance.SignInFailed += (err) => {
 
-            Debug.LogError(err);
+            // Debug.LogError(err);
         };
 
         AuthenticationService.Instance.SignedOut += () => {
 
-            Debug.Log("Player signed out.");
+            // Debug.Log("Player signed out.");
         };
 
         AuthenticationService.Instance.Expired += () => {
 
-            Debug.Log("Player session could not be refreshed and expired.");
+            // Debug.Log("Player session could not be refreshed and expired.");
         };
     }
 }

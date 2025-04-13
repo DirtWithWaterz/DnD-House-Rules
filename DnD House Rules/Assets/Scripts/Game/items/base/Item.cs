@@ -276,7 +276,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
         }
         else{
 
-            Debug.Log("false");
+            // Debug.Log("false");
         }
         GameManager.Singleton.SaveDataRpc();
     }
@@ -312,7 +312,7 @@ public struct item:IEquatable<item>,INetworkSerializable{
 
         if (indexToRemove == -1)
         {
-            Debug.LogWarning($"Item {itemToRemove.name} not found in inventory!");
+            // Debug.LogWarning($"Item {itemToRemove.name} not found in inventory!");
             return;
         }
 

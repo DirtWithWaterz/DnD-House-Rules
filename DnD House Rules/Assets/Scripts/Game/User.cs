@@ -152,7 +152,7 @@ public class User : NetworkBehaviour
             return;
         // if(!screen.activeInHierarchy) return;
         if (GameManager.Singleton == null){
-            Debug.LogError("GameManager.Singleton is null!");
+            // Debug.LogError("GameManager.Singleton is null!");
             return;
         }
         UpdateUserDataRpc(NetworkManager.LocalClientId);
@@ -292,13 +292,21 @@ public class User : NetworkBehaviour
         hungies.Value += value;
         hungies.Value = Mathf.Clamp(hungies.Value, 0f, 100f);
     }
+    [Rpc(SendTo.Everyone)]
+    public void AddTs0HRpc(string usernameI, float value){
+
+        if(usernameI != name || !IsOwner)
+            return;
+        
+        ts0H.Value += value;
+    }
 
     public bool ready;
 
     [Rpc(SendTo.Everyone)]
     public void LoadUserDataRpc(int index){
 
-        if(!IsHost)
+        if(!IsOwner)
             return;
 
         interpreter.SetLevelRpc(this.name, GameManager.Singleton.userDatas[index].Lvl);
@@ -381,10 +389,10 @@ public class User : NetworkBehaviour
             interpreter.SetConditionRpc(this.name, 15, GameManager.Singleton.conditionsValueKey[GameManager.Singleton.userDatas[index].CONDITION_CRUS_RIGHT.ToString()]);
             interpreter.SetConditionRpc(this.name, 16, GameManager.Singleton.conditionsValueKey[GameManager.Singleton.userDatas[index].CONDITION_FOOT_RIGHT.ToString()]);
 
-            yield return new WaitForSeconds(0.1f);
+            yield return new WaitForSeconds(0.25f);
             interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies);
         }
-
+        // interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies);
         // DataLoadedRpc(this.name);
     }
 
@@ -404,7 +412,7 @@ public class User : NetworkBehaviour
             }
         }
         if (netObj == null){
-            Debug.LogError($"NetworkObject not found for id {id}");
+            // Debug.LogError($"NetworkObject not found for id {id}");
             return; // Exit the method early to avoid further errors
         }
 
