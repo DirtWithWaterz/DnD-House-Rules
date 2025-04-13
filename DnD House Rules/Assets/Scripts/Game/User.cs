@@ -30,6 +30,7 @@ public class User : NetworkBehaviour
     [SerializeField] TMP_Text CurrentPlayerLabel2;
 
     public NetworkVariable<float> hungies = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<float> ts0H = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public NetworkVariable<int> eLvl = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     int eLvlOld = -1;
@@ -166,7 +167,7 @@ public class User : NetworkBehaviour
             return;
         // Debug.Log("name is correct || is owner == true");
         // Debug.Log($"{eLvl.Value} -> {set}");
-        eLvl.Value = set;
+        eLvl.Value = Mathf.Clamp(set, -1, 7);
         // Debug.Log($"eLvl == {eLvl.Value} || set == {set}");
     }
 
@@ -189,22 +190,35 @@ public class User : NetworkBehaviour
             case 0:
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger4"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger4"], false);
+                ts0H.Value += Time.deltaTime;
                 break;
             case <= 25:
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger3"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger3"], false);
+                ts0H.Value -= Time.deltaTime*2;
+                if(ts0H.Value <= 0)
+                    ts0H.Value = 0;
                 break;
             case <= 50:
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger2"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger2"], false);
+                ts0H.Value -= Time.deltaTime*3;
+                if(ts0H.Value <= 0)
+                    ts0H.Value = 0;
                 break;
             case <= 75:
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["hunger1"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["hunger1"], false);
+                ts0H.Value -= Time.deltaTime*4;
+                if(ts0H.Value <= 0)
+                    ts0H.Value = 0;
                 break;
             default:
                 if(bodyparts[9].unenforcedCondition != GameManager.Singleton.conditionsValueKey["normal"])
                     interpreter.SetConditionRpc(this.name, 9, GameManager.Singleton.conditionsValueKey["normal"], false);
+                ts0H.Value -= Time.deltaTime*5;
+                if(ts0H.Value <= 0)
+                    ts0H.Value = 0;
                 break;
         }
         if(eLvlOld != eLvl.Value){
@@ -223,6 +237,41 @@ public class User : NetworkBehaviour
             // Debug.Log($"{eLvlOld} -> {eLvl.Value}");
             eLvlOld = eLvl.Value;
             // Debug.Log($"{eLvlOld} == {eLvl.Value}");
+        }
+        switch((int)ts0H.Value){
+
+            case 0:
+                eLvl.Value = 0;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*36:
+                eLvl.Value = 1;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*72:
+                eLvl.Value = 2;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*108:
+                eLvl.Value = 3;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*144:
+                eLvl.Value = 4;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*180:
+                eLvl.Value = 5;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*216:
+                eLvl.Value = 6;
+                eLvlOld = eLvl.Value - 1;
+                break;
+            case 60*60*252:
+                eLvl.Value = 7;
+                eLvlOld = eLvl.Value - 1;
+                break;
         }
     }
 
@@ -270,7 +319,7 @@ public class User : NetworkBehaviour
         interpreter.SetMoneyRpc(this.name, MoneyType.brine, GameManager.Singleton.userDatas[index].brine);
         interpreter.SetMoneyRpc(this.name, MoneyType.penc, GameManager.Singleton.userDatas[index].penc);
 
-        // interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies);
+        interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies, GameManager.Singleton.userDatas[index].ts0H);
 
         StartCoroutine(AllocateEnum());
 
@@ -332,6 +381,8 @@ public class User : NetworkBehaviour
             interpreter.SetConditionRpc(this.name, 15, GameManager.Singleton.conditionsValueKey[GameManager.Singleton.userDatas[index].CONDITION_CRUS_RIGHT.ToString()]);
             interpreter.SetConditionRpc(this.name, 16, GameManager.Singleton.conditionsValueKey[GameManager.Singleton.userDatas[index].CONDITION_FOOT_RIGHT.ToString()]);
 
+            yield return new WaitForSeconds(0.1f);
+            interpreter.SetHungiesRpc(this.name, GameManager.Singleton.userDatas[index].hungies);
         }
 
         // DataLoadedRpc(this.name);
@@ -441,6 +492,8 @@ public class User : NetworkBehaviour
                     penc = user.backpack.penc.Value,
 
                     hungies = user.hungies.Value,
+
+                    ts0H = user.ts0H.Value,
 
                     eLvl = user.eLvl.Value
                 };

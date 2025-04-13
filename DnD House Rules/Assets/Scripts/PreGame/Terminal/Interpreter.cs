@@ -6,6 +6,7 @@ using Newtonsoft.Json;
 using TMPro;
 using Unity.Collections;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -2013,8 +2014,8 @@ public class Interpreter : NetworkBehaviour
 
         if(username != usernameI)
             return;
-        User user = GameObject.Find(usernameI).GetComponent<User>();
-        user.bodyparts[index].black.Value = val;
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        userI.bodyparts[index].black.Value = val;
     }
     
     [Rpc(SendTo.Everyone)]
@@ -2023,21 +2024,21 @@ public class Interpreter : NetworkBehaviour
         if(username != usernameI)
             return;
         
-        User user = GameObject.Find(usernameI).GetComponent<User>();
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
 
         switch(moneyType){
 
             case MoneyType.soljik:
-                user.backpack.soljik.Value = amount;
-                user.backpack.soljikText.text = $"Soljik: {amount:0000000000000}";
+                userI.backpack.soljik.Value = amount;
+                userI.backpack.soljikText.text = $"Soljik: {amount:0000000000000}";
                 break;
             case MoneyType.brine:
-                user.backpack.brine.Value = amount;
-                user.backpack.brineText.text = $"Brine: {amount:000}";
+                userI.backpack.brine.Value = amount;
+                userI.backpack.brineText.text = $"Brine: {amount:000}";
                 break;
             case MoneyType.penc:
-                user.backpack.penc.Value = amount;
-                user.backpack.pencText.text = $"Penc: {amount:000}";
+                userI.backpack.penc.Value = amount;
+                userI.backpack.pencText.text = $"Penc: {amount:000}";
                 break;
         }
     }
@@ -2194,7 +2195,72 @@ public class Interpreter : NetworkBehaviour
                 break;
         }
     }
+    [Rpc(SendTo.Everyone)]
+    public void SetHungiesRpc(string usernameI, float val, float ts0H = -1){
 
+        if(username != usernameI)
+            return;
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        Debug.Log($"hunger == {userI.hungies.Value} || setting to -> {val}");
+        Debug.Log($"{userI.hungies.Value} -> {val}");
+        userI.hungies.Value = val;
+        if(ts0H != -1)
+            userI.ts0H.Value = ts0H;
+        Debug.Log($"{userI.hungies.Value} == {val}");
+        StartCoroutine(HungerConditionsByFrame(userI, usernameI));
+        
+    }
+    IEnumerator HungerConditionsByFrame(User userI, string usernameI){
+        
+        Debug.Log($"Coroutine Started with vars -> [{userI}],[{usernameI}]");
+        Debug.Log($"{userI.hungies.Value} <= 0 ?");
+        if(userI.hungies.Value <= 0)
+            SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger4"], false);
+        Debug.Log("next frame >>>");
+        yield return new WaitForNextFrameUnit();
+        Debug.Log($"{userI.hungies.Value} <= 25 ?");
+        if(userI.hungies.Value <= 25)
+            SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger3"], false);
+        Debug.Log("next frame >>>");
+        yield return new WaitForNextFrameUnit();
+        Debug.Log($"{userI.hungies.Value} <= 50 ?");
+        if(userI.hungies.Value <= 50)
+            SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger2"], false);
+        Debug.Log("next frame >>>");
+        yield return new WaitForNextFrameUnit();
+        Debug.Log($"{userI.hungies.Value} <= 75 ?");
+        if(userI.hungies.Value <= 75)
+            SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["hunger1"], false);
+        Debug.Log("next frame >>>");
+        yield return new WaitForNextFrameUnit();
+        Debug.Log($"{userI.hungies.Value} > 75 ?");
+        if(userI.hungies.Value > 75)
+            SetCondition(userI, usernameI, 9, GameManager.Singleton.conditionsValueKey["normal"], false);
+    }
+    void SetCondition(User user, string usernameI, int index, string conditionVal, bool isEnforced = true){
+
+        Debug.Log($"conditionVal: {conditionVal} || conditionHuman: {GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]]}");
+
+        switch(isEnforced){
+
+            case true:
+                // user.bodyparts[index].forceCondition = true;
+                EnforceConditionRpc(usernameI, index, true);
+                user.bodyparts[index].condition.Value = conditionVal;
+                break;
+            case false:
+                // user.bodyparts[index].forceCondition = false;
+                user.bodyparts[index].unenforcedCondition = conditionVal;
+                break;
+        }
+        condition newCondition = new condition{
+
+            name = GameManager.Singleton.conditionNamesHumanKey[GameManager.Singleton.conditionsKeyValue[conditionVal]],
+            data = conditionVal,
+            bodypart = Rest.bodypartDict1[index]
+        };
+        user.conditionsUI.ListConditionRpc(newCondition, usernameI);
+    }
     [Rpc(SendTo.Server)]
     public void LoadGameSceneRpc(){
 

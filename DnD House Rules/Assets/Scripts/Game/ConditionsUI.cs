@@ -18,15 +18,17 @@ public class ConditionsUI : MonoBehaviour
     [Rpc(SendTo.Everyone)]
     public void ListConditionRpc(condition condition, string usernameI){
 
+        Debug.Log($"{usernameI} == {GameManager.Singleton.interpreter.GetUsername} ?");
         if(usernameI != GameManager.Singleton.interpreter.GetUsername)
             return;
+        Debug.Log("true >>>");
 
         if(condition.name.ToString() == "normal"){
 
             for(int i = 0; i < conditionsList.Count; i++){
                 
                 if(conditionsList[i].bodypart == condition.bodypart){
-
+                    Debug.Log($"removing {conditionsList[i].name} from list because the status of {condition.bodypart} is now normal");
                     conditionsList.RemoveAt(i);
                     i = 0;
                 }
@@ -35,10 +37,15 @@ public class ConditionsUI : MonoBehaviour
 
         for(int i = 0; i < conditionsList.Count; i++){
             
-            if(conditionsList[i].Equals(condition))
+            if(conditionsList[i].Equals(condition)){
+
+                Debug.Log($"{condition.name} already added to list for the {condition.bodypart}");
                 return;
+            }
         }
+        Debug.Log($"adding {condition.name} to the list of conditions for the {condition.bodypart}");
         conditionsList.Add(condition);
+        Debug.Log("refreshing display box >>>");
         RefreshConditionBoxRpc(usernameI);
     }
 
@@ -61,6 +68,8 @@ public class ConditionsUI : MonoBehaviour
         if(usernameI != GameManager.Singleton.interpreter.GetUsername)
             return;
         
+        Debug.Log("<<< commencing refresh");
+
         if(conditionDisplays.Count > 0){
 
             foreach(NetworkObject itemDis in conditionDisplays){
@@ -74,7 +83,7 @@ public class ConditionsUI : MonoBehaviour
 
             if(condition.name == "normal")
                 continue;
-
+            Debug.Log($"adding display for {condition.name} on the {condition.bodypart} >>>");
             NetworkObject conditionDisplayBox = Instantiate(GameManager.Singleton.conditionDisplayBox, Panel.transform);
             ConditionDisplay conditionDisplay = conditionDisplayBox.GetComponent<ConditionDisplay>();
             conditionDisplay.bodypartNameText.text = condition.bodypart.ToString();
@@ -83,6 +92,8 @@ public class ConditionsUI : MonoBehaviour
             conditionDisplay.conditionsUI = this;
             conditionDisplays.Add(conditionDisplayBox);
         }
+
+        Debug.Log("finished >>>");
     }
 
 }

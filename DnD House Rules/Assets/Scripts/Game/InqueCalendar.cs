@@ -82,7 +82,7 @@ public class InqueCalendar : NetworkBehaviour
 
 #region Season Definitions
 
-    [SerializeField] int seasonOffset = 0; // Number of days to offset the seasons
+    public int seasonOffset = 0; // Number of days to offset the seasons
     public Season[] seasons = new Season[0];
 
     public NetworkVariable<int> currentSeasonday = new NetworkVariable<int>(1, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);

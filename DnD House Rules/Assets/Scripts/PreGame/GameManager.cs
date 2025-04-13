@@ -61,6 +61,8 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
 
     public float hungies;
 
+    public float ts0H;
+
     public int eLvl;
 
     public bool Equals(userData other)
@@ -146,6 +148,7 @@ public struct userData:IEquatable<userData>,INetworkSerializable{
         serializer.SerializeValue(ref penc);
 
         serializer.SerializeValue(ref hungies);
+        serializer.SerializeValue(ref ts0H);
 
         serializer.SerializeValue(ref eLvl);
 
@@ -262,6 +265,7 @@ public class GameManager : NetworkBehaviour
         public int soljik, brine, penc;
 
         public float hungies;
+        public float ts0H;
 
         public int eLvl;
     }
@@ -355,6 +359,29 @@ public class GameManager : NetworkBehaviour
         public JsonBodyArray[] bodyArrays;
     }
 
+    [Serializable]
+    public class JsonTimeData{
+
+        public int currentYear;
+        public int currentYearday;
+        public int currentMonth;
+        public int currentMonthday;
+        public int currentWeekday;
+        public int currentDay;
+        public int currentHour;
+        public int currentMin;
+        public int currentSec;
+        public int currentSeasonday;
+        public int currentSeason;
+        public int totalMonthdays;
+        public int totalMonths;
+        public int totalWeekdays;
+        public int totalDays;
+        public int totalHours;
+        public int totalMins;
+        public int totalSecs;
+        public int seasonOffset;
+    }
 
     // void OnApplicationQuit(){
 
@@ -485,6 +512,7 @@ public class GameManager : NetworkBehaviour
                 brine = user.brine,
                 penc = user.penc,
                 hungies = user.hungies,
+                ts0H = user.ts0H,
                 eLvl = user.eLvl
             };
 
@@ -690,6 +718,31 @@ public class GameManager : NetworkBehaviour
         jsonBodyArrays.bodyArrays = bodyArrayMap.Values.ToArray();
         SaveJsonRpc("/bodyarrays.json", JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
 
+        JsonTimeData jsonTimeData = new JsonTimeData(){
+
+            currentYear = inqueCalendar.currentYear.Value,
+            currentYearday = inqueCalendar.currentYearday.Value,
+            currentMonth = inqueCalendar.currentMonth.Value,
+            currentMonthday = inqueCalendar.currentMonthday.Value,
+            currentWeekday = inqueCalendar.currentWeekday.Value,
+            currentDay = inqueCalendar.currentDay.Value,
+            currentHour = inqueCalendar.currentHour.Value,
+            currentMin = inqueCalendar.currentMin.Value,
+            currentSec = inqueCalendar.currentSec.Value,
+            currentSeasonday = inqueCalendar.currentSeasonday.Value,
+            currentSeason = inqueCalendar.currentSeason.Value,
+            totalMonthdays = inqueCalendar.totalMonthdays.Value,
+            totalMonths = inqueCalendar.totalMonths,
+            totalWeekdays = inqueCalendar.totalWeekdays,
+            totalDays = inqueCalendar.totalDays,
+            totalHours = inqueCalendar.totalHours,
+            totalMins = inqueCalendar.totalMins,
+            totalSecs = inqueCalendar.totalSecs,
+            seasonOffset = inqueCalendar.seasonOffset
+        };
+
+        SaveJsonRpc("/timedata.json", JsonConvert.SerializeObject(jsonTimeData, Formatting.Indented));
+
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
         if(log){
 
@@ -836,6 +889,7 @@ public class GameManager : NetworkBehaviour
                     penc = 0,
 
                     hungies = 100f,
+                    ts0H = 0f,
 
                     eLvl = 0
                 };
@@ -959,6 +1013,7 @@ public class GameManager : NetworkBehaviour
                         penc = 0,
 
                         hungies = 100f,
+                        ts0H = 0f,
 
                         eLvl = 0
                     };
@@ -1056,6 +1111,7 @@ public class GameManager : NetworkBehaviour
                         penc = jsonUserDatas.jsonUserDatas[i].penc,
 
                         hungies = jsonUserDatas.jsonUserDatas[i].hungies,
+                        ts0H = jsonUserDatas.jsonUserDatas[i].ts0H,
 
                         eLvl = jsonUserDatas.jsonUserDatas[i].eLvl
                     };
@@ -1228,6 +1284,29 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
+        
+        JsonTimeData jsonTimeData = JsonConvert.DeserializeObject<JsonTimeData>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/timedata.json"));
+
+        inqueCalendar.currentYear.Value = jsonTimeData.currentYear;
+        inqueCalendar.currentYearday.Value = jsonTimeData.currentYearday;
+        inqueCalendar.currentMonth.Value = jsonTimeData.currentMonth;
+        inqueCalendar.currentMonthday.Value = jsonTimeData.currentMonthday;
+        inqueCalendar.currentWeekday.Value = jsonTimeData.currentWeekday;
+        inqueCalendar.currentDay.Value = jsonTimeData.currentDay;
+        inqueCalendar.currentHour.Value = jsonTimeData.currentHour;
+        inqueCalendar.currentMin.Value = jsonTimeData.currentMin;
+        inqueCalendar.currentSec.Value = jsonTimeData.currentSec;
+        inqueCalendar.currentSeasonday.Value = jsonTimeData.currentSeasonday;
+        inqueCalendar.currentSeason.Value = jsonTimeData.currentSeason;
+        inqueCalendar.totalMonthdays.Value = jsonTimeData.totalMonthdays;
+        inqueCalendar.totalMonths = jsonTimeData.totalMonths;
+        inqueCalendar.totalWeekdays = jsonTimeData.totalWeekdays;
+        inqueCalendar.totalDays = jsonTimeData.totalDays;
+        inqueCalendar.totalHours = jsonTimeData.totalHours;
+        inqueCalendar.totalMins = jsonTimeData.totalMins;
+        inqueCalendar.totalSecs = jsonTimeData.totalSecs;
+        inqueCalendar.seasonOffset = jsonTimeData.seasonOffset;
+
         yield return new WaitForEndOfFrame();
         if(InitialLoad){
 
