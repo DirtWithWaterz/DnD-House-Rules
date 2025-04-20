@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
+using Unity.Mathematics;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -30,7 +31,7 @@ public class User : NetworkBehaviour
     [SerializeField] TMP_Text CurrentPlayerLabel2;
 
     public NetworkVariable<float> hungies = new NetworkVariable<float>(100f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
-    public NetworkVariable<float> ts0H = new NetworkVariable<float>(0f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
+    public NetworkVariable<double> ts0H = new NetworkVariable<double>(0d, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
 
     public NetworkVariable<int> eLvl = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Owner);
     int eLvlOld = -1;
@@ -172,6 +173,19 @@ public class User : NetworkBehaviour
     }
 
     float hungiesTimer = 0f;
+
+    enum HEpair{
+        lvl0 = 0,
+        lvl1 = 1,
+        lvl2 = 2,
+        lvl3 = 3,
+        lvl4 = 4,
+        lvl5 = 5,
+        lvl6 = 6
+    }
+    HEpair currHEpair = HEpair.lvl0;
+    HEpair prevHEpair = HEpair.lvl0;
+
     void Update(){
 
         if(!isInitialized.Value || !IsOwner)
@@ -232,7 +246,7 @@ public class User : NetworkBehaviour
                 data = conditionsUI.exhaustionDisplay.thisCondition.data,
                 bodypart = conditionsUI.exhaustionDisplay.thisCondition.bodypart,
                 eLvl = eLvl.Value,
-                eLvlOld = eLvl.Value - 1
+                eLvlOld = eLvlOld
             };
             // Debug.Log($"{eLvlOld} -> {eLvl.Value}");
             eLvlOld = eLvl.Value;
@@ -241,36 +255,67 @@ public class User : NetworkBehaviour
         switch((int)ts0H.Value){
 
             case 0:
-                eLvl.Value = 0;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl0;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*36:
-                eLvl.Value = 1;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl1;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*72:
-                eLvl.Value = 2;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl2;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*108:
-                eLvl.Value = 3;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl3;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*144:
-                eLvl.Value = 4;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl4;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*180:
-                eLvl.Value = 5;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl5;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
             case 60*60*216:
-                eLvl.Value = 6;
-                eLvlOld = eLvl.Value - 1;
-                break;
-            case 60*60*252:
-                eLvl.Value = 7;
-                eLvlOld = eLvl.Value - 1;
+                currHEpair = HEpair.lvl6;
+                if(prevHEpair != currHEpair){
+
+                    eLvl.Value += (int)currHEpair - (int)prevHEpair;
+                    prevHEpair = currHEpair;
+                }
+                eLvl.Value = Mathf.Clamp(eLvl.Value, 0, 6);
                 break;
         }
     }
@@ -501,7 +546,7 @@ public class User : NetworkBehaviour
 
                     hungies = user.hungies.Value,
 
-                    ts0H = user.ts0H.Value,
+                    ts0H = (float)user.ts0H.Value,
 
                     eLvl = user.eLvl.Value
                 };
