@@ -844,6 +844,16 @@ public class Interpreter : NetworkBehaviour
                 response.Add("");
                 return response;
             }
+            if(args[1] == "exhaust"){
+
+                if(IsHost){
+
+                    string usernameI = args[2];
+                    response.Add($"{GameObject.Find(usernameI).GetComponent<User>().eLvl.Value}");
+                    response.Add("");
+                    return response;
+                }
+            }
         }
 
         if(args[0] == "reset"){
@@ -1232,6 +1242,17 @@ public class Interpreter : NetworkBehaviour
                 if(IsHost)
                     SetTimeRpc(5, 0, args[2]);
             }
+            if(args[1] == "exhaust"){
+
+                if(IsHost){
+
+                    string usernameI = args[2];
+                    if(GameObject.Find(usernameI) != null)
+                        SetExhaustPlayerRpc(usernameI, Mathf.Clamp(int.Parse(args[3]), 0, 6));
+                    response.Add("");
+                    return response;
+                }
+            }
             response.Add("");
 
             return response;
@@ -1499,6 +1520,18 @@ public class Interpreter : NetworkBehaviour
                 response.Add("");
                 return response;
 
+            }
+        }
+
+        if(args[0] == "exhaust"){
+
+            if(IsHost){
+
+                string usernameI = args[1];
+                if(GameObject.Find(usernameI) != null)
+                    ExhaustPlayerRpc(usernameI, Mathf.Clamp(int.Parse(args[2]), 0, 6));
+                response.Add("");
+                return response;
             }
         }
 
@@ -1973,7 +2006,24 @@ public class Interpreter : NetworkBehaviour
                 break;
         }
     }
+    [Rpc(SendTo.Everyone)]
+    public void ExhaustPlayerRpc(string usernameI, int val){
 
+        if(usernameI != username)
+            return;
+
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        userI.SetELvlRpc(Mathf.Clamp(userI.eLvl.Value + val, 0, 6), usernameI);
+    }
+    [Rpc(SendTo.Everyone)]
+    public void SetExhaustPlayerRpc(string usernameI, int val){
+
+        if(usernameI != username)
+            return;
+
+        User userI = GameObject.Find(usernameI).GetComponent<User>();
+        userI.SetELvlRpc(val, usernameI);
+    }
     [Rpc(SendTo.Everyone)]
     public void AddItemToBackpackRpc(string usernameI, string backpackName, int backpackId, item item){
 
