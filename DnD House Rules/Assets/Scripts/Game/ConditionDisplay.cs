@@ -128,23 +128,33 @@ public class ConditionDisplay : MonoBehaviour
             
             yield return new WaitUntil(()=> Input.GetMouseButtonUp(0));
 
-            if(hovering){
+            if (hovering)
+            {
                 selected = true;
                 conditionsUI.iPanel_conditionInfo.text = thisCondition.data.ToString().Replace("\\n", "\n");
-                foreach(NetworkObject netObj in conditionsUI.conditionDisplays){
+                foreach (NetworkObject netObj in conditionsUI.conditionDisplays)
+                {
 
-                    if(netObj == null)
+                    if (netObj == null)
                         continue;
 
                     ConditionDisplay ConditionDisplay = netObj.GetComponent<ConditionDisplay>();
-                    if(ConditionDisplay.Equals(this))
+                    Debug.Log($"{ConditionDisplay.conditionNameText.text}");
+                    if (ConditionDisplay.Equals(this))
                         continue;
-                    
-                    
+
+
                     ConditionDisplay.selected = false;
                     ConditionDisplay.background.color = Color.black;
                     ConditionDisplay.bodypartNameText.color = Color.white;
                     ConditionDisplay.conditionNameText.color = Color.white;
+                }
+                if (!conditionsUI.exhaustionDisplay.Equals(this))
+                {
+                    conditionsUI.exhaustionDisplay.selected = false;
+                    conditionsUI.exhaustionDisplay.background.color = Color.black;
+                    conditionsUI.exhaustionDisplay.bodypartNameText.color = Color.white;
+                    conditionsUI.exhaustionDisplay.conditionNameText.color = Color.white;
                 }
             }
         }

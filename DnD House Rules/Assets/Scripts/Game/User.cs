@@ -20,6 +20,8 @@ public class User : NetworkBehaviour
     public Stats stats;
     InqueCalendar calendar;
 
+    public Skills skills;
+
     public List<Bodypart> bodyparts;
 
     Interpreter interpreter;
@@ -60,6 +62,8 @@ public class User : NetworkBehaviour
         health = screen.GetComponentInChildren<Health>();
         stats = screen.GetComponentInChildren<Stats>();
         calendar = GameManager.Singleton.inqueCalendar;
+
+        skills = screen.GetComponentInChildren<Skills>();
 
         interpreter = FindObjectOfType<Interpreter>();
         backpack = GetComponentInChildren<Backpack>();
@@ -348,11 +352,11 @@ public class User : NetworkBehaviour
 
     public bool ready;
 
-    [Rpc(SendTo.Everyone)]
+    [Rpc(SendTo.Server)]
     public void LoadUserDataRpc(int index){
 
-        if(!IsOwner)
-            return;
+        // if(!IsOwner)
+        //     return;
 
         interpreter.SetLevelRpc(this.name, GameManager.Singleton.userDatas[index].Lvl);
         interpreter.SetModRpc(this.name, "con", GameManager.Singleton.userDatas[index].Con);

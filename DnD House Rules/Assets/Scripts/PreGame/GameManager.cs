@@ -383,6 +383,25 @@ public class GameManager : NetworkBehaviour
         public int seasonOffset;
     }
 
+    [Serializable]
+    public class JsonSkill
+    {
+        public string id;
+        public proficiency proficiency;
+    }
+    [Serializable]
+    public class JsonUserSkills
+    {
+        public string username;
+        public JsonSkill[] skills;
+    }
+    [Serializable]
+    public class JsonSkills
+    {
+        public JsonUserSkills[] userList;
+    }
+
+
     // void OnApplicationQuit(){
 
     //     SaveData();
@@ -743,8 +762,107 @@ public class GameManager : NetworkBehaviour
 
         SaveJsonRpc("/timedata.json", JsonConvert.SerializeObject(jsonTimeData, Formatting.Indented));
 
+        JsonSkills jsonSkills = JsonConvert.DeserializeObject<JsonSkills>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/skills.json"));
+        if (jsonSkills.userList != null)
+        {
+
+            foreach (userData userData in userDatas)
+            {
+
+                User user = GameObject.Find(userData.username.ToString()).GetComponent<User>();
+                if (user == null)
+                    continue;
+
+                bool userExists = false;
+
+                foreach (JsonUserSkills jsonUserI in jsonSkills.userList)
+                {
+
+                    if (userData.username.ToString() == jsonUserI.username)
+                    {
+
+                        jsonUserI.skills = new JsonSkill[user.skills.bucket.Count];
+
+                        for (int i = 0; i < user.skills.bucket.Count; i++)
+                        {
+
+                            jsonUserI.skills[i] = new JsonSkill
+                            {
+                                id = user.skills.bucket[i].id.ToString(),
+                                proficiency = user.skills.bucket[i].proficiency
+                            };
+                        }
+                        userExists = true;
+                        break;
+                    }
+                }
+                if (!userExists)
+                {
+
+                    JsonSkill[] skills = new JsonSkill[user.skills.bucket.Count];
+                    for (int i = 0; i < user.skills.bucket.Count; i++)
+                    {
+
+                        skills[i] = new JsonSkill
+                        {
+
+                            id = user.skills.bucket[i].id.ToString(),
+                            proficiency = user.skills.bucket[i].proficiency
+                        };
+                    }
+
+                    JsonUserSkills[] newArr = new JsonUserSkills[jsonSkills.userList.Length + 1];
+
+                    for (int i = 0; i < jsonSkills.userList.Length; i++)
+                    {
+                        newArr[i] = jsonSkills.userList[i];
+                    }
+                    newArr[jsonSkills.userList.Length] = new JsonUserSkills
+                    {
+                        username = userData.username.ToString(),
+                        skills = skills
+                    };
+
+                    jsonSkills.userList = newArr;
+                }
+            }
+        }
+        else
+        {
+
+            jsonSkills = new JsonSkills();
+            jsonSkills.userList = new JsonUserSkills[userDatas.Count];
+
+            for (int i = 0; i < userDatas.Count; i++)
+            {
+                
+                User user = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
+                if (user == null)
+                    continue;
+                
+                jsonSkills.userList[i] = new JsonUserSkills
+                {
+
+                    username = userDatas[i].username.ToString(),
+                    skills = new JsonSkill[user.skills.bucket.Count]
+                };
+                for (int j = 0; j < user.skills.bucket.Count; j++)
+                {
+
+                    jsonSkills.userList[i].skills[j] = new JsonSkill
+                    {
+                        id = user.skills.bucket[j].id.ToString(),
+                        proficiency = user.skills.bucket[j].proficiency
+                    };
+                }
+            }
+        }
+        SaveJsonRpc("/skills.json", JsonConvert.SerializeObject(jsonSkills, Formatting.Indented));
+        
+
         // Debug.Log($"Writing to directory: {Application.persistentDataPath}");
-        if(log){
+        if (log)
+        {
 
             int lines = terminalManager.AddInterpreterLines(interpreter.Interpret("saved()"));
             // Scroll to the bottom of the scrollrect
@@ -1284,28 +1402,194 @@ public class GameManager : NetworkBehaviour
                 }
             }
         }
-        
-        JsonTimeData jsonTimeData = JsonConvert.DeserializeObject<JsonTimeData>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/timedata.json"));
 
-        inqueCalendar.currentYear.Value = jsonTimeData.currentYear;
-        inqueCalendar.currentYearday.Value = jsonTimeData.currentYearday;
-        inqueCalendar.currentMonth.Value = jsonTimeData.currentMonth;
-        inqueCalendar.currentMonthday.Value = jsonTimeData.currentMonthday;
-        inqueCalendar.currentWeekday.Value = jsonTimeData.currentWeekday;
-        inqueCalendar.currentDay.Value = jsonTimeData.currentDay;
-        inqueCalendar.currentHour.Value = jsonTimeData.currentHour;
-        inqueCalendar.currentMin.Value = jsonTimeData.currentMin;
-        inqueCalendar.currentSec.Value = jsonTimeData.currentSec;
-        inqueCalendar.currentSeasonday.Value = jsonTimeData.currentSeasonday;
-        inqueCalendar.currentSeason.Value = jsonTimeData.currentSeason;
-        inqueCalendar.totalMonthdays.Value = jsonTimeData.totalMonthdays;
-        inqueCalendar.totalMonths = jsonTimeData.totalMonths;
-        inqueCalendar.totalWeekdays = jsonTimeData.totalWeekdays;
-        inqueCalendar.totalDays = jsonTimeData.totalDays;
-        inqueCalendar.totalHours = jsonTimeData.totalHours;
-        inqueCalendar.totalMins = jsonTimeData.totalMins;
-        inqueCalendar.totalSecs = jsonTimeData.totalSecs;
-        inqueCalendar.seasonOffset = jsonTimeData.seasonOffset;
+        output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/timedata.json");
+
+        if (output == "{}")
+        {
+            inqueCalendar.currentYear.Value = 0;
+            inqueCalendar.currentYearday.Value = 0;
+            inqueCalendar.currentMonth.Value = 0;
+            inqueCalendar.currentMonthday.Value = 0;
+            inqueCalendar.currentWeekday.Value = 0;
+            inqueCalendar.currentDay.Value = 0;
+            inqueCalendar.currentHour.Value = 0;
+            inqueCalendar.currentMin.Value = 0;
+            inqueCalendar.currentSec.Value = 0;
+            inqueCalendar.currentSeasonday.Value = 0;
+            inqueCalendar.currentSeason.Value = 0;
+            inqueCalendar.totalMonthdays.Value = 0;
+            inqueCalendar.totalMonths = 0;
+            inqueCalendar.totalWeekdays = 0;
+            inqueCalendar.totalDays = 0;
+            inqueCalendar.totalHours = 0;
+            inqueCalendar.totalMins = 0;
+            inqueCalendar.totalSecs = 0;
+            inqueCalendar.seasonOffset = 0;
+        }
+        else
+        {
+            
+            JsonTimeData jsonTimeData = JsonConvert.DeserializeObject<JsonTimeData>(output);
+
+            inqueCalendar.currentYear.Value = jsonTimeData.currentYear;
+            inqueCalendar.currentYearday.Value = jsonTimeData.currentYearday;
+            inqueCalendar.currentMonth.Value = jsonTimeData.currentMonth;
+            inqueCalendar.currentMonthday.Value = jsonTimeData.currentMonthday;
+            inqueCalendar.currentWeekday.Value = jsonTimeData.currentWeekday;
+            inqueCalendar.currentDay.Value = jsonTimeData.currentDay;
+            inqueCalendar.currentHour.Value = jsonTimeData.currentHour;
+            inqueCalendar.currentMin.Value = jsonTimeData.currentMin;
+            inqueCalendar.currentSec.Value = jsonTimeData.currentSec;
+            inqueCalendar.currentSeasonday.Value = jsonTimeData.currentSeasonday;
+            inqueCalendar.currentSeason.Value = jsonTimeData.currentSeason;
+            inqueCalendar.totalMonthdays.Value = jsonTimeData.totalMonthdays;
+            inqueCalendar.totalMonths = jsonTimeData.totalMonths;
+            inqueCalendar.totalWeekdays = jsonTimeData.totalWeekdays;
+            inqueCalendar.totalDays = jsonTimeData.totalDays;
+            inqueCalendar.totalHours = jsonTimeData.totalHours;
+            inqueCalendar.totalMins = jsonTimeData.totalMins;
+            inqueCalendar.totalSecs = jsonTimeData.totalSecs;
+            inqueCalendar.seasonOffset = jsonTimeData.seasonOffset;
+        }
+
+        JsonSkills jsonSkills = null;
+        try
+        {
+
+            output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/skills.json");
+        }
+        catch
+        {
+
+            jsonSkills = new JsonSkills();
+            jsonSkills.userList = new JsonUserSkills[userDatas.Count];
+
+            for (int i = 0; i < userDatas.Count; i++)
+            {
+
+                User user = GameObject.Find(userDatas[i].username.ToString()).GetComponent<User>();
+                if (user == null)
+                    continue;
+
+                Debug.Log(userDatas[i].username);
+
+                jsonSkills.userList[i] = new JsonUserSkills
+                {
+
+                    username = userDatas[i].username.ToString(),
+                    skills = new JsonSkill[18]
+                };
+                for (int j = 0; j < 18; j++)
+                {
+
+                    Skill skill = user.skills.transform.GetChild(j).GetComponent<Skill>();
+
+                    jsonSkills.userList[i].skills[j] = new JsonSkill
+                    {
+                        id = skill.id,
+                        proficiency = proficiency.NONE
+                    };
+                }
+            }
+
+            output = JsonConvert.SerializeObject(jsonSkills, Formatting.Indented);
+            SaveJsonRpc("/skills.json", output);
+        }
+
+        jsonSkills = JsonConvert.DeserializeObject<JsonSkills>(output);
+        if (jsonSkills.userList != null)
+        {
+
+            foreach (userData userData in userDatas)
+            {
+
+                bool found = false;
+
+                foreach (JsonUserSkills jsonUserI in jsonSkills.userList)
+                {
+
+                    if (userData.username.ToString() != jsonUserI.username)
+                        continue;
+
+                    User user = GameObject.Find(jsonUserI.username).GetComponent<User>();
+
+                    if (user == null)
+                        continue;
+
+                    foreach (JsonSkill jsonSkill in jsonUserI.skills)
+                    {
+
+                        user.skills.AddToBucketRpc(new skill
+                        {
+                            id = jsonSkill.id,
+                            proficiency = jsonSkill.proficiency
+                        });
+                    }
+
+                    found = true;
+                    break;
+                }
+                if (!found)
+                {
+
+                    User user = GameObject.Find(userData.username.ToString()).GetComponent<User>();
+
+                    if (user == null)
+                        continue;
+
+                    Debug.Log(userData.username.ToString());
+
+                    JsonUserSkills userSkills = new JsonUserSkills
+                    {
+                        username = userData.username.ToString(),
+                        skills = new JsonSkill[18]
+                    };
+                    foreach (Skill skill in user.skills.GetComponentsInChildren<Skill>())
+                    {
+
+                        user.skills.AddToBucketRpc(new skill
+                        {
+                            id = skill.id,
+                            proficiency = proficiency.NONE
+                        });
+                    }
+                    for (int i = 0; i < 18; i++)
+                    {
+
+                        userSkills.skills[i] = new JsonSkill
+                        {
+                            id = user.skills.bucket[i].id.ToString(),
+                            proficiency = proficiency.NONE
+                        };
+                    }
+                    jsonSkills.userList.Append(userSkills);
+                    SaveJsonRpc("/skills.json", JsonConvert.SerializeObject(jsonSkills, Formatting.Indented));
+                }
+            }
+
+        }
+        else
+        {
+
+            foreach (userData userData in userDatas)
+            {
+
+                User user = GameObject.Find(userData.username.ToString()).GetComponent<User>();
+                if (user == null)
+                    continue;
+
+                foreach (Skill skill in user.skills.GetComponentsInChildren<Skill>())
+                {
+
+                    user.skills.AddToBucketRpc(new skill
+                    {
+                        id = skill.id,
+                        proficiency = proficiency.NONE
+                    });
+                }
+            }
+        }
 
         yield return new WaitForEndOfFrame();
         if(InitialLoad){
