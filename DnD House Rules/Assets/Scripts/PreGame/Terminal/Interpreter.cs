@@ -1680,8 +1680,7 @@ public class Interpreter : NetworkBehaviour
                                 metadata = item.metadata.ToString()
                             };
 
-                            if (item.type == Type.backpack)
-                                GameManager.Singleton.itemIdTally.Value++; // Increment the ID tally for backpacks
+                            GameManager.Singleton.UpdateIdTallyRpc(); // Increment the ID tally
 
                             userI.backpack.AddItemRpc(usernameI, newItem, false);
                             response.Add($"Giving 1 \"{nameI}\" to {usernameI}, if space is available.");

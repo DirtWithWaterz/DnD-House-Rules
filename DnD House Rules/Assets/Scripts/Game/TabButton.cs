@@ -49,16 +49,16 @@ public class TabButton : MonoBehaviour
 
                     case true:
 
-                        descT.GetComponent<RectTransform>().localPosition += Vector3.right * 1000;
-                        skillT.GetComponent<RectTransform>().localPosition -= Vector3.right * 1000;
-                        label.text = "CLOSE SKILL TAB";
+                        descT.GetComponent<RectTransform>().localPosition -= Vector3.right * 1000;
+                        skillT.GetComponent<RectTransform>().localPosition += Vector3.right * 1000;
+                        label.text = "OPEN SKILL TAB";
                         index = !index;
                         break;
                     case false:
 
-                        skillT.GetComponent<RectTransform>().localPosition += Vector3.right * 1000;
-                        descT.GetComponent<RectTransform>().localPosition -= Vector3.right * 1000;
-                        label.text = "OPEN SKILL TAB";
+                        skillT.GetComponent<RectTransform>().localPosition -= Vector3.right * 1000;
+                        descT.GetComponent<RectTransform>().localPosition += Vector3.right * 1000;
+                        label.text = "CLOSE SKILL TAB";
                         index = !index;
                         break;
                 }

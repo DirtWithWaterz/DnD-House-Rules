@@ -85,6 +85,8 @@ public class Health : NetworkBehaviour
     public int maxHP = 0;
     public int currHP = 0;
 
+    public Description description;
+
     public int CONM = 0;
     float lvlBuff;
     int lvl = 0;

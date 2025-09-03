@@ -394,6 +394,7 @@ MonoBehaviour:
   itemDisplayObjectSmall: {fileID: 6437086073024150627, guid: e5c44667f0ffed94d822f9ed799403c4, type: 3}
   itemDisplayBoxMouse: {fileID: 4489792486955451911, guid: bb52df92e8fc7ba409f745a96267c8d7, type: 3}
   conditionDisplayBox: {fileID: 6392386740122727068, guid: 335725e62a305604fae2dbc00e54952e, type: 3}
+  itemListBox: {fileID: 472396020017781110, guid: bd4470cc8355bef45b8dc9b4aa72b1f4, type: 3}
   itemIdTally:
     m_InternalValue: 0
 --- !u!4 &1775000833

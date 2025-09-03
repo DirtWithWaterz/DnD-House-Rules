@@ -40,7 +40,7 @@ public class ArmorSlot : MonoBehaviour
             if(thisItem.id == -1)
                 return;
             // instantiate a new gameobject that follows the mouse
-            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.parent.parent.parent.parent.parent.GetChild(3));
+            NetworkObject fake = Instantiate(GameManager.Singleton.itemDisplayBoxMouse, transform.root.GetChild(1));
             ItemDisplayBoxMouse fakeDisplay = fake.GetComponent<ItemDisplayBoxMouse>();
             fakeDisplay.nameText.text = thisItem.name.ToString();
             fakeDisplay.sizeText.text = $"{thisItem.amount}{thisItem.size}";

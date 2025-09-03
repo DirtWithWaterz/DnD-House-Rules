@@ -47,6 +47,15 @@ public class InventorySmall : NetworkBehaviour
     public void LoadInventory(bool createDisplays = true)
     {
         string filePath = $"{Application.persistentDataPath}/{GameManager.Singleton.interpreter.GetUsername}/{GameManager.Singleton.interpreter.GetUsername} {thisItemDisplay.nameText.text}{thisItemDisplay.id} Inventory.json";
+
+        if (!File.Exists(filePath))
+        {
+            JsonItemInventory newJsonItemInventory = new JsonItemInventory();
+            newJsonItemInventory.items = new GameManager.JsonItem[0];
+
+            File.WriteAllText(filePath, JsonConvert.SerializeObject(newJsonItemInventory));
+        }
+
         JsonItemInventory jsonItemInventory = JsonConvert.DeserializeObject<JsonItemInventory>(File.ReadAllText(filePath));
 
         List<item> inventoryList = new List<item>();

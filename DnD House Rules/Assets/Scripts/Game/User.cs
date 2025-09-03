@@ -14,13 +14,15 @@ public class User : NetworkBehaviour
 
     NetworkVariable<int> clientsReady = new NetworkVariable<int>(0);
 
-    public NetworkList<itemSlot> itemSlots = new NetworkList<itemSlot>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
+    public NetworkList<newItem> itemSlots = new NetworkList<newItem>(null, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     public Health health;
     public Stats stats;
     InqueCalendar calendar;
 
     public Skills skills;
+
+    public ItemList itemList;
 
     public List<Bodypart> bodyparts;
 
@@ -65,6 +67,8 @@ public class User : NetworkBehaviour
 
         skills = screen.GetComponentInChildren<Skills>();
 
+        itemList = screen.GetComponentInChildren<ItemList>();
+
         interpreter = FindObjectOfType<Interpreter>();
         backpack = GetComponentInChildren<Backpack>();
         conditionsUI = GetComponentInChildren<ConditionsUI>();
@@ -108,7 +112,7 @@ public class User : NetworkBehaviour
 
         for (int i = 0; i < bodyparts.Count; i++)
         {
-            foreach (itemSlot itemSlot in bodyparts[i].slot)
+            foreach (newItem itemSlot in bodyparts[i].slot)
             {
                 string nameToUse = itemSlot.item.name.ToString();
                 if (itemSlot.item.id == -1)

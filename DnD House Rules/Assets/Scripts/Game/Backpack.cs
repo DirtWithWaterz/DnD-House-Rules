@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using TMPro;
 using Unity.Netcode;
+using Unity.VisualScripting;
 using UnityEditor;
 using UnityEngine;
 
@@ -34,6 +36,7 @@ public class Backpack : NetworkBehaviour
 
     IEnumerator Inst = null;
     ArmorSlot slotPriv = null;
+    ItemListBox itemPriv = null;
 
     public override void OnNetworkSpawn()
     {
@@ -428,6 +431,276 @@ public class Backpack : NetworkBehaviour
         armorSlot.transform.GetChild(0).gameObject.SetActive(true);
     }
 
+    public void RunItemListLogic(item thisItem, int type, ItemListBox itemListBox, NetworkObject fake = null){
+
+        switch(type){
+
+            case 0:
+                itemPriv = itemListBox;
+                Inst = ItemListLogic(fake, thisItem, itemListBox);
+                StartCoroutine(Inst);
+                break;
+            case 1:
+                StartCoroutine(ItemListLogic(thisItem, itemListBox));
+                break;
+
+        }
+    }
+
+    IEnumerator ItemListLogic(NetworkObject fake, item thisItem, ItemListBox itemListBox){
+
+        // Debug.Log("waiting for mouse button to be released...");
+        mouseDownCoOn = true;
+        yield return new WaitUntil(() => Input.GetMouseButtonUp(1));
+        mouseDownCoOn = false;
+        // Debug.Log("mouse button released. Raycasting...");
+        // raycast from mouse y coordinate and this items x coordinate
+        RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+        if (hit2D.collider != null)
+        {
+
+            // if we hit a different item in the inventory, switch that items place in the hierarchy with this one.
+            // Debug.Log(hit2D.transform.name);
+            if (Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Item Display Box Small") && thisItem.type != Type.backpack)
+            {
+
+                ItemDisplaySmall itemDisplay = hit2D.transform.GetComponent<ItemDisplaySmall>();
+                if (itemDisplay.occupiedInventory.thisItemDisplay.thisItem.CapacityLogic(thisItem))
+                {
+
+                    for (int i = 0; i < thisItem.amount; i++)
+                    {
+
+                        itemDisplay.occupiedInventory.thisItemDisplay.thisItem.AddInventory(new item
+                        {
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id,
+                            equippable = thisItem.equippable,
+                            isEquipped = false,
+                            bodyparts = thisItem.bodyparts,
+                            metadata = thisItem.metadata
+                        }, itemDisplay.transform.GetSiblingIndex());
+                    }
+                    // List<itemShort> itemShorts = new List<itemShort>();
+                    // foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                    //     itemShorts.Add(new itemShort{
+
+                    //         name = itemDisplay1.nameText.text,
+                    //         id = itemDisplay1.id
+                    //     });
+                    // }
+                    // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
+                    // GameManager.Singleton.SaveDataRpc();
+
+                    yield return new WaitForEndOfFrame();
+                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {itemDisplay.occupiedInventory.thisItemDisplay.nameText.text}{itemDisplay.occupiedInventory.thisItemDisplay.id} Inventory.json");
+
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+
+                    yield return new WaitForEndOfFrame();
+                    itemDisplay.occupiedInventory.LoadInventory();
+                    // Destroy(gameObject);
+                    GameManager.Singleton.UpdateIdTallyRpc();
+                }
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Item Display Box"))
+            {
+
+                ItemDisplay itemDisplay = hit2D.transform.GetComponent<ItemDisplay>();
+
+                if (itemDisplay.occupiedInventory.CapacityLogic(thisItem, $"{thisItem.value}:{thisItem.type}"))
+                {
+
+                    // itemDisplay.RefreshItemDisplayBoxRpc(transform.root.name);
+                    int siblingIndex = itemDisplay.transform.GetSiblingIndex();
+                    itemDisplay.occupiedInventory.AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false, siblingIndex);
+                    // GameManager.Singleton.SaveDataRpc();
+                    // List<itemShort> itemShorts = new List<itemShort>();
+                    // foreach(ItemDisplay itemDisplay1 in itemDisplay.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                    //     itemShorts.Add(new itemShort{
+
+                    //         name = itemDisplay1.nameText.text,
+                    //         id = itemDisplay1.id
+                    //     });
+                    // }
+                    // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
+                    yield return new WaitForEndOfFrame();
+
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+                    GameManager.Singleton.UpdateIdTallyRpc();
+                    // itemDisplay.RefreshItemDisplayBoxRpc(transform.root.name);
+                    // Destroy(gameObject);
+                }
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Slot"))
+            {
+
+                if (thisItem.equippable)
+                {
+
+                    ArmorSlot otherArmorSlot = hit2D.transform.GetComponent<ArmorSlot>();
+                    if (otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].Empty())
+                    {
+
+                        otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].item = new item
+                        {
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id,
+                            equippable = thisItem.equippable,
+                            isEquipped = true,
+                            bodyparts = thisItem.bodyparts,
+                            metadata = thisItem.metadata
+                        };
+                        switch (otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].item.type)
+                        {
+
+                            case Type.heavyArmor:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.ac;
+                                break;
+                            case Type.lightArmor:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.ac;
+                                break;
+                            case Type.capacityMult:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultL:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultS:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.capacityMultT:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.storage;
+                                break;
+                            case Type.healthMult:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.hp;
+                                break;
+                            default:
+                                otherArmorSlot.description.bodypart.slot[otherArmorSlot.index].slotModifierType = SlotModifierType.none;
+                                break;
+                        }
+                        yield return new WaitForEndOfFrame();
+                        itemListBox.transform.GetChild(0).gameObject.SetActive(true);
+                        GameManager.Singleton.UpdateIdTallyRpc();
+                    }
+                    else
+                    {
+
+                        yield return new WaitForEndOfFrame();
+                        itemListBox.transform.GetChild(0).gameObject.SetActive(true);
+                    }
+                }
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Scroll"))
+            {
+
+                if (CapacityLogic(thisItem, $"{thisItem.value}:{thisItem.type}"))
+                {
+
+                    AddItemRpc(GameManager.Singleton.interpreter.GetUsername, thisItem, false);
+                    // List<itemShort> itemShorts = new List<itemShort>();
+                    // foreach(ItemDisplay itemDisplay1 in transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                    //     itemShorts.Add(new itemShort{
+
+                    //         name = itemDisplay1.nameText.text,
+                    //         id = itemDisplay1.id
+                    //     });
+                    // }
+                    // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+
+                    yield return new WaitForEndOfFrame();
+
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+                    GameManager.Singleton.UpdateIdTallyRpc();
+                }
+            }
+            else if (Input.GetKey(KeyCode.LeftShift) && hit2D.transform.name.Contains("Inventory") && thisItem.type != Type.backpack)
+            {
+
+                InventorySmall inventorySmall = hit2D.transform.GetComponent<InventorySmall>();
+                if (inventorySmall.thisItemDisplay.thisItem.CapacityLogic(thisItem))
+                {
+
+                    for (int i = 0; i < thisItem.amount; i++)
+                    {
+
+                        inventorySmall.thisItemDisplay.thisItem.AddInventory(new item
+                        {
+
+                            name = thisItem.name,
+                            cost = thisItem.cost,
+                            value = thisItem.value,
+                            type = thisItem.type,
+                            size = thisItem.size,
+                            amount = 1,
+                            weight = thisItem.weight / thisItem.amount,
+                            itemInventory = thisItem.itemInventory,
+                            id = thisItem.id,
+                            equippable = thisItem.equippable,
+                            isEquipped = false,
+                            bodyparts = thisItem.bodyparts,
+                            metadata = thisItem.metadata
+                        });
+                    }
+                    // List<itemShort> itemShorts = new List<itemShort>();
+                    // foreach(ItemDisplay itemDisplay1 in itemDisplay.occupiedInventory.thisItemDisplay.occupiedInventory.transform.GetChild(4).GetChild(0).GetComponentsInChildren<ItemDisplay>()){
+
+                    //     itemShorts.Add(new itemShort{
+
+                    //         name = itemDisplay1.nameText.text,
+                    //         id = itemDisplay1.id
+                    //     });
+                    // }
+                    // GameManager.Singleton.ReorderInventoryRpc(GameManager.Singleton.interpreter.GetUsername, itemShorts.ToArray());
+                    // Debug.Log($"Reorder inventory rpc called.");
+                    // GameManager.Singleton.SaveDataRpc();
+
+                    yield return new WaitForEndOfFrame();
+                    GameManager.Singleton.RequestJsonRpc(GameManager.Singleton.interpreter.GetUsername, "host", $"/{GameManager.Singleton.interpreter.GetUsername} {inventorySmall.thisItemDisplay.nameText.text}{inventorySmall.thisItemDisplay.id} Inventory.json");
+
+                    transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+
+                    yield return new WaitForEndOfFrame();
+                    inventorySmall.LoadInventory();
+                    // Destroy(gameObject);
+                    GameManager.Singleton.UpdateIdTallyRpc();
+                }
+            }
+        }
+        else
+        {
+            // Debug.Log("Raycast did not hit any colliders.");
+        }
+        // Debug.Log("Destroying fake.");
+        if(fake == null)
+            yield break;
+        Destroy(fake.gameObject);
+        transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
+        yield return new WaitForEndOfFrame();
+        itemListBox.transform.GetChild(0).gameObject.SetActive(true);
+    }
+
     void Update(){
 
         if(Input.GetKeyUp(KeyCode.LeftShift) && mouseDownCoOn){
@@ -439,6 +712,8 @@ public class Backpack : NetworkBehaviour
             transform.root.GetComponent<User>().UpdateNetworkedSlotsRpc(GameManager.Singleton.interpreter.GetUsername);
             if(slotPriv != null)
                 slotPriv.transform.GetChild(0).gameObject.SetActive(true);
+            if (itemPriv != null)
+                itemPriv.transform.GetChild(0).gameObject.SetActive(true);
             mouseDownCoOn = false;
         }
         if(Input.GetMouseButtonUp(0)){
@@ -463,6 +738,31 @@ public class Backpack : NetworkBehaviour
                     }
                 }
             }
+            foreach (ItemListBox listBox in user.itemList.displays)
+            {
+
+                if (listBox.selected)
+                {
+
+                    RaycastHit2D hit2D = Physics2D.Raycast(cam.ScreenToWorldPoint(Input.mousePosition), Vector2.zero);
+                    if (hit2D.collider != null)
+                    {
+
+                        if (hit2D.transform.name.Contains("Scroll"))
+                        {
+
+                            iPanel_itemName.text = "";
+                            iPanel_itemInfo.text = "Left-Click an item in the inventory to see information regarding it's application. Said information will show up here.";
+
+                            listBox.selected = false;
+                            listBox.background.color = Color.black;
+                            listBox.itemName.color = Color.white;
+                            listBox.weight.color = Color.white;
+                            listBox.amount.color = Color.white;
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -473,14 +773,150 @@ public class Backpack : NetworkBehaviour
         if(thisArmorSlot.hovering){
 
             thisArmorSlot.selected = true;
-            foreach(ArmorSlot slot in thisArmorSlot.description.armorSlots){
+            
+            foreach (ItemListBox listBox in user.itemList.displays)
+            {
+                
+                listBox.selected = false;
+                listBox.background.color = Color.black;
+                listBox.itemName.color = Color.white;
+                listBox.weight.color = Color.white;
+                listBox.amount.color = Color.white;
+            }
+            foreach (ArmorSlot slot in thisArmorSlot.description.armorSlots)
+            {
 
                 // if(!slot.gameObject.activeInHierarchy)
                 //     continue;
+
+                if (slot.Equals(thisArmorSlot))
+                    continue;
+
+                slot.selected = false;
+                slot.background.color = Color.black;
+                slot.itemName.color = Color.white;
+                slot.bonus.color = Color.white;
+            }
+            foreach(NetworkObject netObj in itemDisplays){
+
+                if(netObj == null)
+                    continue;
+
+                ItemDisplay itemDisplay = netObj.GetComponent<ItemDisplay>();
                 
-                if(slot.Equals(thisArmorSlot))
+                itemDisplay.selected = false;
+                itemDisplay.background.color = Color.black;
+                itemDisplay.nameText.color = Color.white;
+                itemDisplay.sizeText.color = Color.white;
+                itemDisplay.weightText.color = Color.white;
+            }
+            if(ItemDisplay.BackpackOpen(this, out List<InventorySmall> inventorySmalls)){
+
+                for(int i = 0; i < inventorySmalls.Count; i++){
+
+                    foreach(NetworkObject netObj in inventorySmalls[i].itemDisplays){
+
+                        if(netObj == null)
+                            continue;
+
+                        ItemDisplaySmall itemDisplay = netObj.GetComponent<ItemDisplaySmall>();
+                        
+                        itemDisplay.selected = false;
+                        itemDisplay.background.color = Color.black;
+                        itemDisplay.nameText.color = Color.white;
+                        itemDisplay.sizeText.color = Color.white;
+                        itemDisplay.weightText.color = Color.white;
+                    }
+                }
+            }
+
+            iPanel_itemName.text = thisItem.name.ToString();
+            switch(thisItem.type){
+
+                case Type.backpack:
+
+                    iPanel_itemInfo.text = $"Holds {thisItem.value} large items worth of space, {thisItem.value*2} small items worth of space, or {thisItem.value*4} tiny items worth of space.";
+                    break;
+                case Type.other:
+
+                    iPanel_itemInfo.text = $"This items information is unable to be processed do to the complications of it's nature. Please query the DM for additional information.";
+                    break;
+                case Type.food:
+
+                    iPanel_itemInfo.text = "A food item, it will nourish you.";
+                    break;
+                case Type.heavyArmor:
+
+                    iPanel_itemInfo.text = $"Heavy armor, +{thisItem.value} ac to applied body part. ";
+                    break;
+                case Type.lightArmor:
+
+                    iPanel_itemInfo.text = $"Light armor, +{thisItem.value} ac to applied body part. ";
+                    break;
+                case Type.medical:
+
+                    iPanel_itemInfo.text = $"Heals {thisItem.value} hp when applied to a body part.";
+                    break;
+                case Type.weapon:
+
+                    iPanel_itemInfo.text = "No relevant information to display.";
+                    break;
+                case Type.healthMult:
+
+                    iPanel_itemInfo.text = $"Increases the maximum hp of the relevant body part by {thisItem.value}";
+                    break;
+                case Type.capacityMult:
+
+                    iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space, {thisItem.value*2} small items worth of space, or {thisItem.value*4} tiny items worth of space, to your main inventory.";
+                    break;
+                case Type.capacityMultL:
+
+                    iPanel_itemInfo.text = $"Adds {thisItem.value} large items worth of space to your main inventory.";
+                    break;
+                case Type.capacityMultS:
+
+                    iPanel_itemInfo.text = $"Adds {thisItem.value} small items worth of space to your main inventory.";
+                    break;
+                case Type.capacityMultT:
+
+                    iPanel_itemInfo.text = $"Adds {thisItem.value} tiny items worth of space to your main inventory.";
+                    break;
+            }
+            if(thisItem.name.ToString().Contains("bullet proof")){
+
+                iPanel_itemInfo.text += "Prevents lethal piercing damage to the protected body part, up to its specified protection level ";
+                iPanel_itemInfo.text += $"({thisItem.metadata.ToString()}).";
+            }
+        }
+    }
+
+    IEnumerator ItemListLogic(item thisItem, ItemListBox thisItemListBox){
+
+        yield return new WaitUntil(()=> Input.GetMouseButtonUp(0));
+
+        if(thisItemListBox.hovering){
+
+            thisItemListBox.selected = true;
+
+            foreach (ItemListBox listBox in thisItemListBox.itemList.displays)
+            {
+
+                if (listBox.Equals(thisItemListBox))
                     continue;
                 
+                listBox.selected = false;
+                listBox.background.color = Color.black;
+                listBox.itemName.color = Color.white;
+                listBox.weight.color = Color.white;
+                listBox.amount.color = Color.white;
+            }
+
+            foreach (ArmorSlot slot in user.health.description.armorSlots)
+            {
+
+                // if(!slot.gameObject.activeInHierarchy)
+                //     continue;
+
                 slot.selected = false;
                 slot.background.color = Color.black;
                 slot.itemName.color = Color.white;
@@ -829,9 +1265,21 @@ public class Backpack : NetworkBehaviour
 
             if(itemName == inventory[i].name.ToString() && (checkId ? itemId == inventory[i].id : true)){
 
-                if(inventory[i].amount > 1){
+                if (inventory[i].type == Type.backpack)
+                {
 
-                    inventory[i] = new item(){
+                    string path = Application.persistentDataPath + "/" + GameManager.Singleton.interpreter.GetUsername + inventory[i].itemInventory.ToString();
+                    if(File.Exists(path))
+                        File.Delete(path);
+
+                    inventory.Remove(inventory[i]);
+                    RefreshItemDisplayBoxRpc(username);
+                }
+                else if (inventory[i].amount > 1)
+                {
+
+                    inventory[i] = new item()
+                    {
 
                         name = inventory[i].name,
                         cost = inventory[i].cost,
@@ -850,7 +1298,8 @@ public class Backpack : NetworkBehaviour
                     itemDisplays[i].GetComponent<ItemDisplay>().sizeText.text = $"{inventory[i].amount}{inventory[i].size}";
                     itemDisplays[i].GetComponent<ItemDisplay>().weightText.text = $"{inventory[i].weight} Lbs.";
                 }
-                else{
+                else
+                {
 
                     inventory.Remove(inventory[i]);
                     RefreshItemDisplayBoxRpc(username);

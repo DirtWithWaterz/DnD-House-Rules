@@ -155,6 +155,15 @@ public class ItemDisplay : MonoBehaviour
                     slot.itemName.color = Color.white;
                     slot.bonus.color = Color.white;
                 }
+                foreach (ItemListBox listBox in transform.root.GetComponent<User>().itemList.displays)
+                {
+                    
+                    listBox.selected = false;
+                    listBox.background.color = Color.black;
+                    listBox.itemName.color = Color.white;
+                    listBox.weight.color = Color.white;
+                    listBox.amount.color = Color.white;
+                }
                 occupiedInventory.iPanel_itemName.text = thisItem.name.ToString();
                 switch(type){
 

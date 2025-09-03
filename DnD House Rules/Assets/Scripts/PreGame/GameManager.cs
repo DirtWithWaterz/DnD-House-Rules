@@ -175,7 +175,7 @@ public class GameManager : NetworkBehaviour
 
     public TerminalManager terminalManager;
 
-    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse, conditionDisplayBox;
+    public NetworkObject itemDisplayObject, itemDisplayObjectSmall, itemDisplayBoxMouse, conditionDisplayBox, itemListBox;
 
     public Dictionary<string, string> conditionsKeyValue = new Dictionary<string, string>();
     public Dictionary<string, string> conditionsValueKey = new Dictionary<string, string>();
@@ -191,6 +191,7 @@ public class GameManager : NetworkBehaviour
         userDatas = new NetworkList<userData>();
         items = new NetworkList<item>();
         userDatas.Initialize(this);
+        items.Initialize(this);
 
         userDatas.OnListChanged += UpdateNames;
 
@@ -1263,10 +1264,13 @@ public class GameManager : NetworkBehaviour
             });
         }
         yield return new WaitUntil(() => userDatas.Count > 0);
-        foreach(userData userData in userDatas){
+        foreach (userData userData in userDatas)
+        {
 
             User userI = GameObject.Find(userData.username.ToString()).GetComponent<User>();
             userI.backpack.ClearRpc(userI.name);
+            if(IsServer)
+                userI.itemList.displayRpc(userI.name);
         }
 
         JsonInventories jsonInventories = JsonConvert.DeserializeObject<JsonInventories>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/inventories.json"));
@@ -1375,7 +1379,7 @@ public class GameManager : NetworkBehaviour
                         User userI = GameObject.Find(data.username.ToString()).GetComponent<User>();
                         foreach(JsonItemSlot itemSlot in jsonBodyArrays.bodyArrays[i].itemSlots){
 
-                            LoadItemSlotRpc(data.username.ToString(), new itemSlot{
+                            LoadItemSlotRpc(data.username.ToString(), new newItem{
 
                                 item = new item{
 
@@ -1609,7 +1613,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    void UpdateNetworkedSlotServRpc(string usernameI, itemSlot newItemSlot)
+    void UpdateNetworkedSlotServRpc(string usernameI, newItem newItemSlot)
     {
         User userI = GameObject.Find(usernameI)?.GetComponent<User>();
         if (userI == null)
@@ -1690,7 +1694,7 @@ public class GameManager : NetworkBehaviour
     }
 
     [Rpc(SendTo.Everyone)]
-    public void UpdateNetworkedSlotRpc(string usernameI, itemSlot newItemSlot)
+    public void UpdateNetworkedSlotRpc(string usernameI, newItem newItemSlot)
     {
         // Debug.Log("Checking if host...");
         if (!IsHost)
@@ -1700,7 +1704,7 @@ public class GameManager : NetworkBehaviour
     }
     
     [Rpc(SendTo.Server)]
-    public void LoadItemSlotRpc(string usernameI, itemSlot itemSlot)
+    public void LoadItemSlotRpc(string usernameI, newItem itemSlot)
     {
         if (!NetworkManager.Singleton.IsServer)
             return; // Ensure only the server processes this request
@@ -1721,7 +1725,7 @@ public class GameManager : NetworkBehaviour
 
     // ClientRpc so that only the item slot owner modifies their NetworkVariables
     [Rpc(SendTo.Everyone)]
-    private void LoadItemSlotClientRpc(string usernameI, itemSlot itemSlot)
+    private void LoadItemSlotClientRpc(string usernameI, newItem itemSlot)
     {
         User userI = GameObject.Find(usernameI)?.GetComponent<User>();
         if (userI == null || !userI.IsOwner)
@@ -1778,7 +1782,19 @@ public class GameManager : NetworkBehaviour
 
                         if(userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().type == Type.backpack){
 
-                            RequestJsonRpc(data.username.ToString(), "host", $"/{data.username.ToString()} {userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().nameText.text}{userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().id} Inventory.json");
+                            
+                            string path = $"/{data.username.ToString()} {userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().nameText.text}{userI.backpack.itemDisplays[j].GetComponent<ItemDisplay>().id} Inventory.json";
+
+                            if (!File.Exists(Application.persistentDataPath + "/" + interpreter.GetUsername + path))
+                            {
+                                JsonItemInventory newJsonItemInventory = new JsonItemInventory();
+                                newJsonItemInventory.items = new JsonItem[0];
+
+                                File.WriteAllText(Application.persistentDataPath + "/" + interpreter.GetUsername + path, JsonConvert.SerializeObject(newJsonItemInventory));
+                                SaveJsonRpc(path, JsonConvert.SerializeObject(newJsonItemInventory));
+                            }
+
+                            RequestJsonRpc(data.username.ToString(), "host", path);
                             StartCoroutine(LoadSmallInv(userI, j));
                         }
                     }

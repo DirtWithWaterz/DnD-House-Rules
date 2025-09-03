@@ -7,7 +7,7 @@ using Unity.Netcode;
 using UnityEngine;
 
 [Serializable]
-public struct itemSlot:IEquatable<item>,IEquatable<itemSlot>, INetworkSerializable
+public struct newItem:IEquatable<item>,IEquatable<newItem>, INetworkSerializable
 {
 
     // public FixedString64Bytes itemName;
@@ -34,7 +34,7 @@ public struct itemSlot:IEquatable<item>,IEquatable<itemSlot>, INetworkSerializab
         return other.name == item.name && other.id == item.id;
     }
 
-    public bool Equals(itemSlot other)
+    public bool Equals(newItem other)
     {
         return other.bodypart == bodypart && other.item.Equals(item);
     }
@@ -76,7 +76,7 @@ public class Bodypart : NetworkBehaviour
     Health h;
     public User user;
 
-    public itemSlot[] slot;
+    public newItem[] slot;
 
     public bool shot = false;
 
@@ -110,10 +110,10 @@ public class Bodypart : NetworkBehaviour
         if(deselect)
             return;
 
-        slot = new itemSlot[Description.slotNum[name]];
+        slot = new newItem[Description.slotNum[name]];
         for(int i = 0; i < slot.Length; i++){
 
-            slot[i] = new itemSlot{
+            slot[i] = new newItem{
 
                 item = new item{
 
@@ -129,7 +129,7 @@ public class Bodypart : NetworkBehaviour
 
     public void EmptySlot(int index){
 
-        slot[index] = new itemSlot{
+        slot[index] = new newItem{
 
             item = new item{
 
