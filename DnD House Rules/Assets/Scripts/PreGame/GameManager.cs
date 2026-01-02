@@ -170,7 +170,7 @@ public class GameManager : NetworkBehaviour
     public NetworkList<userData> userDatas;
     public NetworkList<item> items;
 
-    public InqueCalendar inqueCalendar;
+    // public InqueCalendar inqueCalendar;
     public Interpreter interpreter;
 
     public TerminalManager terminalManager;
@@ -195,7 +195,7 @@ public class GameManager : NetworkBehaviour
 
         userDatas.OnListChanged += UpdateNames;
 
-        inqueCalendar = GetComponent<InqueCalendar>();
+        // inqueCalendar = GetComponent<InqueCalendar>();
 
         interpreter = FindObjectOfType<Interpreter>().GetComponent<Interpreter>();
 
@@ -383,6 +383,23 @@ public class GameManager : NetworkBehaviour
         public int totalSecs;
         public int seasonOffset;
     }
+
+    // [Serializable]
+    // public class JsonMoonData
+    // {
+    //     public string name;
+    //     public int cycle;
+    //     public int shift;
+    //     public string color;
+    //     public int currentPhase;
+    //     public int cyclePos;
+    // }
+
+    // [Serializable]
+    // public class JsonMoons
+    // {
+    //     public JsonMoonData[] moons;
+    // }
 
     [Serializable]
     public class JsonSkill
@@ -738,30 +755,42 @@ public class GameManager : NetworkBehaviour
         jsonBodyArrays.bodyArrays = bodyArrayMap.Values.ToArray();
         SaveJsonRpc("/bodyarrays.json", JsonConvert.SerializeObject(jsonBodyArrays, Formatting.Indented));
 
-        JsonTimeData jsonTimeData = new JsonTimeData(){
+        // JsonTimeData jsonTimeData = new JsonTimeData(){
 
-            currentYear = inqueCalendar.currentYear.Value,
-            currentYearday = inqueCalendar.currentYearday.Value,
-            currentMonth = inqueCalendar.currentMonth.Value,
-            currentMonthday = inqueCalendar.currentMonthday.Value,
-            currentWeekday = inqueCalendar.currentWeekday.Value,
-            currentDay = inqueCalendar.currentDay.Value,
-            currentHour = inqueCalendar.currentHour.Value,
-            currentMin = inqueCalendar.currentMin.Value,
-            currentSec = inqueCalendar.currentSec.Value,
-            currentSeasonday = inqueCalendar.currentSeasonday.Value,
-            currentSeason = inqueCalendar.currentSeason.Value,
-            totalMonthdays = inqueCalendar.totalMonthdays.Value,
-            totalMonths = inqueCalendar.totalMonths,
-            totalWeekdays = inqueCalendar.totalWeekdays,
-            totalDays = inqueCalendar.totalDays,
-            totalHours = inqueCalendar.totalHours,
-            totalMins = inqueCalendar.totalMins,
-            totalSecs = inqueCalendar.totalSecs,
-            seasonOffset = inqueCalendar.seasonOffset
-        };
+        //     currentYear = inqueCalendar.currentYear.Value,
+        //     currentYearday = inqueCalendar.currentYearday.Value,
+        //     currentMonth = inqueCalendar.currentMonth.Value,
+        //     currentMonthday = inqueCalendar.currentMonthday.Value,
+        //     currentWeekday = inqueCalendar.currentWeekday.Value,
+        //     currentDay = inqueCalendar.currentDay.Value,
+        //     currentHour = inqueCalendar.currentHour.Value,
+        //     currentMin = inqueCalendar.currentMin.Value,
+        //     currentSec = inqueCalendar.currentSec.Value,
+        //     currentSeasonday = inqueCalendar.currentSeasonday.Value,
+        //     currentSeason = inqueCalendar.currentSeason.Value,
+        //     totalMonthdays = inqueCalendar.totalMonthdays.Value,
+        //     totalMonths = inqueCalendar.totalMonths,
+        //     totalWeekdays = inqueCalendar.totalWeekdays,
+        //     totalDays = inqueCalendar.totalDays,
+        //     totalHours = inqueCalendar.totalHours,
+        //     totalMins = inqueCalendar.totalMins,
+        //     totalSecs = inqueCalendar.totalSecs,
+        //     seasonOffset = inqueCalendar.seasonOffset
+        // };
 
-        SaveJsonRpc("/timedata.json", JsonConvert.SerializeObject(jsonTimeData, Formatting.Indented));
+        // SaveJsonRpc("/timedata.json", JsonConvert.SerializeObject(jsonTimeData, Formatting.Indented));
+
+        // JsonMoons moonData = new JsonMoons()
+        // {
+        //     moons = new JsonMoonData[]{
+
+        //         Moon.ToJson(inqueCalendar.moons[0]),
+        //         Moon.ToJson(inqueCalendar.moons[1]),
+        //         Moon.ToJson(inqueCalendar.moons[2])
+        //     }
+        // };
+
+        // SaveJsonRpc("/moons.json", JsonConvert.SerializeObject(moonData, Formatting.Indented));
 
         JsonSkills jsonSkills = JsonConvert.DeserializeObject<JsonSkills>(File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/skills.json"));
         if (jsonSkills.userList != null)
@@ -1407,55 +1436,62 @@ public class GameManager : NetworkBehaviour
             }
         }
 
-        output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/timedata.json");
+        // output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/timedata.json");
 
-        if (output == "{}")
-        {
-            inqueCalendar.currentYear.Value = 0;
-            inqueCalendar.currentYearday.Value = 0;
-            inqueCalendar.currentMonth.Value = 0;
-            inqueCalendar.currentMonthday.Value = 0;
-            inqueCalendar.currentWeekday.Value = 0;
-            inqueCalendar.currentDay.Value = 0;
-            inqueCalendar.currentHour.Value = 0;
-            inqueCalendar.currentMin.Value = 0;
-            inqueCalendar.currentSec.Value = 0;
-            inqueCalendar.currentSeasonday.Value = 0;
-            inqueCalendar.currentSeason.Value = 0;
-            inqueCalendar.totalMonthdays.Value = 0;
-            inqueCalendar.totalMonths = 0;
-            inqueCalendar.totalWeekdays = 0;
-            inqueCalendar.totalDays = 0;
-            inqueCalendar.totalHours = 0;
-            inqueCalendar.totalMins = 0;
-            inqueCalendar.totalSecs = 0;
-            inqueCalendar.seasonOffset = 0;
-        }
-        else
-        {
+        // if (output == "{}")
+        // {
+        //     inqueCalendar.currentYear.Value = 0;
+        //     inqueCalendar.currentYearday.Value = 0;
+        //     inqueCalendar.currentMonth.Value = 0;
+        //     inqueCalendar.currentMonthday.Value = 0;
+        //     inqueCalendar.currentWeekday.Value = 0;
+        //     inqueCalendar.currentDay.Value = 0;
+        //     inqueCalendar.currentHour.Value = 0;
+        //     inqueCalendar.currentMin.Value = 0;
+        //     inqueCalendar.currentSec.Value = 0;
+        //     inqueCalendar.currentSeasonday.Value = 0;
+        //     inqueCalendar.currentSeason.Value = 0;
+        //     inqueCalendar.totalMonthdays.Value = 0;
+        //     inqueCalendar.totalMonths = 0;
+        //     inqueCalendar.totalWeekdays = 0;
+        //     inqueCalendar.totalDays = 0;
+        //     inqueCalendar.totalHours = 0;
+        //     inqueCalendar.totalMins = 0;
+        //     inqueCalendar.totalSecs = 0;
+        //     inqueCalendar.seasonOffset = 0;
+        // }
+        // else
+        // {
             
-            JsonTimeData jsonTimeData = JsonConvert.DeserializeObject<JsonTimeData>(output);
+        //     JsonTimeData jsonTimeData = JsonConvert.DeserializeObject<JsonTimeData>(output);
 
-            inqueCalendar.currentYear.Value = jsonTimeData.currentYear;
-            inqueCalendar.currentYearday.Value = jsonTimeData.currentYearday;
-            inqueCalendar.currentMonth.Value = jsonTimeData.currentMonth;
-            inqueCalendar.currentMonthday.Value = jsonTimeData.currentMonthday;
-            inqueCalendar.currentWeekday.Value = jsonTimeData.currentWeekday;
-            inqueCalendar.currentDay.Value = jsonTimeData.currentDay;
-            inqueCalendar.currentHour.Value = jsonTimeData.currentHour;
-            inqueCalendar.currentMin.Value = jsonTimeData.currentMin;
-            inqueCalendar.currentSec.Value = jsonTimeData.currentSec;
-            inqueCalendar.currentSeasonday.Value = jsonTimeData.currentSeasonday;
-            inqueCalendar.currentSeason.Value = jsonTimeData.currentSeason;
-            inqueCalendar.totalMonthdays.Value = jsonTimeData.totalMonthdays;
-            inqueCalendar.totalMonths = jsonTimeData.totalMonths;
-            inqueCalendar.totalWeekdays = jsonTimeData.totalWeekdays;
-            inqueCalendar.totalDays = jsonTimeData.totalDays;
-            inqueCalendar.totalHours = jsonTimeData.totalHours;
-            inqueCalendar.totalMins = jsonTimeData.totalMins;
-            inqueCalendar.totalSecs = jsonTimeData.totalSecs;
-            inqueCalendar.seasonOffset = jsonTimeData.seasonOffset;
-        }
+        //     inqueCalendar.currentYear.Value = jsonTimeData.currentYear;
+        //     inqueCalendar.currentYearday.Value = jsonTimeData.currentYearday;
+        //     inqueCalendar.currentMonth.Value = jsonTimeData.currentMonth;
+        //     inqueCalendar.currentMonthday.Value = jsonTimeData.currentMonthday;
+        //     inqueCalendar.currentWeekday.Value = jsonTimeData.currentWeekday;
+        //     inqueCalendar.currentDay.Value = jsonTimeData.currentDay;
+        //     inqueCalendar.currentHour.Value = jsonTimeData.currentHour;
+        //     inqueCalendar.currentMin.Value = jsonTimeData.currentMin;
+        //     inqueCalendar.currentSec.Value = jsonTimeData.currentSec;
+        //     inqueCalendar.currentSeasonday.Value = jsonTimeData.currentSeasonday;
+        //     inqueCalendar.currentSeason.Value = jsonTimeData.currentSeason;
+        //     inqueCalendar.totalMonthdays.Value = jsonTimeData.totalMonthdays;
+        //     inqueCalendar.totalMonths = jsonTimeData.totalMonths;
+        //     inqueCalendar.totalWeekdays = jsonTimeData.totalWeekdays;
+        //     inqueCalendar.totalDays = jsonTimeData.totalDays;
+        //     inqueCalendar.totalHours = jsonTimeData.totalHours;
+        //     inqueCalendar.totalMins = jsonTimeData.totalMins;
+        //     inqueCalendar.totalSecs = jsonTimeData.totalSecs;
+        //     inqueCalendar.seasonOffset = jsonTimeData.seasonOffset;
+        // }
+
+        // output = File.ReadAllText($"{Application.persistentDataPath}/{interpreter.GetUsername}/moons.json");
+
+        // if (output == "{}")
+        // {
+        //     dhgakuydgawduyagdjkawbdauybdsayudbauwdbakjbdawldiahduasdyhawudyga
+        // } // need to finish implementing moon saving
 
         JsonSkills jsonSkills = null;
         try

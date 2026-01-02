@@ -19,6 +19,16 @@ public class ItemList : NetworkBehaviour
         if (usernameI != transform.root.name)
             return;
 
+        GameObject[] toDestroy = new GameObject[panel.transform.childCount];
+        if (panel.transform.childCount > 0)
+            for (int i = 0; i < panel.transform.childCount; i++)
+                toDestroy[i] = panel.transform.GetChild(i).gameObject;
+
+        for (int i = 0; i < toDestroy.Length; i++)
+            Destroy(toDestroy[i]);
+
+        displays = new List<ItemListBox>();
+
         for (int i = 0; i < gameManager.items.Count; i++)
         {
 

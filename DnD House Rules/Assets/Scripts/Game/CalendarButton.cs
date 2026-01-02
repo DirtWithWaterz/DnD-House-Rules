@@ -5,7 +5,7 @@ using UnityEngine.UI;
 
 public class CalendarButton : MonoBehaviour
 {
-    CalendarUI calendarUI;
+    // CalendarUI calendarUI;
     public int index;
     bool hovering;
 
@@ -19,7 +19,7 @@ public class CalendarButton : MonoBehaviour
     void Awake(){
 
         
-        calendarUI = transform.parent.GetComponent<CalendarUI>();
+        // calendarUI = transform.parent.GetComponent<CalendarUI>();
 
         if(background == null || label == null || bottomEdge == null){
 
@@ -49,14 +49,14 @@ public class CalendarButton : MonoBehaviour
         if(Input.GetMouseButtonDown(0)){
 
             yield return new WaitUntil(() => Input.GetMouseButtonUp(0));
-            if(hovering && index!=-1){
+            // if(hovering && index!=-1){
 
-                calendarUI.OpenTab(index);
-                background.color = Color.black;
-                label.color = Color.white;
-                // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
-            }
-            else if(hovering && index==-1){
+            //     calendarUI.OpenTab(index);
+            //     background.color = Color.black;
+            //     label.color = Color.white;
+            //     // user.UpdateUserDataRpc(NetworkManager.Singleton.LocalClientId);
+            // }
+            if(hovering && index==-1){
 
                 GameManager.Singleton.terminal.transform.GetChild(0).GetChild(0).gameObject.SetActive(true);
                 user.screen.GetComponent<Canvas>().enabled = false;

@@ -18,7 +18,7 @@ public class User : NetworkBehaviour
 
     public Health health;
     public Stats stats;
-    InqueCalendar calendar;
+    // InqueCalendar calendar;
 
     public Skills skills;
 
@@ -63,7 +63,7 @@ public class User : NetworkBehaviour
 
         health = screen.GetComponentInChildren<Health>();
         stats = screen.GetComponentInChildren<Stats>();
-        calendar = GameManager.Singleton.inqueCalendar;
+        // calendar = GameManager.Singleton.inqueCalendar;
 
         skills = screen.GetComponentInChildren<Skills>();
 
